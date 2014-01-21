@@ -1,5 +1,5 @@
 import 'dart:html';
-import 'viewlet.dart';
+import '../lib/viewlet.dart';
 
 var $ = new Tags();
 
