@@ -79,27 +79,23 @@ abstract class View {
   Map<Symbol,dynamic> get props;
 }
 
+/// A DOM element.
 class Elt extends View {
   final String name;
   final Map<Symbol, dynamic> _props;
-  final inner;
-  Elt(this.name, this._props, inner) : inner = _makeInner(inner);
+  List<View> _children; // non-null when Elt is mounted
 
-  factory Elt.from(String name, Map<Symbol, dynamic> props) {
-    var children;
+  Elt(this.name, this._props) {
     for (Symbol key in props.keys) {
       var val = props[key];
-      if (key == #inner) {
-        children = val;
-      } else if (key == #clazz) {
+      if (key == #inner || key == #clazz || allHandlers.containsKey(key)) {
         // ok
-      } else if (allHandlers.containsKey(key)) {
-        // It's an event handler.
       } else {
         throw "property not supported: ${key}";
       }
     }
-    return new Elt(name, props, children);
+    var inner = _props[#inner];
+    assert(inner == null || inner is String || inner is View || inner is List);
   }
 
   void mount(StringBuffer out, String path, int depth) {
@@ -115,18 +111,34 @@ class Elt extends View {
       }
     }
     out.write(">");
+    var inner = _props[#inner];
     if (inner == null) {
       // none
     } else if (inner is String) {
       out.write(HTML_ESCAPE.convert(inner));
+    } else if (inner is View) {
+      _mountChildren(out, [inner]);
     } else if (inner is List) {
-      for (int i = 0; i < inner.length; i++) {
-        inner[i].mount(out, "${path}/${i}", depth + 1);
+      List<View> children = [];
+      for (var item in inner) {
+        if (item is String) {
+          children.add(new Text(item));
+        } else if (item is View) {
+          children.add(item);
+        } else {
+          throw "bad item in inner: ${item}";
+        }
       }
-    } else {
-      throw "bad argument to inner: ${inner}";
+      _mountChildren(out, inner);
     }
     out.write("</${name}>");
+  }
+
+  void _mountChildren(StringBuffer out, List<View> children) {
+    _children = children;
+    for (int i = 0; i < children.length; i++) {
+      children[i].mount(out, "${path}/${i}", _depth + 1);
+    }
   }
 
   void unmount() {
@@ -134,16 +146,18 @@ class Elt extends View {
       Map m = allHandlers[key];
       m.remove(path);
     }
+    if (_children != null) {
+      for (View child in _children) {
+        child.unmount();
+      }
+    }
   }
 
   Map<Symbol,dynamic> get props => _props;
 
-  static _makeInner(inner) {
-    if (inner == null || inner is String) {
-      // special cases
-      return inner;
-    } else if (inner is View) {
-      return [inner];
+  static _checkInner(inner) {
+    if (inner == null || inner is String || inner is View) {
+      // ok
     } else if (inner is List) {
       // Handle mixed content
       List<View> result = [];
@@ -261,7 +275,7 @@ class Tags implements TagsApi {
         if (!inv.positionalArguments.isEmpty) {
           throw "position arguments not supported for html tags";
         }
-        return new Elt.from(tag, inv.namedArguments);
+        return new Elt(tag, inv.namedArguments);
       }
     }
     throw new NoSuchMethodError(this,
