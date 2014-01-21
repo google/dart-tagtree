@@ -42,15 +42,39 @@ Map<Symbol, Map<String, Handler>> allHandlers = {
   #onClick: {}
 };
 
+/// A View is a node in a view tree.
+///
+/// A View can can be an HTML Element ("Elt"), plain text ("Text"), or a Widget.
+/// Each Widget generates its own "shadow" view tree, which may contain Widgets in turn.
+///
+/// Each View has a Map<Symbol, dynamic> containing its *props*, which are a generalization of
+/// HTML attributes. These contain all the externally-provided arguments to the view.
+///
+/// In addition, some views may have internal state, which changes in response to events.
+/// When a Widget changes state, its shadow view tree must be re-rendered.
 abstract class View {
-  String _id;
+  String _path;
   int _depth;
   View();
 
-  void mount(StringBuffer out, String id, int depth) {
-    _id = id;
+  /// Writes the view tree to HTML and assigns an id to each View.
+  ///
+  /// The path should be a string starting with "/" and using "/" as a separator,
+  /// for example "/asdf/1/2/3", chosen to ensure uniqueness in the DOM.
+  /// The path of a child View is created by appending a suffix starting with "/" to its
+  /// parent. When rendered to HTML, the path will show up as the data-path attribute.
+  ///
+  /// Any Widgets will be expanded (recursively). The root node in a Widget's
+  /// shadow tree will be assigned the same path as the Widget (recursively).
+  void mount(StringBuffer out, String path, int depth) {
+    _path = path;
     _depth = depth;
   }
+
+  /// Frees resources associated with this View, not including any DOM nodes.
+  void unmount();
+
+  String get path => _path;
 
   Map<Symbol,dynamic> get props;
 }
@@ -78,13 +102,13 @@ class Elt extends View {
     return new Elt(name, props, children);
   }
 
-  void mount(StringBuffer out, String id, int depth) {
-    super.mount(out, id, depth);
-    out.write("<${name} data-path=\"${id}\"");
+  void mount(StringBuffer out, String path, int depth) {
+    super.mount(out, path, depth);
+    out.write("<${name} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
       if (allHandlers.containsKey(key)) {
-        allHandlers[key][id] = val;
+        allHandlers[key][path] = val;
       } else if (key == #clazz) {
         String escaped = HTML_ESCAPE.convert(_makeClassAttr(val));
         out.write(" class=\"${escaped}\"");
@@ -97,12 +121,19 @@ class Elt extends View {
       out.write(HTML_ESCAPE.convert(inner));
     } else if (inner is List) {
       for (int i = 0; i < inner.length; i++) {
-        inner[i].mount(out, "${id}/${i}", depth + 1);
+        inner[i].mount(out, "${path}/${i}", depth + 1);
       }
     } else {
       throw "bad argument to inner: ${inner}";
     }
     out.write("</${name}>");
+  }
+
+  void unmount() {
+    for (Symbol key in allHandlers.keys) {
+      Map m = allHandlers[key];
+      m.remove(path);
+    }
   }
 
   Map<Symbol,dynamic> get props => _props;
@@ -154,6 +185,8 @@ class Text extends View {
     out.write("<span data-path=${id}>${HTML_ESCAPE.convert(value)}</span>");
   }
 
+  void unmount() {}
+
   Map<Symbol,dynamic> get props => {#value: value};
 }
 
@@ -187,21 +220,26 @@ abstract class Widget extends View {
     shadow.mount(out, id, depth);
   }
 
+  void unmount() {
+    shadow.unmount();
+  }
+
   View render();
 
   void refresh() {
-    assert(_id != null);
+    assert(_path != null);
 
     if (_nextState != null) {
       _state = _nextState;
       _nextState = null;
     }
 
-    Element before = querySelector("[data-path=\"${_id}\"]");
+    Element before = querySelector("[data-path=\"${_path}\"]");
 
-    StringBuffer out = new StringBuffer();
+    shadow.unmount();
     shadow = render();
-    shadow.mount(out, _id, _depth);
+    StringBuffer out = new StringBuffer();
+    shadow.mount(out, _path, _depth);
     Element after = _unsafeNewElement(out.toString());
 
     before.replaceWith(after);
