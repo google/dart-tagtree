@@ -8,18 +8,25 @@ import 'dart:convert';
 int idCounter = 0;
 Map<String, View> idToTree = {};
 Set<Widget> updated = new Set();
+List<LifecycleHandler> didMountQueue = [];
 
 void mount(View tree, HtmlElement container) {
   StringBuffer out = new StringBuffer();
   String id = "/${idCounter}"; idCounter++;
   tree.mount(out, id, 0);
   _unsafeSetInnerHtml(container, out.toString());
+
+  for (LifecycleHandler h in didMountQueue) {
+    h();
+  }
+  didMountQueue.clear();
+
   container.onClick.listen((MouseEvent e) {
     var target = e.target;
     if (target is Element) {
       // TODO: bubbling. For now, just exact match.
       String id = target.dataset["path"];
-      Handler h = allHandlers[#onClick][id];
+      EventHandler h = allHandlers[#onClick][id];
       if (h != null) {
         h(e);
         for (Widget w in updated) {
@@ -36,11 +43,13 @@ Map<Symbol, String> allTags = {
   #Span: "span"
 };
 
-typedef Handler(e);
+typedef EventHandler(e);
 
-Map<Symbol, Map<String, Handler>> allHandlers = {
+Map<Symbol, Map<String, EventHandler>> allHandlers = {
   #onClick: {}
 };
+
+typedef LifecycleHandler();
 
 /// A View is a node in a view tree.
 ///
@@ -53,8 +62,11 @@ Map<Symbol, Map<String, Handler>> allHandlers = {
 /// In addition, some views may have internal state, which changes in response to events.
 /// When a Widget changes state, its shadow view tree must be re-rendered.
 abstract class View {
+  LifecycleHandler didMount;
+
   String _path;
   int _depth;
+
   View();
 
   /// Writes the view tree to HTML and assigns an id to each View.
@@ -69,6 +81,9 @@ abstract class View {
   void mount(StringBuffer out, String path, int depth) {
     _path = path;
     _depth = depth;
+    if (didMount != null) {
+      didMountQueue.add(didMount);
+    }
   }
 
   /// Frees resources associated with this View, not including any DOM nodes.
