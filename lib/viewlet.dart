@@ -193,10 +193,10 @@ class Text extends View {
   final String value;
   Text(this.value);
 
-  void mount(StringBuffer out, String id, int depth) {
-    super.mount(out, id, depth);
+  void mount(StringBuffer out, String path, int depth) {
+    super.mount(out, path, depth);
     // need to surround with a span to support incremental updates to a child
-    out.write("<span data-path=${id}>${HTML_ESCAPE.convert(value)}</span>");
+    out.write("<span data-path=${path}>${HTML_ESCAPE.convert(value)}</span>");
   }
 
   void unmount() {}
@@ -227,15 +227,16 @@ abstract class Widget extends View {
     updated.add(this);
   }
 
-  void mount(StringBuffer out, String id, int depth) {
-    super.mount(out, id, depth);
+  void mount(StringBuffer out, String path, int depth) {
+    super.mount(out, path, depth);
     _state = firstState;
     shadow = render();
-    shadow.mount(out, id, depth);
+    shadow.mount(out, path, depth);
   }
 
   void unmount() {
     shadow.unmount();
+    shadow = null;
   }
 
   View render();
