@@ -62,7 +62,7 @@ typedef LifecycleHandler();
 /// In addition, some views may have internal state, which changes in response to events.
 /// When a Widget changes state, its shadow view tree must be re-rendered.
 abstract class View {
-  LifecycleHandler didMount;
+  LifecycleHandler didMount, willUnmount;
 
   String _path;
   int _depth;
@@ -87,7 +87,11 @@ abstract class View {
   }
 
   /// Frees resources associated with this View, not including any DOM nodes.
-  void unmount();
+  void unmount() {
+    if (willUnmount != null) {
+      willUnmount();
+    }
+  }
 
   String get path => _path;
 
@@ -166,6 +170,7 @@ class Elt extends View {
         child.unmount();
       }
     }
+    super.unmount();
   }
 
   Map<Symbol,dynamic> get props => _props;
