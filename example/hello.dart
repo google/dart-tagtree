@@ -13,18 +13,30 @@ class Clicker extends Widget {
 
   Clicker(value) : super({#value: value});
 
-  get firstState => {#reversed: false};
+  get firstState => new ClickerState();
+  ClickerState get state => super.state;
+  ClickerState get nextState => super.nextState;
 
   onClick(e) {
-    setState({#reversed: !state[#reversed]});
+    nextState
+      ..reversed = !state.reversed;
   }
 
   View render() {
     var text = props[#value];
-    if (state[#reversed]) {
+    if (state.reversed) {
       text = reverseString(props[#value]);
     }
     return $.Div(clazz: "sample_text", onClick: onClick, inner: text);
+  }
+}
+
+class ClickerState extends State {
+  bool reversed = false;
+
+  State clone() {
+    return new ClickerState()
+      ..reversed = reversed;
   }
 }
 

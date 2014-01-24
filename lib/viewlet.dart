@@ -204,26 +204,31 @@ class Text extends View {
   Map<Symbol,dynamic> get props => {#value: value};
 }
 
+abstract class State {
+  State clone();
+}
+
 abstract class Widget extends View {
   Map<Symbol, dynamic> _props;
-  dynamic _state, _nextState;
+  State _state, _nextState;
   View shadow;
 
   Widget(this._props);
 
-  get firstState => null;
+  State get firstState => null;
 
-  get state => _state;
+  State get state => _state;
 
-  set nextState(s) {
-    _nextState = s;
+  State get nextState {
+    if (_nextState == null) {
+      _nextState = _state.clone();
+      updated.add(this);
+    }
+    return _nextState;
   }
 
-  void setState(Map updates) {
-    if (_nextState == null) {
-      _nextState = new Map.from(_state);
-    }
-    _nextState.addAll(updates);
+  void set nextState(State s) {
+    _nextState = s;
     updated.add(this);
   }
 
