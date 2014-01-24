@@ -79,7 +79,7 @@ abstract class View {
   Map<Symbol,dynamic> get props;
 }
 
-/// A DOM element.
+/// A virtual DOM element.
 class Elt extends View {
   final String name;
   final Map<Symbol, dynamic> _props;
@@ -186,9 +186,15 @@ class Elt extends View {
   }
 }
 
-/// Some text that appears as a root or as a child in a list of Html nodes
-/// (mixed content). If an Html node has text as its only child, it's handled
-/// as a special case.
+/// A plain text view.
+///
+/// The framework needs to find the corresponding DOM element using a query on a
+/// data-path attribute, so the text is actually rendered inside a <span>.
+/// (We can't support mixed-content HTML directly and instead use a list of Elt and
+/// Text views as the closest equivalent.)
+///
+/// However, if the parent's "inner" property is just a string, it's handled as a
+/// special case and the Text class isn't used.
 class Text extends View {
   final String value;
   Text(this.value);
@@ -204,10 +210,8 @@ class Text extends View {
   Map<Symbol,dynamic> get props => {#value: value};
 }
 
-abstract class State {
-  State clone();
-}
-
+/// A Widget is a View that acts as a template. Its render() method typically
+/// returns elements to be rendered
 abstract class Widget extends View {
   Map<Symbol, dynamic> _props;
   State _state, _nextState;
@@ -215,10 +219,18 @@ abstract class Widget extends View {
 
   Widget(this._props);
 
+  /// Constructs the initial state when the Widget is mounted.
+  /// (Stateful widgets should override.)
   State get firstState => null;
 
+  /// Returns the currently rendered state. This should be treated as read-only.
+  /// (Subclasses may want to override to change the return type.)
   State get state => _state;
 
+  /// Returns the state that will be rendered on the next update.
+  /// This is typically used to update the state due to an event.
+  /// Accessing nextState automatically marks the Widget as dirty.
+  /// (Subclasses may want to override to change the return type.)
   State get nextState {
     if (_nextState == null) {
       _nextState = _state.clone();
@@ -227,6 +239,8 @@ abstract class Widget extends View {
     return _nextState;
   }
 
+  /// Sets the state to be rendered on the next update.
+  /// Setting the nextState automatically marks the Widget as dirty.
   void set nextState(State s) {
     _nextState = s;
     updated.add(this);
@@ -244,8 +258,13 @@ abstract class Widget extends View {
     shadow = null;
   }
 
+  /// Constructs another View to be rendered in place of this Widget.
+  /// (This is somewhat similar to "shadow DOM".)
   View render();
 
+  /// Called by the framework to update the DOM element.
+  /// This also moves nextState to the current state.
+  /// Prerequisite: the Widget must be mounted.
   void refresh() {
     assert(_path != null);
 
@@ -268,11 +287,22 @@ abstract class Widget extends View {
   Map<Symbol, dynamic> get props => _props;
 }
 
+/// The internal state of a stateful Widget.
+/// (Each stateful Widget will typically have a corresponding subclass of State.)
+abstract class State {
+  /// Returns a copy of the state, to be rendered on the next refresh.
+  State clone();
+}
+
+/// An API for constructing the corresponding view for each HTML Element.
+/// (Typically Tags is used instead.)
 abstract class TagsApi {
   View Div({clazz, onClick, inner});
   View Span({clazz, onClick, inner});
 }
 
+/// A factory for constructing the corresponding view for each HTML Element.
+/// (Typically assigned to '$'.)
 class Tags implements TagsApi {
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {
