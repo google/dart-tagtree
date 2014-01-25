@@ -21,32 +21,35 @@ void mount(View tree, HtmlElement container) {
   }
   didMountQueue.clear();
 
-  container.onClick.listen((MouseEvent e) {
-    var target = e.target;
-    if (target is Element) {
-      // TODO: bubbling. For now, just exact match.
-      String id = target.dataset["path"];
-      EventHandler h = allHandlers[#onClick][id];
-      if (h != null) {
-        h(e);
-        for (Widget w in updated) {
-          w.refresh();
-        }
-      }
-    }
-  });
+  container.onChange.listen((Event e) => dispatchEvent(e, #onChange));
+  container.onClick.listen((Event e) => dispatchEvent(e, #onClick));
+  container.onSubmit.listen((Event e) => dispatchEvent(e, #onSubmit));
   idToTree[id] = tree;
 }
 
-Map<Symbol, String> allTags = {
-  #Div: "div",
-  #Span: "span"
-};
+void dispatchEvent(Event e, Symbol handlerKey) {
+  print("got event: ${e} with key ${handlerKey}");
+  var target = e.target;
+  if (target is Element) {
+    // TODO: bubbling. For now, just exact match.
+    String id = target.dataset["path"];
+    EventHandler h = allHandlers[handlerKey][id];
+    if (h != null) {
+      print("dispatched");
+      h(e);
+      for (Widget w in updated) {
+        w.refresh();
+      }
+    }
+  }
+}
 
 typedef EventHandler(e);
 
 Map<Symbol, Map<String, EventHandler>> allHandlers = {
-  #onClick: {}
+  #onChange: {},
+  #onClick: {},
+  #onSubmit: {}
 };
 
 typedef LifecycleHandler();
@@ -107,15 +110,17 @@ class Elt extends View {
   Elt(this.name, this._props) {
     for (Symbol key in props.keys) {
       var val = props[key];
-      if (key == #inner || key == #clazz || allHandlers.containsKey(key)) {
+      if (key == #inner || allAtts.containsKey(key) || allHandlers.containsKey(key)) {
         // ok
       } else {
         throw "property not supported: ${key}";
       }
     }
     var inner = _props[#inner];
-    assert(inner == null || inner is String || inner is View || inner is List);
+    assert(inner == null || inner is String || inner is View || inner is Iterable);
   }
+
+  Map<Symbol,dynamic> get props => _props;
 
   void mount(StringBuffer out, String path, int depth) {
     super.mount(out, path, depth);
@@ -124,9 +129,13 @@ class Elt extends View {
       var val = _props[key];
       if (allHandlers.containsKey(key)) {
         allHandlers[key][path] = val;
-      } else if (key == #clazz) {
-        String escaped = HTML_ESCAPE.convert(_makeClassAttr(val));
-        out.write(" class=\"${escaped}\"");
+      } else if (allAtts.containsKey(key)) {
+        String name = allAtts[key];
+        if (key == #clazz) {
+          val = _makeClassAttr(val);
+        }
+        String escaped = HTML_ESCAPE.convert(val);
+        out.write(" ${name}=\"${escaped}\"");
       }
     }
     out.write(">");
@@ -137,7 +146,7 @@ class Elt extends View {
       out.write(HTML_ESCAPE.convert(inner));
     } else if (inner is View) {
       _mountChildren(out, [inner]);
-    } else if (inner is List) {
+    } else if (inner is Iterable) {
       List<View> children = [];
       for (var item in inner) {
         if (item is String) {
@@ -148,7 +157,7 @@ class Elt extends View {
           throw "bad item in inner: ${item}";
         }
       }
-      _mountChildren(out, inner);
+      _mountChildren(out, children);
     }
     out.write("</${name}>");
   }
@@ -171,28 +180,6 @@ class Elt extends View {
       }
     }
     super.unmount();
-  }
-
-  Map<Symbol,dynamic> get props => _props;
-
-  static _checkInner(inner) {
-    if (inner == null || inner is String || inner is View) {
-      // ok
-    } else if (inner is List) {
-      // Handle mixed content
-      List<View> result = [];
-      for (var item in inner) {
-        if (item is String) {
-          result.add(new Text(item));
-        } else if (item is View) {
-          result.add(item);
-        } else {
-          throw "bad item in inner: ${item}";
-        }
-      }
-      return result;
-    }
-    throw "bad argument to inner: ${inner}";
   }
 
   static String _makeClassAttr(val) {
@@ -319,7 +306,39 @@ abstract class State {
 abstract class TagsApi {
   View Div({clazz, onClick, inner});
   View Span({clazz, onClick, inner});
+
+  View H1({clazz, onClick, inner});
+  View H2({clazz, onClick, inner});
+  View H3({clazz, onClick, inner});
+
+  View Ul({clazz, onClick, inner});
+  View Li({clazz, onClick, inner});
+
+  View Form({clazz, onClick, onSubmit, inner});
+  View Input({clazz, onClick, onChange, value, inner});
+  View Button({clazz, onClick, inner});
 }
+
+Map<Symbol, String> allTags = {
+  #Div: "div",
+  #Span: "span",
+
+  #H1: "h1",
+  #H2: "h2",
+  #H3: "h3",
+
+  #Ul: "ul",
+  #Li: "li",
+
+  #Form: "form",
+  #Input: "input",
+  #Button: "button"
+};
+
+Map<Symbol, String> allAtts = {
+  #clazz: "class",
+  #value: "value"
+};
 
 /// A factory for constructing the corresponding view for each HTML Element.
 /// (Typically assigned to '$'.)
