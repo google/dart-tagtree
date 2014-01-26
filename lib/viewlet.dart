@@ -226,6 +226,8 @@ class Elt extends View {
   bool canUpdateTo(View other) => (other is Elt) && other.name == name;
 
   void refresh(Elt nextVersion) {
+    print("refresh Elt: ${_path}");
+
     if (nextVersion == null) {
       return; // no internal state to update
     }
@@ -316,6 +318,8 @@ class Text extends View {
   bool canUpdateTo(View other) => (other is Text);
 
   void refresh(Text nextVersion) {
+    print("refresh Text: ${_path}");
+
     if (nextVersion == null || value == nextVersion.value) {
       return; // no internal state to update
     }
@@ -381,6 +385,7 @@ abstract class Widget extends View {
 
   void refresh(Widget nextVersion) {
     assert(_mounted);
+    print("refresh Widget: ${_path}");
 
     if (_nextState != null) {
       _state = _nextState;
@@ -389,13 +394,17 @@ abstract class Widget extends View {
 
     Element before = querySelector("[data-path=\"${_path}\"]");
 
-    shadow.unmount();
-    shadow = render();
-    StringBuffer out = new StringBuffer();
-    shadow.mount(out, _path, _depth);
-    Element after = _unsafeNewElement(out.toString());
-
-    before.replaceWith(after);
+    View newShadow = render();
+    if (shadow.canUpdateTo(newShadow)) {
+      shadow.refresh(newShadow);
+    } else {
+      shadow.unmount();
+      shadow = newShadow;
+      StringBuffer out = new StringBuffer();
+      shadow.mount(out, _path, _depth);
+      Element after = _unsafeNewElement(out.toString());
+      before.replaceWith(after);
+    }
   }
 
   Map<Symbol, dynamic> get props => _props;
