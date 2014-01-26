@@ -4,7 +4,7 @@ import '../../lib/viewlet.dart';
 var $ = new Tags();
 
 void main() {
-  mount(new HelloMessage(name: "John"), querySelector("#container"));
+  mount(new HelloMessage(name: "world"), querySelector("#container"));
 }
 
 class HelloMessage extends Widget {

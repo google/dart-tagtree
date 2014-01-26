@@ -7,7 +7,7 @@ import 'dart:convert';
 
 int idCounter = 0;
 Map<String, View> idToTree = {};
-Set<Widget> updated = new Set();
+Set<View> _dirtyViews = new Set();
 List<LifecycleHandler> didMountQueue = [];
 
 void mount(View tree, HtmlElement container) {
@@ -37,11 +37,23 @@ void dispatchEvent(Event e, Symbol handlerKey) {
     if (h != null) {
       print("dispatched");
       h(e);
-      for (Widget w in updated) {
-        w.refresh();
-      }
+      applyUpdates();
     }
   }
+}
+
+void applyUpdates() {
+  List<View> batch = new List.from(_dirtyViews);
+  _dirtyViews.clear();
+
+  // Sort ancestors ahead of children.
+  batch.sort((a, b) => a._depth - b._depth);
+  for (View v in batch) {
+    v.refresh(null);
+  }
+
+  // No new updates should be requested while refreshing.
+  assert(_dirtyViews.isEmpty);
 }
 
 typedef EventHandler(e);
@@ -57,33 +69,49 @@ typedef LifecycleHandler();
 /// A View is a node in a view tree.
 ///
 /// A View can can be an HTML Element ("Elt"), plain text ("Text"), or a Widget.
-/// Each Widget generates its own "shadow" view tree, which may contain Widgets in turn.
+/// Each Widget generates a "shadow" view tree to represent it. To calculate the HTML
+/// that will actually be displayed, recursively replace each Widget with its shadow,
+/// resulting in a tree containing only Elt and Text nodes.
 ///
-/// Each View has a Map<Symbol, dynamic> containing its *props*, which are a generalization of
-/// HTML attributes. These contain all the externally-provided arguments to the view.
+/// Conceptually, each View has a set of *props*, which are a generalization of HTML
+/// attributes. Props are always passed in as arguments to a View constructor, but may
+/// be copied from one View to another of the same type using an updateTo() call.
+/// (Exactly how this happens depends on the view.)
 ///
-/// In addition, some views may have internal state, which changes in response to events.
-/// When a Widget changes state, its shadow view tree must be re-rendered.
+/// In addition, some views may have internal state, which can change in response to
+/// events. When a Widget changes state, its shadow must be re-rendered. When
+/// re-rendering, we attempt to preserve as many View nodes as possible by updating them
+/// in place. This is both more efficient and preserves state.
 abstract class View {
   LifecycleHandler didMount, willUnmount;
 
+  bool _mounted = false;
   String _path;
   int _depth;
+  View _nextVersion;
 
   View();
+
+  /// Returns a unique id used to find the view's HTML element.
+  ///
+  /// The path is set at mount time and never changes afterward.
+  String get path => _path;
+
+  /// Returns the view's current props (for debugging).
+  Map<Symbol,dynamic> get props;
 
   /// Writes the view tree to HTML and assigns an id to each View.
   ///
   /// The path should be a string starting with "/" and using "/" as a separator,
   /// for example "/asdf/1/2/3", chosen to ensure uniqueness in the DOM.
   /// The path of a child View is created by appending a suffix starting with "/" to its
-  /// parent. When rendered to HTML, the path will show up as the data-path attribute.
+  /// parent. When rendered to HTML, the path will show up in the data-path attribute.
   ///
-  /// Any Widgets will be expanded (recursively). The root node in a Widget's
-  /// shadow tree will be assigned the same path as the Widget (recursively).
+  /// A Widget has the same path as the root node in its shadow tree (recursively).
   void mount(StringBuffer out, String path, int depth) {
     _path = path;
     _depth = depth;
+    _mounted = true;
     if (didMount != null) {
       didMountQueue.add(didMount);
     }
@@ -94,17 +122,26 @@ abstract class View {
     if (willUnmount != null) {
       willUnmount();
     }
+    _mounted = false;
   }
 
-  String get path => _path;
+  /// Returns true if we can do an in-place update that sets the props to those of the given view.
+  ///
+  /// If so, we can call refresh(). Otherwise, we must unmount the view and mount its replacement,
+  /// so all state will be lost.
+  bool canUpdateTo(View nextVersion);
 
-  Map<Symbol,dynamic> get props;
+  /// Updates a view in place. After the update, it should have the same properties as nextVersion.
+  /// If nextVersion is null, the props are unchanged, but a stateful view may apply any pending
+  /// state.
+  /// (This should only be called by the framework.)
+  void refresh(View nextVersion);
 }
 
 /// A virtual DOM element.
 class Elt extends View {
   final String name;
-  final Map<Symbol, dynamic> _props;
+  Map<Symbol, dynamic> _props;
   List<View> _children; // non-null when Elt is mounted
 
   Elt(this.name, this._props) {
@@ -131,15 +168,16 @@ class Elt extends View {
         allHandlers[key][path] = val;
       } else if (allAtts.containsKey(key)) {
         String name = allAtts[key];
-        if (key == #clazz) {
-          val = _makeClassAttr(val);
-        }
-        String escaped = HTML_ESCAPE.convert(val);
+        String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
         out.write(" ${name}=\"${escaped}\"");
       }
     }
     out.write(">");
-    var inner = _props[#inner];
+    _mountInner(out, _props[#inner]);
+    out.write("</${name}>");
+  }
+
+  void _mountInner(StringBuffer out, inner) {
     if (inner == null) {
       // none
     } else if (inner is String) {
@@ -159,7 +197,6 @@ class Elt extends View {
       }
       _mountChildren(out, children);
     }
-    out.write("</${name}>");
   }
 
   void _mountChildren(StringBuffer out, List<View> children) {
@@ -174,21 +211,81 @@ class Elt extends View {
       Map m = allHandlers[key];
       m.remove(path);
     }
+    _unmountChildren();
+    super.unmount();
+  }
+
+  void _unmountChildren() {
     if (_children != null) {
       for (View child in _children) {
         child.unmount();
       }
     }
-    super.unmount();
   }
 
-  static String _makeClassAttr(val) {
-    if (val is String) {
-      return val;
-    } else if (val is List) {
-      return val.join(" ");
+  bool canUpdateTo(View other) => (other is Elt) && other.name == name;
+
+  void refresh(Elt nextVersion) {
+    if (nextVersion == null) {
+      return; // no internal state to update
+    }
+    Map<Symbol, dynamic> oldProps = _props;
+    _props = nextVersion._props;
+
+    Element elt = querySelector("[data-path=\"${_path}\"]");
+
+    _updateDomProperties(elt, oldProps);
+
+    // TODO: update children
+    _unmountChildren();
+    var buf = new StringBuffer();
+    _mountInner(buf, _props[#inner]);
+    _unsafeSetInnerHtml(elt, buf.toString());
+  }
+
+  /// Updates DOM attributes and event handlers.
+  void _updateDomProperties(Element elt, Map<Symbol, dynamic> oldProps) {
+    // Delete any removed props
+    for (Symbol key in oldProps.keys) {
+      if (_props.containsKey(key)) {
+        continue;
+      }
+
+      if (allHandlers.containsKey(key)) {
+        allHandlers[key].remove(path);
+      } else if(allAtts.containsKey(key)) {
+        elt.attributes.remove(allAtts[key]);
+      }
+    }
+
+    // Update any new or changed props
+    for (Symbol key in _props.keys) {
+      var oldVal = oldProps[key];
+      var newVal = _props[key];
+      if (oldVal == newVal) {
+        continue;
+      }
+
+      if (allHandlers.containsKey(key)) {
+        allHandlers[key][path] = newVal;
+      } else if (allAtts.containsKey(key)) {
+        String name = allAtts[key];
+        elt.attributes[name] = _makeDomVal(key, newVal);
+      }
+    }
+  }
+
+  static String _makeDomVal(Symbol key, val) {
+    if (key == #clazz) {
+      if (val is String) {
+        return val;
+      } else if (val is List) {
+        return val.join(" ");
+      } else {
+        throw "bad argument for clazz: ${val}";
+      }
     } else {
-      throw "bad argument for clazz: ${val}";
+      return val;
     }
   }
 }
@@ -203,8 +300,10 @@ class Elt extends View {
 /// However, if the parent's "inner" property is just a string, it's handled as a
 /// special case and the Text class isn't used.
 class Text extends View {
-  final String value;
+  String value;
   Text(this.value);
+
+  Map<Symbol,dynamic> get props => {#value: value};
 
   void mount(StringBuffer out, String path, int depth) {
     super.mount(out, path, depth);
@@ -214,7 +313,16 @@ class Text extends View {
 
   void unmount() {}
 
-  Map<Symbol,dynamic> get props => {#value: value};
+  bool canUpdateTo(View other) => (other is Text);
+
+  void refresh(Text nextVersion) {
+    if (nextVersion == null || value == nextVersion.value) {
+      return; // no internal state to update
+    }
+    value = nextVersion.value;
+    Element elt = querySelector("[data-path=\"${_path}\"]");
+    elt.text = value;
+  }
 }
 
 /// A Widget is a View that acts as a template. Its render() method typically
@@ -241,7 +349,7 @@ abstract class Widget extends View {
   State get nextState {
     if (_nextState == null) {
       _nextState = _state.clone();
-      updated.add(this);
+      _dirtyViews.add(this);
     }
     return _nextState;
   }
@@ -250,7 +358,7 @@ abstract class Widget extends View {
   /// Setting the nextState automatically marks the Widget as dirty.
   void set nextState(State s) {
     _nextState = s;
-    updated.add(this);
+    _dirtyViews.add(this);
   }
 
   void mount(StringBuffer out, String path, int depth) {
@@ -269,11 +377,10 @@ abstract class Widget extends View {
   /// (This is somewhat similar to "shadow DOM".)
   View render();
 
-  /// Called by the framework to update the DOM element.
-  /// This also moves nextState to the current state.
-  /// Prerequisite: the Widget must be mounted.
-  void refresh() {
-    assert(_path != null);
+  bool canUpdateTo(View other) => false;
+
+  void refresh(Widget nextVersion) {
+    assert(_mounted);
 
     if (_nextState != null) {
       _state = _nextState;
