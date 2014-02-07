@@ -4,6 +4,7 @@ import '../../lib/viewlet.dart';
 var $ = new Tags();
 
 void main() {
+  print("main entered");
   mount(new TodoApp(), querySelector("#container"));
 }
 
@@ -26,6 +27,7 @@ class TodoApp extends Widget {
     InputElement target = e.target;
     nextState
       ..text = target.value;
+    print("changed text to: ${target.value}");
   }
 
   void handleSubmit(Event e) {
