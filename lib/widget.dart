@@ -55,18 +55,20 @@ abstract class Widget extends View {
   /// (This is somewhat similar to "shadow DOM".)
   View render();
 
-  bool canUpdateTo(View other) => false;
+  bool canUpdateTo(View other) => runtimeType == other.runtimeType;
 
-  void update(_) {
+  void update(Widget nextVersion) {
     assert(_mounted);
+
     print("refresh Widget: ${_path}");
 
     if (_nextState != null) {
       _state = _nextState;
       _nextState = null;
     }
-
-    Element before = getDom();
+    if (nextVersion != null) {
+      _props = nextVersion._props;
+    }
 
     View newShadow = render();
     if (shadow.canUpdateTo(newShadow)) {
@@ -76,6 +78,7 @@ abstract class Widget extends View {
       shadow = newShadow;
       StringBuffer out = new StringBuffer();
       shadow.mount(out, _path, _depth);
+      Element before = getDom();
       Element after = _unsafeNewElement(out.toString());
       before.replaceWith(after);
     }

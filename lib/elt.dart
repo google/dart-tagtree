@@ -252,7 +252,7 @@ class Inner{
         var out = new StringBuffer();
         after.mount(out, "${_parent.path}/${i}", _parent._depth + 1);
         Element newElt = _unsafeNewElement(out.toString());
-        elt.childNodes.add(newElt);
+        elt.children.add(newElt);
         updatedChildren.add(after);
       }
     }
