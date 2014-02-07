@@ -3,6 +3,7 @@ library viewlet;
 import 'dart:html';
 import 'dart:convert';
 
+part 'inner.dart';
 part 'elt.dart';
 part 'event.dart';
 part 'tags.dart';
@@ -61,8 +62,11 @@ abstract class View {
 
   /// Returns a unique id used to find the view's HTML element.
   ///
-  /// The path is set at mount time and never changes afterward.
+  /// Non-null when mounted.
   String get path => _path;
+
+  /// The depth of this node in the view tree. Non-null when mounted;
+  int get depth => _depth;
 
   /// Returns the view's current props (for debugging).
   Map<Symbol,dynamic> get props;

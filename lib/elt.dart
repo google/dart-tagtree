@@ -1,13 +1,11 @@
 part of viewlet;
 
 /// A virtual DOM element.
-class Elt extends View {
-  final String name;
+class Elt extends View with _Inner {
+  final String tagName;
   Map<Symbol, dynamic> _props;
 
-  Inner _inner; // non-null when mounted
-
-  Elt(this.name, this._props) {
+  Elt(this.tagName, this._props) {
     for (Symbol key in props.keys) {
       var val = props[key];
       if (key == #inner || allAtts.containsKey(key) || allHandlers.containsKey(key)) {
@@ -19,7 +17,7 @@ class Elt extends View {
     var inner = _props[#inner];
     assert(inner == null || inner is String || inner is View || inner is Iterable);
 
-    if (name == "form") {
+    if (tagName == "form") {
       // onSubmit doesn't bubble correctly
       didMount = () {
         getDom().onSubmit.listen((Event e) {
@@ -35,7 +33,7 @@ class Elt extends View {
 
   void mount(StringBuffer out, String path, int depth) {
     super.mount(out, path, depth);
-    out.write("<${name} data-path=\"${path}\"");
+    out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
       if (allHandlers.containsKey(key)) {
@@ -47,9 +45,8 @@ class Elt extends View {
       }
     }
     out.write(">");
-    _inner = new Inner(this);
-    _inner.mount(out, _props[#inner]);
-    out.write("</${name}>");
+    _mountInner(out, _props[#inner]);
+    out.write("</${tagName}>");
   }
 
   void unmount() {
@@ -57,25 +54,25 @@ class Elt extends View {
       Map m = allHandlers[key];
       m.remove(path);
     }
-    _inner.unmount();
+    _unmountInner();
     super.unmount();
     print("unmount: ${_path}");
   }
 
-  bool canUpdateTo(View other) => (other is Elt) && other.name == name;
+  bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
 
   void update(Elt nextVersion) {
     if (nextVersion == null) {
-      print("no change to Elt ${name}: ${_path}");
+      print("no change to Elt ${tagName}: ${_path}");
       return; // no internal state to update
     }
     Map<Symbol, dynamic> oldProps = _props;
     _props = nextVersion._props;
 
-    print("updating Elt ${name}: ${_path}");
+    print("updating Elt ${tagName}: ${_path}");
     Element elt = getDom();
     _updateDomProperties(elt, oldProps);
-    _inner.update(elt, _props[#inner]);
+    _updateInner(elt, _props[#inner]);
   }
 
   /// Updates DOM attributes and event handlers.
@@ -89,7 +86,7 @@ class Elt extends View {
       if (allHandlers.containsKey(key)) {
         allHandlers[key].remove(path);
       } else if(allAtts.containsKey(key)) {
-        print("removing property: ${name}");
+        print("removing property: ${tagName}");
         elt.attributes.remove(allAtts[key]);
       }
     }
@@ -118,149 +115,6 @@ class Elt extends View {
   }
 }
 
-class Inner{
-  final Elt _parent;
-  // Non-null when the Elt is mounted and it has at least one child.
-  List<View> _children = null;
-  // Non-null when the Elt is mounted and it contains just text.
-  String _childText = null;
-
-  Inner(this._parent);
-
-  void mount(StringBuffer out, inner) {
-    if (inner == null) {
-      // none
-    } else if (inner is String) {
-      out.write(HTML_ESCAPE.convert(inner));
-      _childText = inner;
-    } else if (inner is View) {
-      _children = _mountChildren(out, [inner]);
-    } else if (inner is Iterable) {
-      List<View> children = [];
-      for (var item in inner) {
-        if (item is String) {
-          children.add(new Text(item));
-        } else if (item is View) {
-          children.add(item);
-        } else {
-          throw "bad item in inner: ${item}";
-        }
-      }
-      _children = _mountChildren(out, children);
-    }
-  }
-
-  List<View> _mountChildren(StringBuffer out, List<View> children) {
-    if (children.isEmpty) {
-      return null;
-    }
-
-    for (int i = 0; i < children.length; i++) {
-      children[i].mount(out, "${_parent.path}/${i}", _parent._depth + 1);
-    }
-    return children;
-  }
-
-  void unmount() {
-    if (_children != null) {
-      for (View child in _children) {
-        child.unmount();
-      }
-      _children = null;
-    }
-  }
-
-  /// Updates the inner DOM and mount/unmounts children when needed.
-  /// (Postcondition: _children is updated.)
-  void update(Element elt, newInner) {
-    if (newInner == null) {
-      unmount();
-      elt.text = "";
-    } else if (newInner is String) {
-      if (newInner == _childText) {
-        return;
-      }
-      unmount();
-      print("setting text of ${_parent.path}");
-      elt.text = newInner;
-      _childText = newInner;
-    } else if (newInner is View) {
-      _updateChildren(elt, [newInner]);
-    } else if (newInner is Iterable) {
-      List<View> children = [];
-      for (var item in newInner) {
-        if (item is String) {
-          children.add(new Text(item));
-        } else if (item is View) {
-          children.add(item);
-        } else {
-          throw "bad item in inner: ${item}";
-        }
-      }
-      _updateChildren(elt, children);
-    }
-  }
-
-  /// Updates the inner DOM and mounts/unmounts children when needed.
-  /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(Element elt, List<View> newChildren) {
-
-    if (_children == null) {
-      print("_children is null");
-      StringBuffer out = new StringBuffer();
-      mount(out, newChildren);
-      _unsafeSetInnerHtml(elt, out.toString());
-      _children = newChildren;
-      _childText = null;
-      return;
-    }
-
-    List<View> updatedChildren = [];
-    // update or replace each child that's in both lists
-    int endBoth = _children.length < newChildren.length ? _children.length : newChildren.length;
-    for (int i = 0; i < endBoth; i++) {
-      View before = _children[i];
-      assert(before != null);
-      View after = newChildren[i];
-      assert(after != null);
-      if (before.canUpdateTo(after)) {
-        before.update(after);
-        updatedChildren.add(before);
-      } else {
-        print("replacing ${_parent.path} child ${i} from ${before.runtimeType} to ${after.runtimeType}");
-        Element oldElt = elt.childNodes[i];
-        before.unmount();
-        var out = new StringBuffer();
-        after.mount(out, "${_parent.path}/${i}", _parent._depth + 1);
-        Element newElt = _unsafeNewElement(out.toString());
-        oldElt.replaceWith(newElt);
-        updatedChildren.add(after);
-      }
-    }
-
-    if (_children.length > newChildren.length) {
-      print("removing extra children under ${_parent.path}");
-      // trim to new size
-      for (int i = _children.length - 1; i >= newChildren.length; i--) {
-        elt.childNodes[i].remove();
-      }
-    } else if (_children.length < newChildren.length) {
-      print("adding extra children under ${_parent.path}");
-      // append  children
-      for (int i = _children.length; i < newChildren.length; i++) {
-        View after = newChildren[i];
-        var out = new StringBuffer();
-        after.mount(out, "${_parent.path}/${i}", _parent._depth + 1);
-        Element newElt = _unsafeNewElement(out.toString());
-        elt.children.add(newElt);
-        updatedChildren.add(after);
-      }
-    }
-    _children = updatedChildren;
-    _childText = null;
-  }
-
-}
 
 String _makeDomVal(Symbol key, val) {
   if (key == #clazz) {
