@@ -3,19 +3,20 @@ part of viewlet;
 /// An API for constructing the corresponding view for each HTML Element.
 /// (Typically Tags is used instead.)
 abstract class TagsApi {
-  View Div({clazz, onClick, inner});
-  View Span({clazz, onClick, inner});
+  View Div({clazz, onClick, inner, innerHtml, ref});
+  View Span({clazz, onClick, inner, innerHtml, ref});
 
-  View H1({clazz, onClick, inner});
-  View H2({clazz, onClick, inner});
-  View H3({clazz, onClick, inner});
+  View H1({clazz, onClick, inner, innerHtml, ref});
+  View H2({clazz, onClick, inner, innerHtml, ref});
+  View H3({clazz, onClick, inner, innerHtml, ref});
 
-  View Ul({clazz, onClick, inner});
-  View Li({clazz, onClick, inner});
+  View Ul({clazz, onClick, inner, innerHtml, ref});
+  View Li({clazz, onClick, inner, innerHtml, ref});
 
-  View Form({clazz, onClick, onSubmit, inner});
-  View Input({clazz, onClick, onChange, value, inner});
-  View Button({clazz, onClick, inner});
+  View Form({clazz, onClick, onSubmit, inner, innerHtml, ref});
+  View Input({clazz, onClick, onChange, value, defaultValue, ref});
+  View TextArea({clazz, onClick, onChange, value, defaultValue, ref});
+  View Button({clazz, onClick, inner, innerHtml, ref});
 }
 
 Map<Symbol, String> allTags = {
@@ -31,13 +32,17 @@ Map<Symbol, String> allTags = {
 
   #Form: "form",
   #Input: "input",
+  #TextArea: "textarea",
   #Button: "button"
 };
 
 Map<Symbol, String> allAtts = {
   #clazz: "class",
-  #value: "value"
+  #value: "value",
 };
+
+Set<Symbol> allEltProps = new Set()..addAll(allAtts.keys)..addAll(allHandlers.keys)
+  ..addAll([#ref, #inner, #innerHtml, #defaultValue]);
 
 /// A factory for constructing the corresponding view for each HTML Element.
 /// (Typically assigned to '$'.)

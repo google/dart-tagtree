@@ -5,17 +5,17 @@ class Elt extends View with _Inner {
   final String tagName;
   Map<Symbol, dynamic> _props;
 
-  Elt(this.tagName, this._props) {
+  Elt(this.tagName, Map<Symbol, dynamic> props) : super(props[#ref]),
+      _props = props {
     for (Symbol key in props.keys) {
-      var val = props[key];
-      if (key == #inner || allAtts.containsKey(key) || allHandlers.containsKey(key)) {
-        // ok
-      } else {
+      if (!allEltProps.contains(key)) {
         throw "property not supported: ${key}";
       }
     }
     var inner = _props[#inner];
     assert(inner == null || inner is String || inner is View || inner is Iterable);
+    assert(inner == null || _props[#innerHtml] == null);
+    assert(_props[#value] == null || _props[#defaultValue] == null);
 
     if (tagName == "form") {
       // onSubmit doesn't bubble correctly
@@ -44,8 +44,22 @@ class Elt extends View with _Inner {
         out.write(" ${name}=\"${escaped}\"");
       }
     }
+    if (tagName == "input") {
+      String val = _props[#defaultValue];
+      if (val != null) {
+        String escaped = HTML_ESCAPE.convert(val);
+        out.write(" value=\"${escaped}\"");
+      }
+    }
     out.write(">");
-    _mountInner(out, _props[#inner]);
+    if (tagName == "textarea") {
+      String val = _props[#defaultValue];
+      if (val != null) {
+        out.write(HTML_ESCAPE.convert(val));
+      }
+    } else {
+      _mountInner(out, _props[#inner], _props[#innerHtml]);
+    }
     out.write("</${tagName}>");
   }
 
@@ -72,7 +86,7 @@ class Elt extends View with _Inner {
     print("updating Elt ${tagName}: ${_path}");
     Element elt = getDom();
     _updateDomProperties(elt, oldProps);
-    _updateInner(elt, _props[#inner]);
+    _updateInner(elt, _props[#inner], _props[#innerHtml]);
   }
 
   /// Updates DOM attributes and event handlers.
@@ -107,8 +121,12 @@ class Elt extends View with _Inner {
         print("setting property: ${name}='${val}'");
         elt.setAttribute(name, val);
         // Setting the "value" attribute on an input element doesn't actually change what's in the text box.
-        if (name == "value" && elt is InputElement) {
-          elt.value = newVal;
+        if (key == #value) {
+          if (elt is InputElement) {
+            elt.value = newVal;
+          } else if(elt is TextAreaElement) {
+            elt.value = newVal;
+          }
         }
       }
     }

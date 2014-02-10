@@ -8,20 +8,35 @@ Map<Symbol, Map<String, EventHandler>> allHandlers = {
   #onSubmit: {}
 };
 
-bool _inEvent = false;
+/// Listens for native events and transforms them into Viewlet events.
+void listenForEvents(Element container) {
+  // Form events are tricky. We want an onChange event to fire every time
+  // the value in a text box changes. The native 'input' event does this,
+  // not 'change' which only fires after focus is lost.
+  // In React, see ChangeEventPlugin.
+  // TODO: support IE9.
+  container.onInput.listen((Event e) => dispatchEvent(e, #onChange));
 
+  container.onClick.listen((Event e) => dispatchEvent(e, #onClick));
+  container.onSubmit.listen((Event e) => dispatchEvent(e, #onSubmit));
+}
+
+bool _inViewletEvent = false;
+
+/// Dispatches a synthetic viewlet event.
+/// TODO: make a synthetic event class. For now, I'm just using native events.
+/// TODO: bubbling. For now, just exact match.
 void dispatchEvent(Event e, Symbol handlerKey) {
-  if (_inEvent) {
+  if (_inViewletEvent) {
     // React does this too; see EVENT_SUPPRESSION
     print("ignored ${handlerKey} received while processing another event");
     return;
   }
-  _inEvent = true;
+  _inViewletEvent = true;
   try {
     print("\n### ${handlerKey}");
     var target = e.target;
     if (target is Element) {
-      // TODO: bubbling. For now, just exact match.
       String id = target.dataset["path"];
       EventHandler h = allHandlers[handlerKey][id];
       if (h != null) {
@@ -31,7 +46,7 @@ void dispatchEvent(Event e, Symbol handlerKey) {
       }
     }
   } finally {
-    _inEvent = false;
+    _inViewletEvent = false;
   }
 }
 

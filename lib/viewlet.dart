@@ -6,6 +6,7 @@ import 'dart:convert';
 part 'inner.dart';
 part 'elt.dart';
 part 'event.dart';
+part 'dom.dart';
 part 'tags.dart';
 part 'widget.dart';
 
@@ -19,16 +20,14 @@ void mount(View tree, HtmlElement container) {
   StringBuffer out = new StringBuffer();
   String id = "/${idCounter}"; idCounter++;
   tree.mount(out, id, 0);
-  _unsafeSetInnerHtml(container, out.toString());
+  setInnerHtml(container, out.toString());
 
   for (LifecycleHandler h in didMountQueue) {
     h();
   }
   didMountQueue.clear();
 
-  container.onChange.listen((Event e) => dispatchEvent(e, #onChange));
-  container.onClick.listen((Event e) => dispatchEvent(e, #onClick));
-  container.onSubmit.listen((Event e) => dispatchEvent(e, #onSubmit));
+  listenForEvents(container);
   idToTree[id] = tree;
 }
 
@@ -53,12 +52,13 @@ typedef LifecycleHandler();
 abstract class View {
   LifecycleHandler didMount, willUnmount;
 
+  Ref _ref;
   bool _mounted = false;
   String _path;
   int _depth;
   View _nextVersion;
 
-  View();
+  View(this._ref);
 
   /// Returns a unique id used to find the view's HTML element.
   ///
@@ -83,6 +83,9 @@ abstract class View {
     _path = path;
     _depth = depth;
     _mounted = true;
+    if (_ref != null) {
+      _ref._set(this);
+    }
     if (didMount != null) {
       didMountQueue.add(didMount);
     }
@@ -92,6 +95,9 @@ abstract class View {
   void unmount() {
     if (willUnmount != null) {
       willUnmount();
+    }
+    if (_ref != null) {
+      _ref._set(null);
     }
     _mounted = false;
   }
@@ -115,6 +121,21 @@ abstract class View {
   }
 }
 
+/// Holds a reference to a view.
+///
+/// This is typically passed via a "ref" property. It's valid
+/// when the view is mounted and automatically cleared on unmount.
+class Ref {
+  View _view;
+
+  View get view => _view;
+  Element getDom() => _view.getDom();
+
+  void _set(View target) {
+    _view = target;
+  }
+}
+
 /// A plain text view.
 ///
 /// The framework needs to find the corresponding DOM element using a query on a
@@ -126,7 +147,7 @@ abstract class View {
 /// special case and the Text class isn't used.
 class Text extends View {
   String value;
-  Text(this.value);
+  Text(this.value, {Ref ref}) : super(ref);
 
   Map<Symbol,dynamic> get props => {#value: value};
 
@@ -152,15 +173,3 @@ class Text extends View {
   }
 }
 
-Element _unsafeNewElement(String html) {
-  return new Element.html(html, treeSanitizer: _NullSanitizer.instance);
-}
-
-void _unsafeSetInnerHtml(HtmlElement elt, String html) {
-  elt.setInnerHtml(html, treeSanitizer: _NullSanitizer.instance);
-}
-
-class _NullSanitizer implements NodeTreeSanitizer {
-  static var instance = new _NullSanitizer();
-  void sanitizeTree(Node node) {}
-}

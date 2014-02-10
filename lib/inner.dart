@@ -17,9 +17,12 @@ abstract class _Inner {
   // The parent node's depth.
   int get depth;
 
-  void _mountInner(StringBuffer out, inner) {
+  void _mountInner(StringBuffer out, inner, String innerHtml) {
     if (inner == null) {
-      // none
+      if (innerHtml != null) {
+        // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)
+        out.write(innerHtml);
+      }
     } else if (inner is String) {
       out.write(HTML_ESCAPE.convert(inner));
       _childText = inner;
@@ -65,10 +68,14 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mount/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(Element elt, newInner) {
+  void _updateInner(Element elt, newInner, newInnerHtml) {
     if (newInner == null) {
       _unmountInner();
-      elt.text = "";
+      if (newInnerHtml != null) {
+        setInnerHtml(elt, newInnerHtml);
+      } else {
+        elt.text = "";
+      }
     } else if (newInner is String) {
       if (newInner == _childText) {
         return;
@@ -102,8 +109,8 @@ abstract class _Inner {
 
     if (_children == null) {
       StringBuffer out = new StringBuffer();
-      _mountInner(out, newChildren);
-      _unsafeSetInnerHtml(elt, out.toString());
+      _mountInner(out, newChildren, null);
+      setInnerHtml(elt, out.toString());
       _children = newChildren;
       _childText = null;
       return;
@@ -128,7 +135,7 @@ abstract class _Inner {
         before.unmount();
         var out = new StringBuffer();
         after.mount(out, childPath, childDepth);
-        Element newElt = _unsafeNewElement(out.toString());
+        Element newElt = newElement(out.toString());
         oldElt.replaceWith(newElt);
         updatedChildren.add(after);
       }
@@ -148,7 +155,7 @@ abstract class _Inner {
         View after = newChildren[i];
         var out = new StringBuffer();
         after.mount(out, "${path}/${i}", childDepth);
-        Element newElt = _unsafeNewElement(out.toString());
+        Element newElt = newElement(out.toString());
         elt.children.add(newElt);
         updatedChildren.add(after);
       }

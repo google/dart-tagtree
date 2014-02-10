@@ -1,4 +1,7 @@
 name: viewlet
-description: A sample web application
+version: 0.1.0
+author: Brian Slesinsky
+description: A framework for building HTML views using reactive programming.  Inspired by the React JavaScript library.
 dependencies:
   browser: any
+  markdown: any

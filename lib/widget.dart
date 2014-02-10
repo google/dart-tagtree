@@ -7,7 +7,7 @@ abstract class Widget extends View {
   State _state, _nextState;
   View shadow;
 
-  Widget(this._props);
+  Widget(Map<Symbol, dynamic> props) : super(props[#ref]), _props = props;
 
   /// Constructs the initial state when the Widget is mounted.
   /// (Stateful widgets should override.)
@@ -79,7 +79,7 @@ abstract class Widget extends View {
       StringBuffer out = new StringBuffer();
       shadow.mount(out, _path, _depth);
       Element before = getDom();
-      Element after = _unsafeNewElement(out.toString());
+      Element after = newElement(out.toString());
       before.replaceWith(after);
     }
   }
