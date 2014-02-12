@@ -3,12 +3,12 @@ library viewlet;
 import 'dart:html';
 import 'dart:convert';
 
-part 'inner.dart';
-part 'elt.dart';
-part 'event.dart';
-part 'dom.dart';
-part 'tags.dart';
-part 'widget.dart';
+part 'src/inner.dart';
+part 'src/elt.dart';
+part 'src/event.dart';
+part 'src/dom.dart';
+part 'src/tags.dart';
+part 'src/widget.dart';
 
 // infrastructure
 
