@@ -24,7 +24,7 @@ abstract class Widget extends View {
   State get nextState {
     if (_nextState == null) {
       _nextState = _state.clone();
-      _dirtyViews.add(this);
+      invalidate(this);
     }
     return _nextState;
   }
@@ -33,7 +33,7 @@ abstract class Widget extends View {
   /// Setting the nextState automatically marks the Widget as dirty.
   void set nextState(State s) {
     _nextState = s;
-    _dirtyViews.add(this);
+    invalidate(this);
   }
 
   void mount(StringBuffer out, String path, int depth) {

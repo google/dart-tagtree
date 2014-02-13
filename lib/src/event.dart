@@ -42,7 +42,6 @@ void dispatchEvent(Event e, Symbol handlerKey) {
       if (h != null) {
         print("dispatched");
         h(e);
-        applyUpdates();
       }
     }
   } finally {
@@ -51,6 +50,15 @@ void dispatchEvent(Event e, Symbol handlerKey) {
 }
 
 Set<View> _dirtyViews = new Set();
+
+void invalidate(View view) {
+  if (_dirtyViews.isEmpty) {
+    window.animationFrame.then((t) {
+      applyUpdates();
+    });
+  }
+  _dirtyViews.add(view);
+}
 
 void applyUpdates() {
   List<View> batch = new List.from(_dirtyViews);
