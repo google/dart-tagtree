@@ -58,8 +58,9 @@ void applyUpdates() {
 
   // Sort ancestors ahead of children.
   batch.sort((a, b) => a._depth - b._depth);
+  NextFrame frame = new NextFrame();
   for (View v in batch) {
-    v.update(null);
+    v.update(null, frame);
   }
 
   // No new updates should be requested while refreshing.

@@ -57,7 +57,7 @@ abstract class Widget extends View {
 
   bool canUpdateTo(View other) => runtimeType == other.runtimeType;
 
-  void update(Widget nextVersion) {
+  void update(Widget nextVersion, NextFrame frame) {
     assert(_mounted);
 
     print("refresh Widget: ${_path}");
@@ -72,14 +72,14 @@ abstract class Widget extends View {
 
     View newShadow = render();
     if (shadow.canUpdateTo(newShadow)) {
-      shadow.update(newShadow);
+      shadow.update(newShadow, frame);
     } else {
       shadow.unmount();
       shadow = newShadow;
       StringBuffer out = new StringBuffer();
       shadow.mount(out, _path, _depth);
       Element before = getDom();
-      Element after = newElement(out.toString());
+      Element after = frame.newElement(out.toString());
       before.replaceWith(after);
     }
   }

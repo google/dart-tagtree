@@ -25,9 +25,8 @@ class TimerWidget extends Widget {
   TimerState get nextState => super.nextState;
 
   tick() {
-    nextState
-      ..secondsElapsed = state.secondsElapsed + 1;
-    update(null);
+    nextState.secondsElapsed = state.secondsElapsed + 1;
+    applyUpdates();
   }
 
   View render() => $.Div(inner: "Seconds elapsed: ${state.secondsElapsed}");

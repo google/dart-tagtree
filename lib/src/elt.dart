@@ -75,7 +75,7 @@ class Elt extends View with _Inner {
 
   bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
 
-  void update(Elt nextVersion) {
+  void update(Elt nextVersion, NextFrame frame) {
     if (nextVersion == null) {
       print("no change to Elt ${tagName}: ${_path}");
       return; // no internal state to update
@@ -85,12 +85,12 @@ class Elt extends View with _Inner {
 
     print("updating Elt ${tagName}: ${_path}");
     Element elt = getDom();
-    _updateDomProperties(elt, oldProps);
-    _updateInner(elt, _props[#inner], _props[#innerHtml]);
+    _updateDomProperties(elt, oldProps, frame);
+    _updateInner(elt, _props[#inner], _props[#innerHtml], frame);
   }
 
   /// Updates DOM attributes and event handlers.
-  void _updateDomProperties(Element elt, Map<Symbol, dynamic> oldProps) {
+  void _updateDomProperties(Element elt, Map<Symbol, dynamic> oldProps, NextFrame frame) {
     // Delete any removed props
     for (Symbol key in oldProps.keys) {
       if (_props.containsKey(key)) {
@@ -101,7 +101,7 @@ class Elt extends View with _Inner {
         allHandlers[key].remove(path);
       } else if(allAtts.containsKey(key)) {
         print("removing property: ${tagName}");
-        elt.attributes.remove(allAtts[key]);
+        frame.removeAttribute(elt, allAtts[key]);
       }
     }
 
@@ -118,16 +118,7 @@ class Elt extends View with _Inner {
       } else if (allAtts.containsKey(key)) {
         String name = allAtts[key];
         String val = _makeDomVal(key, newVal);
-        print("setting property: ${name}='${val}'");
-        elt.setAttribute(name, val);
-        // Setting the "value" attribute on an input element doesn't actually change what's in the text box.
-        if (key == #value) {
-          if (elt is InputElement) {
-            elt.value = newVal;
-          } else if(elt is TextAreaElement) {
-            elt.value = newVal;
-          }
-        }
+        frame.setAttribute(elt, name, val);
       }
     }
   }

@@ -17,10 +17,11 @@ Map<String, View> idToTree = {};
 List<LifecycleHandler> didMountQueue = [];
 
 void mount(View tree, HtmlElement container) {
+  NextFrame frame = new NextFrame();
   StringBuffer out = new StringBuffer();
   String id = "/${idCounter}"; idCounter++;
   tree.mount(out, id, 0);
-  setInnerHtml(container, out.toString());
+  frame.setInnerHtml(container, out.toString());
 
   for (LifecycleHandler h in didMountQueue) {
     h();
@@ -108,11 +109,12 @@ abstract class View {
   /// so all state will be lost.
   bool canUpdateTo(View nextVersion);
 
-  /// Updates a view in place. After the update, it should have the same properties as nextVersion.
+  /// Updates a view in place. After the update, it should have the same properties as nextVersion,
+  /// and any DOM changes needed should be sent to nextFrame.
   /// If nextVersion is null, the props are unchanged, but a stateful view may apply any pending
   /// state.
   /// (This should only be called by the framework.)
-  void update(View nextVersion);
+  void update(View nextVersion, NextFrame nextFrame);
 
   /// Returns the actual DOM element. Valid only when mounted.
   Element getDom() {
@@ -161,15 +163,14 @@ class Text extends View {
 
   bool canUpdateTo(View other) => (other is Text);
 
-  void update(Text nextVersion) {
+  void update(Text nextVersion, NextFrame frame) {
     print("refresh Text: ${_path}");
 
     if (nextVersion == null || value == nextVersion.value) {
       return; // no internal state to update
     }
     value = nextVersion.value;
-    Element elt = querySelector("[data-path=\"${_path}\"]");
-    elt.text = value;
+    frame.setInnerText(getDom(), value);
   }
 }
 
