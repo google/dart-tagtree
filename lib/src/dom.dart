@@ -1,5 +1,33 @@
 part of viewlet;
 
+ElementCache elementCache = new ElementCache();
+
+class ElementCache {
+  Map<String, HtmlElement> idToNode = {};
+
+  HtmlElement get(String path) {
+    HtmlElement node = idToNode[path];
+    if (node != null) {
+      return node;
+    }
+    node = querySelector("[data-path=\"${path}\"]");
+    if (node != null) {
+      idToNode[path] = node;
+      return node;
+    }
+    return null;
+  }
+
+  void _set(String path, HtmlElement elt) {
+    idToNode[path] = elt;
+  }
+
+  void _clear(String path) {
+    idToNode.remove(path);
+  }
+}
+
+
 /// Encapsulates all DOM operations used to advance the view to the next frame.
 class NextFrame {
   Element newElement(String html) {
@@ -44,6 +72,11 @@ class NextFrame {
 
   void removeChild(HtmlElement elt, int index) {
     elt.childNodes[index].remove();
+  }
+
+  void replaceElement(Element elt, String html) {
+    Element after = newElement(html);
+    elt.replaceWith(after);
   }
 }
 

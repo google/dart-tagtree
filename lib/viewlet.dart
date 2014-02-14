@@ -100,6 +100,7 @@ abstract class View {
     if (_ref != null) {
       _ref._set(null);
     }
+    elementCache._clear(_path);
     _mounted = false;
   }
 
@@ -109,17 +110,24 @@ abstract class View {
   /// so all state will be lost.
   bool canUpdateTo(View nextVersion);
 
-  /// Updates a view in place. After the update, it should have the same properties as nextVersion,
-  /// and any DOM changes needed should be sent to nextFrame.
+  /// Updates a view in place.
+  ///
+  /// After the update, it should have the same props as nextVersion and any DOM changes
+  /// needed should have been sent to nextFrame for rendering.
+  ///
   /// If nextVersion is null, the props are unchanged, but a stateful view may apply any pending
   /// state.
-  /// (This should only be called by the framework.)
+  ///
+  /// (This should only be called by the framework; it is called within a
+  /// requestAnimationFrame callback.)
   void update(View nextVersion, NextFrame nextFrame);
 
   /// Returns the actual DOM element. Valid only when mounted.
-  Element getDom() {
+  HtmlElement getDom() {
     assert(_mounted);
-    return querySelector("[data-path=\"${_path}\"]");
+    var result = elementCache.get(_path);
+    assert(result != null);
+    return result;
   }
 }
 

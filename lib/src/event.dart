@@ -53,14 +53,12 @@ Set<View> _dirtyViews = new Set();
 
 void invalidate(View view) {
   if (_dirtyViews.isEmpty) {
-    window.animationFrame.then((t) {
-      applyUpdates();
-    });
+    window.animationFrame.then(renderFrame);
   }
   _dirtyViews.add(view);
 }
 
-void applyUpdates() {
+void renderFrame(t) {
   List<View> batch = new List.from(_dirtyViews);
   _dirtyViews.clear();
 
@@ -71,6 +69,6 @@ void applyUpdates() {
     v.update(null, frame);
   }
 
-  // No new updates should be requested while refreshing.
+  // No views should be invalidated while rendering.
   assert(_dirtyViews.isEmpty);
 }

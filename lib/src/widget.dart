@@ -74,13 +74,12 @@ abstract class Widget extends View {
     if (shadow.canUpdateTo(newShadow)) {
       shadow.update(newShadow, frame);
     } else {
+      Element before = getDom();
       shadow.unmount();
       shadow = newShadow;
       StringBuffer out = new StringBuffer();
       shadow.mount(out, _path, _depth);
-      Element before = getDom();
-      Element after = frame.newElement(out.toString());
-      before.replaceWith(after);
+      frame.replaceElement(before, out.toString());
     }
   }
 
