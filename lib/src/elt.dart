@@ -84,13 +84,14 @@ class Elt extends View with _Inner {
     _props = nextVersion._props;
 
     print("updating Elt ${tagName}: ${_path}");
-    Element elt = getDom();
-    _updateDomProperties(elt, oldProps, frame);
-    _updateInner(elt, _props[#inner], _props[#innerHtml], frame);
+    _updateDomProperties(oldProps, frame);
+    _updateInner(_path, _props[#inner], _props[#innerHtml], frame);
   }
 
   /// Updates DOM attributes and event handlers.
-  void _updateDomProperties(Element elt, Map<Symbol, dynamic> oldProps, NextFrame frame) {
+  void _updateDomProperties(Map<Symbol, dynamic> oldProps, NextFrame frame) {
+    frame.visit(_path);
+
     // Delete any removed props
     for (Symbol key in oldProps.keys) {
       if (_props.containsKey(key)) {
@@ -101,7 +102,7 @@ class Elt extends View with _Inner {
         allHandlers[key].remove(path);
       } else if(allAtts.containsKey(key)) {
         print("removing property: ${tagName}");
-        frame.removeAttribute(elt, allAtts[key]);
+        frame.removeAttribute(allAtts[key]);
       }
     }
 
@@ -118,7 +119,7 @@ class Elt extends View with _Inner {
       } else if (allAtts.containsKey(key)) {
         String name = allAtts[key];
         String val = _makeDomVal(key, newVal);
-        frame.setAttribute(elt, name, val);
+        frame.setAttribute(name, val);
       }
     }
   }

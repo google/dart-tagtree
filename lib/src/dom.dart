@@ -3,7 +3,7 @@ part of viewlet;
 ElementCache elementCache = new ElementCache();
 
 class ElementCache {
-  Map<String, HtmlElement> idToNode = {};
+  Map<String, HtmlElement> idToNode = new HashMap();
 
   HtmlElement get(String path) {
     HtmlElement node = idToNode[path];
@@ -28,25 +28,31 @@ class ElementCache {
 }
 
 
-/// Encapsulates all DOM operations used to advance the view to the next frame.
+/// Encapsulates all operations used to update the DOM to the next frame.
 class NextFrame {
-  Element newElement(String html) {
-    return new Element.html(html, treeSanitizer: _sanitizer);
+  HtmlElement _elt;
+
+  void mount(HtmlElement container, String html) {
+    container.setInnerHtml(html, treeSanitizer: _sanitizer);
   }
 
-  void setInnerHtml(HtmlElement elt, String html) {
-    elt.setInnerHtml(html, treeSanitizer: _sanitizer);
+  /// Visits the element at the given path. Other methods act on the current element.
+  void visit(String path) {
+    _elt = elementCache.get(path);
+    assert(_elt is HtmlElement);
   }
 
-  void setInnerText(HtmlElement elt, String text) {
-    elt.text = text;
+  void replaceElement(String html) {
+    Element after = _newElement(html);
+    _elt.replaceWith(after);
   }
 
-  void setAttribute(HtmlElement elt, String key, String value) {
+  void setAttribute(String key, String value) {
     print("setting attribute: ${key}='${value}'");
-    elt.setAttribute(key, value);
+    _elt.setAttribute(key, value);
     // Setting the "value" attribute on an input element doesn't actually change what's in the text box.
     if (key == "value") {
+      HtmlElement elt = _elt;
       if (elt is InputElement) {
         elt.value = value;
       } else if(elt is TextAreaElement) {
@@ -55,28 +61,35 @@ class NextFrame {
     }
   }
 
-  void removeAttribute(HtmlElement elt, String key) {
-    elt.attributes.remove(key);
+  void removeAttribute(String key) {
+    _elt.attributes.remove(key);
   }
 
-  void replaceChildElement(HtmlElement elt, int index, String newHtml) {
-    Element oldElt = elt.childNodes[index];
-    Element newElt = newElement(newHtml);
+  void setInnerHtml(String html) {
+    _elt.setInnerHtml(html, treeSanitizer: _sanitizer);
+  }
+
+  void setInnerText(String text) {
+    _elt.text = text;
+  }
+
+  void replaceChildElement(int index, String newHtml) {
+    Element oldElt = _elt.childNodes[index];
+    Element newElt = _newElement(newHtml);
     oldElt.replaceWith(newElt);
   }
 
-  void addChildElement(HtmlElement elt, String childHtml) {
-    Element newElt = newElement(childHtml);
-    elt.children.add(newElt);
+  void addChildElement(String childHtml) {
+    Element newElt = _newElement(childHtml);
+    _elt.children.add(newElt);
   }
 
-  void removeChild(HtmlElement elt, int index) {
-    elt.childNodes[index].remove();
+  void removeChild(int index) {
+    _elt.childNodes[index].remove();
   }
 
-  void replaceElement(Element elt, String html) {
-    Element after = newElement(html);
-    elt.replaceWith(after);
+  HtmlElement _newElement(String html) {
+    return new Element.html(html, treeSanitizer: _sanitizer);
   }
 }
 

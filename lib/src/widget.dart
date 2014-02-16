@@ -74,12 +74,13 @@ abstract class Widget extends View {
     if (shadow.canUpdateTo(newShadow)) {
       shadow.update(newShadow, frame);
     } else {
-      Element before = getDom();
+      // visit should come first because unmount clears the node cache
+      frame.visit(_path);
       shadow.unmount();
       shadow = newShadow;
       StringBuffer out = new StringBuffer();
       shadow.mount(out, _path, _depth);
-      frame.replaceElement(before, out.toString());
+      frame.replaceElement(out.toString());
     }
   }
 

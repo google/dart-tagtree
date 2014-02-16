@@ -2,6 +2,7 @@ library viewlet;
 
 import 'dart:html';
 import 'dart:convert';
+import 'dart:collection' show HashMap;
 
 part 'src/inner.dart';
 part 'src/elt.dart';
@@ -10,18 +11,16 @@ part 'src/dom.dart';
 part 'src/tags.dart';
 part 'src/widget.dart';
 
-// infrastructure
-
 int idCounter = 0;
-Map<String, View> idToTree = {};
 List<LifecycleHandler> didMountQueue = [];
 
 void mount(View tree, HtmlElement container) {
-  NextFrame frame = new NextFrame();
+
   StringBuffer out = new StringBuffer();
   String id = "/${idCounter}"; idCounter++;
   tree.mount(out, id, 0);
-  frame.setInnerHtml(container, out.toString());
+
+  new NextFrame().mount(container, out.toString());
 
   for (LifecycleHandler h in didMountQueue) {
     h();
@@ -29,7 +28,6 @@ void mount(View tree, HtmlElement container) {
   didMountQueue.clear();
 
   listenForEvents(container);
-  idToTree[id] = tree;
 }
 
 typedef LifecycleHandler();
@@ -178,7 +176,7 @@ class Text extends View {
       return; // no internal state to update
     }
     value = nextVersion.value;
-    frame.setInnerText(getDom(), value);
+    frame..visit(_path)..setInnerText(value);
   }
 }
 

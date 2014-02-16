@@ -68,13 +68,14 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mount/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(Element elt, newInner, newInnerHtml, NextFrame frame) {
+  void _updateInner(String path, newInner, newInnerHtml, NextFrame frame) {
     if (newInner == null) {
       _unmountInner();
+      frame.visit(path);
       if (newInnerHtml != null) {
-        frame.setInnerHtml(elt, newInnerHtml);
+        frame.setInnerHtml(newInnerHtml);
       } else {
-        frame.setInnerText(elt, "");
+        frame.setInnerText("");
       }
     } else if (newInner is String) {
       if (newInner == _childText) {
@@ -82,10 +83,10 @@ abstract class _Inner {
       }
       _unmountInner();
       print("setting text of ${path}");
-      frame.setInnerText(elt, newInner);
+      frame..visit(path)..setInnerText(newInner);
       _childText = newInner;
     } else if (newInner is View) {
-      _updateChildren(elt, [newInner], frame);
+      _updateChildren(path, [newInner], frame);
     } else if (newInner is Iterable) {
       List<View> children = [];
       for (var item in newInner) {
@@ -97,7 +98,7 @@ abstract class _Inner {
           throw "bad item in inner: ${item}";
         }
       }
-      _updateChildren(elt, children, frame);
+      _updateChildren(path, children, frame);
     } else {
       throw "invalid new value of inner: ${newInner.runtimeType}";
     }
@@ -105,12 +106,13 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(Element elt, List<View> newChildren, NextFrame frame) {
+  void _updateChildren(String path, List<View> newChildren, NextFrame frame) {
 
     if (_children == null) {
       StringBuffer out = new StringBuffer();
       _mountInner(out, newChildren, null);
-      frame.setInnerHtml(elt, out.toString());
+      frame.visit(path);
+      frame.setInnerHtml(out.toString());
       _children = newChildren;
       _childText = null;
       return;
@@ -126,6 +128,7 @@ abstract class _Inner {
       View after = newChildren[i];
       assert(after != null);
       if (before.canUpdateTo(after)) {
+        // note: update may call frame.visit()
         before.update(after, frame);
         updatedChildren.add(before);
       } else {
@@ -134,7 +137,7 @@ abstract class _Inner {
         before.unmount();
         var out = new StringBuffer();
         after.mount(out, childPath, childDepth);
-        frame.replaceChildElement(elt, i, out.toString());
+        frame..visit(path)..replaceChildElement(i, out.toString());
         updatedChildren.add(after);
       }
     }
@@ -143,17 +146,19 @@ abstract class _Inner {
     if (extraChildren < 0) {
       print("removing ${-extraChildren} children under ${path}");
       // trim to new size
+      frame.visit(path);
       for (int i = _children.length - 1; i >= newChildren.length; i--) {
-        frame.removeChild(elt, i);
+        frame.removeChild(i);
       }
     } else if (extraChildren > 0) {
       print("adding ${extraChildren} children under ${path}");
       // append  children
+      frame.visit(path);
       for (int i = _children.length; i < newChildren.length; i++) {
         View after = newChildren[i];
         var out = new StringBuffer();
         after.mount(out, "${path}/${i}", childDepth);
-        frame.addChildElement(elt, out.toString());
+        frame.addChildElement(out.toString());
         updatedChildren.add(after);
       }
     }
