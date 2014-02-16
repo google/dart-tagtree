@@ -4,8 +4,7 @@ import '../../lib/viewlet.dart';
 var $ = new Tags();
 
 void main() {
-  print("main entered");
-  mount(new TodoApp(), querySelector("#container"));
+  mount(new TodoApp(), "#container");
 }
 
 class TodoList extends Widget {

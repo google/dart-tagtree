@@ -14,20 +14,21 @@ part 'src/widget.dart';
 int idCounter = 0;
 List<LifecycleHandler> didMountQueue = [];
 
-void mount(View tree, HtmlElement container) {
+void mount(View tree, String domQuery) {
 
   StringBuffer out = new StringBuffer();
   String id = "/${idCounter}"; idCounter++;
   tree.mount(out, id, 0);
 
-  new NextFrame().mount(container, out.toString());
+  new NextFrame()
+    ..mount(domQuery, out.toString());
 
   for (LifecycleHandler h in didMountQueue) {
     h();
   }
   didMountQueue.clear();
 
-  listenForEvents(container);
+  listenForEvents(querySelector(domQuery));
 }
 
 typedef LifecycleHandler();

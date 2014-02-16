@@ -1,10 +1,9 @@
-import 'dart:html';
 import '../../lib/viewlet.dart';
 
 var $ = new Tags();
 
 void main() {
-  mount(new HelloMessage(name: "world"), querySelector("#container"));
+  mount(new HelloMessage(name: "world"), "#container");
 }
 
 class HelloMessage extends Widget {

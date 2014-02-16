@@ -32,7 +32,8 @@ class ElementCache {
 class NextFrame {
   HtmlElement _elt;
 
-  void mount(HtmlElement container, String html) {
+  void mount(String domQuery, String html) {
+    HtmlElement container = querySelector(domQuery);
     container.setInnerHtml(html, treeSanitizer: _sanitizer);
   }
 

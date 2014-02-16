@@ -1,11 +1,9 @@
-import 'dart:html';
 import '../../lib/viewlet.dart';
 
 var $ = new Tags();
 
 void main() {
-  var clicker = new Clicker("Click me!");
-  mount(clicker, querySelector("#sample_container_id"));
+  mount(new Clicker("Click me!"), "#container");
 }
 
 class Clicker extends Widget {
