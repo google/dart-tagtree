@@ -22,14 +22,14 @@ class TodoApp extends Widget {
   TodoState get state => super.state;
   TodoState get nextState => super.nextState;
 
-  void onChange(Event e) {
+  void onChange(Ev e) {
     InputElement target = e.target;
     nextState
       ..text = target.value;
     print("changed text to: ${target.value}");
   }
 
-  void handleSubmit(Event e) {
+  void handleSubmit(Ev e) {
     e.preventDefault();
     nextState
       ..items = (new List.from(state.items)..add(state.text))

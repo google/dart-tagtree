@@ -1,6 +1,25 @@
 part of viewlet;
 
-typedef EventHandler(e);
+/// A synthetic event.
+abstract class Ev {
+  get nativeEvent;
+  get target;
+  void preventDefault();
+}
+
+class DomEvent implements Ev {
+  final Event nativeEvent;
+
+  DomEvent(this.nativeEvent);
+
+  EventTarget get target => nativeEvent.target;
+
+  void preventDefault() {
+    nativeEvent.preventDefault();
+  }
+}
+
+typedef EventHandler(Ev e);
 
 Map<Symbol, Map<String, EventHandler>> allHandlers = {
   #onChange: {},
@@ -15,18 +34,17 @@ void listenForEvents(Element container) {
   // not 'change' which only fires after focus is lost.
   // In React, see ChangeEventPlugin.
   // TODO: support IE9.
-  container.onInput.listen((Event e) => dispatchEvent(e, #onChange));
+  container.onInput.listen((Event e) => dispatchEvent(new DomEvent(e), #onChange));
 
-  container.onClick.listen((Event e) => dispatchEvent(e, #onClick));
-  container.onSubmit.listen((Event e) => dispatchEvent(e, #onSubmit));
+  container.onClick.listen((Event e) => dispatchEvent(new DomEvent(e), #onClick));
+  container.onSubmit.listen((Event e) => dispatchEvent(new DomEvent(e), #onSubmit));
 }
 
 bool _inViewletEvent = false;
 
 /// Dispatches a synthetic viewlet event.
-/// TODO: make a synthetic event class. For now, I'm just using native events.
 /// TODO: bubbling. For now, just exact match.
-void dispatchEvent(Event e, Symbol handlerKey) {
+void dispatchEvent(Ev e, Symbol handlerKey) {
   if (_inViewletEvent) {
     // React does this too; see EVENT_SUPPRESSION
     print("ignored ${handlerKey} received while processing another event");

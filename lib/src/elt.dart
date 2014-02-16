@@ -23,7 +23,7 @@ class Elt extends View with _Inner {
         getDom().onSubmit.listen((Event e) {
           print("form submitted: ${path}");
           e.stopPropagation();
-          dispatchEvent(e, #onSubmit);
+          dispatchEvent(new DomEvent(e), #onSubmit);
         });
       };
     }
