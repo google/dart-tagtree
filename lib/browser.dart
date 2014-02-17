@@ -108,6 +108,10 @@ class NextFrameImpl implements core.NextFrame {
     container.setInnerHtml(html, treeSanitizer: _sanitizer);
   }
 
+  void detachElement(String path) {
+    elementCache._clear(path);
+  }
+
   /// Visits the element at the given path. Other methods act on the current element.
   void visit(String path) {
     _elt = elementCache.get(path);

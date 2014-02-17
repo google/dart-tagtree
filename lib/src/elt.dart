@@ -59,13 +59,13 @@ class Elt extends View with _Inner {
     out.write("</${tagName}>");
   }
 
-  void unmount() {
+  void unmount(NextFrame frame) {
     for (Symbol key in allHandlers.keys) {
       Map m = allHandlers[key];
       m.remove(path);
     }
-    _unmountInner();
-    super.unmount();
+    _unmountInner(frame);
+    super.unmount(frame);
     print("unmount: ${_path}");
   }
 

@@ -56,10 +56,10 @@ abstract class _Inner {
     return children;
   }
 
-  void _unmountInner() {
+  void _unmountInner(NextFrame frame) {
     if (_children != null) {
       for (View child in _children) {
-        child.unmount();
+        child.unmount(frame);
       }
       _children = null;
     }
@@ -70,7 +70,7 @@ abstract class _Inner {
   /// (Postcondition: _children and _childText are updated.)
   void _updateInner(String path, newInner, newInnerHtml, NextFrame frame) {
     if (newInner == null) {
-      _unmountInner();
+      _unmountInner(frame);
       frame.visit(path);
       if (newInnerHtml != null) {
         frame.setInnerHtml(newInnerHtml);
@@ -81,7 +81,7 @@ abstract class _Inner {
       if (newInner == _childText) {
         return;
       }
-      _unmountInner();
+      _unmountInner(frame);
       print("setting text of ${path}");
       frame..visit(path)..setInnerText(newInner);
       _childText = newInner;
@@ -134,7 +134,7 @@ abstract class _Inner {
       } else {
         String childPath = "${path}/${i}";
         print("replacing ${childPath} from ${before.runtimeType} to ${after.runtimeType}");
-        before.unmount();
+        before.unmount(frame);
         var out = new StringBuffer();
         after.mount(out, childPath, childDepth);
         frame..visit(path)..replaceChildElement(i, out.toString());

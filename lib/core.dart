@@ -39,6 +39,7 @@ void coreMount(Context ctx, View tree, String domQuery) {
   context.listenForEvents(domQuery);
 }
 
+/// A function called during a View's lifecycle.
 typedef LifecycleHandler();
 
 /// A View is a node in a view tree.
@@ -99,16 +100,18 @@ abstract class View {
     }
   }
 
-  /// Frees resources associated with this View, not including any DOM nodes.
-  void unmount() {
+  /// Frees resources associated with this View and all its descendants
+  /// and marks them as unmounted. This removes any references to the DOM,
+  /// but doesn't actually change the DOM.
+  void unmount(NextFrame frame) {
     if (willUnmount != null) {
       willUnmount();
     }
     if (_ref != null) {
       _ref._set(null);
     }
-    context.onUnmount(_path);
     _mounted = false;
+    frame.detachElement(_path);
   }
 
   /// Returns true if we can do an in-place update that sets the props to those of the given view.
@@ -164,8 +167,6 @@ class Text extends View {
     // need to surround with a span to support incremental updates to a child
     out.write("<span data-path=${path}>${HTML_ESCAPE.convert(value)}</span>");
   }
-
-  void unmount() {}
 
   bool canUpdateTo(View other) => (other is Text);
 

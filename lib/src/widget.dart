@@ -43,11 +43,11 @@ abstract class Widget extends View {
     shadow.mount(out, path, depth);
   }
 
-  void unmount() {
+  void unmount(NextFrame frame) {
     if (shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }
-    shadow.unmount();
+    shadow.unmount(frame);
     shadow = null;
   }
 
@@ -76,7 +76,7 @@ abstract class Widget extends View {
     } else {
       // visit should come first because unmount clears the node cache
       frame.visit(_path);
-      shadow.unmount();
+      shadow.unmount(frame);
       shadow = newShadow;
       StringBuffer out = new StringBuffer();
       shadow.mount(out, _path, _depth);
