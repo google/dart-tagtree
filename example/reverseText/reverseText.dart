@@ -1,4 +1,4 @@
-import '../../lib/viewlet.dart';
+import 'package:viewlet/core.dart';
 
 var $ = new Tags();
 
