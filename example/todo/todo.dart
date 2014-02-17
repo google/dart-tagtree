@@ -1,4 +1,3 @@
-import 'dart:html';
 import '../../lib/viewlet.dart';
 
 var $ = new Tags();
@@ -9,6 +8,7 @@ void main() {
 
 class TodoList extends Widget {
   TodoList({List<String> items}) : super({#items: items});
+
   View render() {
     createItem(itemText) => $.Li(inner: itemText);
     return $.Ul(inner: props[#items].map(createItem));
@@ -22,15 +22,11 @@ class TodoApp extends Widget {
   TodoState get state => super.state;
   TodoState get nextState => super.nextState;
 
-  void onChange(Ev e) {
-    InputElement target = e.target;
-    nextState
-      ..text = target.value;
-    print("changed text to: ${target.value}");
+  void onChange(ChangeEvent e) {
+    nextState.text = e.value;
   }
 
-  void handleSubmit(Ev e) {
-    e.preventDefault();
+  void handleSubmit(ViewEvent e) {
     nextState
       ..items = (new List.from(state.items)..add(state.text))
       ..text = "";

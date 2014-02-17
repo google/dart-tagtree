@@ -1,25 +1,26 @@
 part of viewlet;
 
-/// A synthetic event.
-abstract class Ev {
-  get nativeEvent;
-  get target;
-  void preventDefault();
+class ViewEvent {
+  final Symbol handlerKey;
+  final String path;
+  ViewEvent(this.handlerKey, this.path);
 }
 
-class DomEvent implements Ev {
-  final Event nativeEvent;
+class ChangeEvent extends ViewEvent {
+  final value;
+  ChangeEvent(String path, this.value) : super(#onChange, path);
+}
 
-  DomEvent(this.nativeEvent);
-
-  EventTarget get target => nativeEvent.target;
-
-  void preventDefault() {
-    nativeEvent.preventDefault();
+String getTargetPath(Event e) {
+  var target = e.target;
+  if (target is Element) {
+    return target.dataset["path"];
+  } else {
+    return null;
   }
 }
 
-typedef EventHandler(Ev e);
+typedef EventHandler(ViewEvent e);
 
 Map<Symbol, Map<String, EventHandler>> allHandlers = {
   #onChange: {},
@@ -34,29 +35,41 @@ void listenForEvents(Element container) {
   // not 'change' which only fires after focus is lost.
   // In React, see ChangeEventPlugin.
   // TODO: support IE9.
-  container.onInput.listen((Event e) => dispatchEvent(new DomEvent(e), #onChange));
+  container.onInput.listen((Event e) {
+    var target = e.target;
+    String value;
+    if (target is InputElement) {
+      value = target.value;
+    }
+    if (target is TextAreaElement) {
+      value = target.value;
+    }
+    dispatchEvent(new ChangeEvent(getTargetPath(e), value));
+  });
 
-  container.onClick.listen((Event e) => dispatchEvent(new DomEvent(e), #onClick));
-  container.onSubmit.listen((Event e) => dispatchEvent(new DomEvent(e), #onSubmit));
+  container.onClick.listen((Event e) {
+      dispatchEvent(new ViewEvent(#onClick, getTargetPath(e)));
+  });
+  container.onSubmit.listen((Event e) {
+      dispatchEvent(new ViewEvent(#onSubmit, getTargetPath(e)));
+  });
 }
 
 bool _inViewletEvent = false;
 
 /// Dispatches a synthetic viewlet event.
 /// TODO: bubbling. For now, just exact match.
-void dispatchEvent(Ev e, Symbol handlerKey) {
+void dispatchEvent(ViewEvent e) {
   if (_inViewletEvent) {
     // React does this too; see EVENT_SUPPRESSION
-    print("ignored ${handlerKey} received while processing another event");
+    print("ignored ${e.handlerKey} received while processing another event");
     return;
   }
   _inViewletEvent = true;
   try {
-    print("\n### ${handlerKey}");
-    var target = e.target;
-    if (target is Element) {
-      String id = target.dataset["path"];
-      EventHandler h = allHandlers[handlerKey][id];
+    print("\n### ${e.handlerKey}");
+    if (e.path != null) {
+      EventHandler h = allHandlers[e.handlerKey][e.path];
       if (h != null) {
         print("dispatched");
         h(e);

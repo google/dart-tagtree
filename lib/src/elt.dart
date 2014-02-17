@@ -22,8 +22,9 @@ class Elt extends View with _Inner {
       didMount = () {
         getDom().onSubmit.listen((Event e) {
           print("form submitted: ${path}");
+          e.preventDefault();
           e.stopPropagation();
-          dispatchEvent(new DomEvent(e), #onSubmit);
+          dispatchEvent(new ViewEvent(#onSubmit, getTargetPath(e)));
         });
       };
     }
