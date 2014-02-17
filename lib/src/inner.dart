@@ -1,4 +1,4 @@
-part of viewlet;
+part of core;
 
 /// A mixin that implements the 'inner' property of an Elt.
 /// This can be text, a list of child views, or nothing.

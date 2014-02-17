@@ -1,4 +1,5 @@
 import 'package:viewlet/core.dart';
+import 'package:viewlet/browser.dart';
 import 'package:markdown/markdown.dart' show markdownToHtml;
 
 var $ = new Tags();

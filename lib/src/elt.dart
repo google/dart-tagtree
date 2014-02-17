@@ -1,4 +1,4 @@
-part of viewlet;
+part of core;
 
 /// A virtual DOM element.
 class Elt extends View with _Inner {
@@ -20,12 +20,7 @@ class Elt extends View with _Inner {
     if (tagName == "form") {
       // onSubmit doesn't bubble correctly
       didMount = () {
-        getDom().onSubmit.listen((Event e) {
-          print("form submitted: ${path}");
-          e.preventDefault();
-          e.stopPropagation();
-          dispatchEvent(new ViewEvent(#onSubmit, getTargetPath(e)));
-        });
+        context.didMountForm(_path);
       };
     }
   }

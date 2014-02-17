@@ -1,104 +1,26 @@
-part of viewlet;
-
-ElementCache elementCache = new ElementCache();
-
-class ElementCache {
-  Map<String, HtmlElement> idToNode = new HashMap();
-
-  HtmlElement get(String path) {
-    HtmlElement node = idToNode[path];
-    if (node != null) {
-      return node;
-    }
-    node = querySelector("[data-path=\"${path}\"]");
-    if (node != null) {
-      idToNode[path] = node;
-      return node;
-    }
-    return null;
-  }
-
-  void _set(String path, HtmlElement elt) {
-    idToNode[path] = elt;
-  }
-
-  void _clear(String path) {
-    idToNode.remove(path);
-  }
-}
-
+part of core;
 
 /// Encapsulates all operations used to update the DOM to the next frame.
-class NextFrame {
-  HtmlElement _elt;
+abstract class NextFrame {
 
-  void mount(String domQuery, String html) {
-    HtmlElement container = querySelector(domQuery);
-    container.setInnerHtml(html, treeSanitizer: _sanitizer);
-  }
+  void mount(String domQuery, String html);
 
   /// Visits the element at the given path. Other methods act on the current element.
-  void visit(String path) {
-    _elt = elementCache.get(path);
-    assert(_elt is HtmlElement);
-  }
+  void visit(String path);
 
-  void replaceElement(String html) {
-    Element after = _newElement(html);
-    _elt.replaceWith(after);
-  }
+  void replaceElement(String html);
 
-  void setAttribute(String key, String value) {
-    print("setting attribute: ${key}='${value}'");
-    _elt.setAttribute(key, value);
-    // Setting the "value" attribute on an input element doesn't actually change what's in the text box.
-    if (key == "value") {
-      HtmlElement elt = _elt;
-      if (elt is InputElement) {
-        elt.value = value;
-      } else if(elt is TextAreaElement) {
-        elt.value = value;
-      }
-    }
-  }
+  void setAttribute(String key, String value);
 
-  void removeAttribute(String key) {
-    _elt.attributes.remove(key);
-  }
+  void removeAttribute(String key);
 
-  void setInnerHtml(String html) {
-    _elt.setInnerHtml(html, treeSanitizer: _sanitizer);
-  }
+  void setInnerHtml(String html);
 
-  void setInnerText(String text) {
-    _elt.text = text;
-  }
+  void setInnerText(String text);
 
-  void replaceChildElement(int index, String newHtml) {
-    Element oldElt = _elt.childNodes[index];
-    Element newElt = _newElement(newHtml);
-    oldElt.replaceWith(newElt);
-  }
+  void replaceChildElement(int index, String newHtml);
 
-  void addChildElement(String childHtml) {
-    Element newElt = _newElement(childHtml);
-    _elt.children.add(newElt);
-  }
+  void addChildElement(String childHtml);
 
-  void removeChild(int index) {
-    _elt.childNodes[index].remove();
-  }
-
-  HtmlElement _newElement(String html) {
-    return new Element.html(html, treeSanitizer: _sanitizer);
-  }
-}
-
-NodeTreeSanitizer _sanitizer = new NodeTreeSanitizer(new NodeValidatorBuilder()
-    ..allowHtml5()
-    ..add(new AllowDataPath()));
-
-class AllowDataPath implements NodeValidator {
-  bool allowsAttribute(Element elt, String att, String value) => att == "data-path";
-  bool allowsElement(Element elt) => false;
+  void removeChild(int index);
 }

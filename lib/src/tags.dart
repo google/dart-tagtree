@@ -1,4 +1,4 @@
-part of viewlet;
+part of core;
 
 /// An API for constructing the corresponding view for each HTML Element.
 /// (Typically Tags is used instead.)

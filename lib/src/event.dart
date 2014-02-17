@@ -1,4 +1,4 @@
-part of viewlet;
+part of core;
 
 class ViewEvent {
   final Symbol handlerKey;
@@ -11,15 +11,6 @@ class ChangeEvent extends ViewEvent {
   ChangeEvent(String path, this.value) : super(#onChange, path);
 }
 
-String getTargetPath(Event e) {
-  var target = e.target;
-  if (target is Element) {
-    return target.dataset["path"];
-  } else {
-    return null;
-  }
-}
-
 typedef EventHandler(ViewEvent e);
 
 Map<Symbol, Map<String, EventHandler>> allHandlers = {
@@ -28,36 +19,9 @@ Map<Symbol, Map<String, EventHandler>> allHandlers = {
   #onSubmit: {}
 };
 
-/// Listens for native events and transforms them into Viewlet events.
-void listenForEvents(Element container) {
-  // Form events are tricky. We want an onChange event to fire every time
-  // the value in a text box changes. The native 'input' event does this,
-  // not 'change' which only fires after focus is lost.
-  // In React, see ChangeEventPlugin.
-  // TODO: support IE9.
-  container.onInput.listen((Event e) {
-    var target = e.target;
-    String value;
-    if (target is InputElement) {
-      value = target.value;
-    }
-    if (target is TextAreaElement) {
-      value = target.value;
-    }
-    dispatchEvent(new ChangeEvent(getTargetPath(e), value));
-  });
-
-  container.onClick.listen((Event e) {
-      dispatchEvent(new ViewEvent(#onClick, getTargetPath(e)));
-  });
-  container.onSubmit.listen((Event e) {
-      dispatchEvent(new ViewEvent(#onSubmit, getTargetPath(e)));
-  });
-}
-
 bool _inViewletEvent = false;
 
-/// Dispatches a synthetic viewlet event.
+/// Dispatches a synthetic view event.
 /// TODO: bubbling. For now, just exact match.
 void dispatchEvent(ViewEvent e) {
   if (_inViewletEvent) {
@@ -84,7 +48,7 @@ Set<View> _dirtyViews = new Set();
 
 void invalidate(View view) {
   if (_dirtyViews.isEmpty) {
-    window.animationFrame.then(renderFrame);
+    context.requestAnimationFrame(renderFrame);
   }
   _dirtyViews.add(view);
 }
@@ -95,7 +59,7 @@ void renderFrame(t) {
 
   // Sort ancestors ahead of children.
   batch.sort((a, b) => a._depth - b._depth);
-  NextFrame frame = new NextFrame();
+  NextFrame frame = context.nextFrame();
   for (View v in batch) {
     v.update(null, frame);
   }

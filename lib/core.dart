@@ -1,8 +1,6 @@
-library viewlet;
+library core;
 
-import 'dart:html';
 import 'dart:convert';
-import 'dart:collection' show HashMap;
 
 part 'src/inner.dart';
 part 'src/elt.dart';
@@ -11,24 +9,34 @@ part 'src/dom.dart';
 part 'src/tags.dart';
 part 'src/widget.dart';
 
+abstract class Context {
+  NextFrame nextFrame();
+  void listenForEvents(String domQuery);
+  void didMountForm(String path);
+  void onUnmount(String path);
+  void requestAnimationFrame(callback);
+}
+
+Context context;
+
 int idCounter = 0;
 List<LifecycleHandler> didMountQueue = [];
 
-void mount(View tree, String domQuery) {
+void coreMount(Context ctx, View tree, String domQuery) {
+  context = ctx;
 
   StringBuffer out = new StringBuffer();
   String id = "/${idCounter}"; idCounter++;
   tree.mount(out, id, 0);
 
-  new NextFrame()
-    ..mount(domQuery, out.toString());
+  context.nextFrame().mount(domQuery, out.toString());
 
   for (LifecycleHandler h in didMountQueue) {
     h();
   }
   didMountQueue.clear();
 
-  listenForEvents(querySelector(domQuery));
+  context.listenForEvents(domQuery);
 }
 
 typedef LifecycleHandler();
@@ -99,7 +107,7 @@ abstract class View {
     if (_ref != null) {
       _ref._set(null);
     }
-    elementCache._clear(_path);
+    context.onUnmount(_path);
     _mounted = false;
   }
 
@@ -120,14 +128,6 @@ abstract class View {
   /// (This should only be called by the framework; it is called within a
   /// requestAnimationFrame callback.)
   void update(View nextVersion, NextFrame nextFrame);
-
-  /// Returns the actual DOM element. Valid only when mounted.
-  HtmlElement getDom() {
-    assert(_mounted);
-    var result = elementCache.get(_path);
-    assert(result != null);
-    return result;
-  }
 }
 
 /// Holds a reference to a view.
@@ -138,7 +138,6 @@ class Ref {
   View _view;
 
   View get view => _view;
-  Element getDom() => _view.getDom();
 
   void _set(View target) {
     _view = target;

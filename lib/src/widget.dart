@@ -1,4 +1,4 @@
-part of viewlet;
+part of core;
 
 /// A Widget is a View that acts as a template. Its render() method typically
 /// returns elements to be rendered
