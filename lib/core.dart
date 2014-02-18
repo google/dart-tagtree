@@ -13,7 +13,6 @@ abstract class Context {
   NextFrame nextFrame();
   void listenForEvents(String domQuery);
   void didMountForm(String path);
-  void onUnmount(String path);
   void requestAnimationFrame(callback);
 }
 

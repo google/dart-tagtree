@@ -53,11 +53,6 @@ class BrowserContext implements core.Context {
   }
 
   @override
-  void onUnmount(String path) {
-    elementCache._clear(path);
-  }
-
-  @override
   void requestAnimationFrame(callback) {
     window.animationFrame.then(callback);
   }
