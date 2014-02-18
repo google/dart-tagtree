@@ -43,6 +43,11 @@ abstract class Widget extends View {
     shadow.mount(out, path, depth);
   }
 
+  void traverse(callback) {
+    callback(this);
+    shadow.traverse(callback);
+  }
+
   void unmount(NextFrame frame) {
     if (shadow == null) {
       throw "not mounted: ${this.runtimeType}";

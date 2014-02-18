@@ -16,13 +16,6 @@ class Elt extends View with _Inner {
     assert(inner == null || inner is String || inner is View || inner is Iterable);
     assert(inner == null || _props[#innerHtml] == null);
     assert(_props[#value] == null || _props[#defaultValue] == null);
-
-    if (tagName == "form") {
-      // onSubmit doesn't bubble correctly
-      didMount = () {
-        context.didMountForm(_path);
-      };
-    }
   }
 
   Map<Symbol,dynamic> get props => _props;
@@ -57,6 +50,11 @@ class Elt extends View with _Inner {
       _mountInner(out, _props[#inner], _props[#innerHtml]);
     }
     out.write("</${tagName}>");
+  }
+
+  void traverse(Visitor callback) {
+    callback(this);
+    _traverseInner(callback);
   }
 
   void unmount(NextFrame frame) {

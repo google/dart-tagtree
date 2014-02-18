@@ -6,7 +6,7 @@ import 'dart:collection' show HashMap;
 
 var _context = new BrowserContext();
 
-void mount(core.View tree, String domQuery) => core.coreMount(_context, tree, domQuery);
+void mount(core.View tree, String domQuery) => core.mountTree(_context, tree, domQuery);
 
 class BrowserContext implements core.Context {
 
@@ -40,17 +40,6 @@ class BrowserContext implements core.Context {
 
   @override
   core.NextFrame nextFrame() => new NextFrameImpl();
-
-  @override
-  void didMountForm(String path) {
-    FormElement elt = elementCache.get(path);
-    elt.onSubmit.listen((Event e) {
-      print("form submitted: ${path}");
-      e.preventDefault();
-      e.stopPropagation();
-      core.dispatchEvent(new core.ViewEvent(#onSubmit, getTargetPath(e)));
-    });
-  }
 
   @override
   void requestAnimationFrame(callback) {
@@ -101,6 +90,19 @@ class NextFrameImpl implements core.NextFrame {
   void mount(String domQuery, String html) {
     HtmlElement container = querySelector(domQuery);
     container.setInnerHtml(html, treeSanitizer: _sanitizer);
+  }
+
+  void attachElement(String path, String tag) {
+    if (tag == "form") {
+      // onSubmit doesn't bubble correctly
+      FormElement elt = elementCache.get(path);
+      elt.onSubmit.listen((Event e) {
+        print("form submitted: ${path}");
+        e.preventDefault();
+        e.stopPropagation();
+        core.dispatchEvent(new core.ViewEvent(#onSubmit, getTargetPath(e)));
+      });
+    }
   }
 
   void detachElement(String path) {

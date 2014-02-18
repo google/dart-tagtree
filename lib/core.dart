@@ -12,7 +12,6 @@ part 'src/widget.dart';
 abstract class Context {
   NextFrame nextFrame();
   void listenForEvents(String domQuery);
-  void didMountForm(String path);
   void requestAnimationFrame(callback);
 }
 
@@ -21,14 +20,22 @@ Context context;
 int idCounter = 0;
 List<LifecycleHandler> didMountQueue = [];
 
-void coreMount(Context ctx, View tree, String domQuery) {
+void mountTree(Context ctx, View tree, String domQuery) {
   context = ctx;
 
   StringBuffer out = new StringBuffer();
   String id = "/${idCounter}"; idCounter++;
+
   tree.mount(out, id, 0);
 
-  context.nextFrame().mount(domQuery, out.toString());
+  NextFrame frame = context.nextFrame();
+  frame.mount(domQuery, out.toString());
+
+  tree.traverse((View v) {
+    if (v is Elt) {
+      frame.attachElement(v.path, v.tagName);
+    }
+  });
 
   for (LifecycleHandler h in didMountQueue) {
     h();
@@ -40,6 +47,9 @@ void coreMount(Context ctx, View tree, String domQuery) {
 
 /// A function called during a View's lifecycle.
 typedef LifecycleHandler();
+
+/// A callback function for traversing the tree.
+typedef Visitor(View v);
 
 /// A View is a node in a view tree.
 ///
@@ -98,6 +108,9 @@ abstract class View {
       didMountQueue.add(didMount);
     }
   }
+
+  /// Performs a pre-order traversal of all the views in the view tree.
+  void traverse(Visitor callback);
 
   /// Frees resources associated with this View and all its descendants
   /// and marks them as unmounted. This removes any references to the DOM,
@@ -166,6 +179,8 @@ class Text extends View {
     // need to surround with a span to support incremental updates to a child
     out.write("<span data-path=${path}>${HTML_ESCAPE.convert(value)}</span>");
   }
+
+  void traverse(callback) => callback(this);
 
   bool canUpdateTo(View other) => (other is Text);
 

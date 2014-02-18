@@ -43,6 +43,14 @@ abstract class _Inner {
     }
   }
 
+  void _traverseInner(Visitor callback) {
+    if (_children != null) {
+      for (View child in _children) {
+        child.traverse(callback);
+      }
+    }
+  }
+
   List<View> _mountChildren(StringBuffer out, List<View> children) {
     if (children.isEmpty) {
       return null;
