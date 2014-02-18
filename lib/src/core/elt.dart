@@ -8,7 +8,7 @@ class Elt extends View with _Inner {
   Elt(this.tagName, Map<Symbol, dynamic> props) : super(props[#ref]),
       _props = props {
     for (Symbol key in props.keys) {
-      if (!allEltProps.contains(key)) {
+      if (!_allEltProps.contains(key)) {
         throw "property not supported: ${key}";
       }
     }
@@ -25,10 +25,10 @@ class Elt extends View with _Inner {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
-      if (allHandlers.containsKey(key)) {
-        allHandlers[key][path] = val;
-      } else if (allAtts.containsKey(key)) {
-        String name = allAtts[key];
+      if (_allHandlers.containsKey(key)) {
+        _allHandlers[key][path] = val;
+      } else if (_allAtts.containsKey(key)) {
+        String name = _allAtts[key];
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
         out.write(" ${name}=\"${escaped}\"");
       }
@@ -58,8 +58,8 @@ class Elt extends View with _Inner {
   }
 
   void unmount(NextFrame frame) {
-    for (Symbol key in allHandlers.keys) {
-      Map m = allHandlers[key];
+    for (Symbol key in _allHandlers.keys) {
+      Map m = _allHandlers[key];
       m.remove(path);
     }
     _unmountInner(frame);
@@ -84,7 +84,7 @@ class Elt extends View with _Inner {
 
   /// Updates DOM attributes and event handlers.
   void _updateDomProperties(Map<Symbol, dynamic> oldProps, NextFrame frame) {
-    frame.visit(_path);
+    frame.currentElement = _path;
 
     // Delete any removed props
     for (Symbol key in oldProps.keys) {
@@ -92,11 +92,11 @@ class Elt extends View with _Inner {
         continue;
       }
 
-      if (allHandlers.containsKey(key)) {
-        allHandlers[key].remove(path);
-      } else if(allAtts.containsKey(key)) {
+      if (_allHandlers.containsKey(key)) {
+        _allHandlers[key].remove(path);
+      } else if(_allAtts.containsKey(key)) {
         print("removing property: ${tagName}");
-        frame.removeAttribute(allAtts[key]);
+        frame.removeAttribute(_allAtts[key]);
       }
     }
 
@@ -108,17 +108,16 @@ class Elt extends View with _Inner {
         continue;
       }
 
-      if (allHandlers.containsKey(key)) {
-        allHandlers[key][path] = newVal;
-      } else if (allAtts.containsKey(key)) {
-        String name = allAtts[key];
+      if (_allHandlers.containsKey(key)) {
+        _allHandlers[key][path] = newVal;
+      } else if (_allAtts.containsKey(key)) {
+        String name = _allAtts[key];
         String val = _makeDomVal(key, newVal);
         frame.setAttribute(name, val);
       }
     }
   }
 }
-
 
 String _makeDomVal(Symbol key, val) {
   if (key == #clazz) {

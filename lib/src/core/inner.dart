@@ -79,7 +79,7 @@ abstract class _Inner {
   void _updateInner(String path, newInner, newInnerHtml, NextFrame frame) {
     if (newInner == null) {
       _unmountInner(frame);
-      frame.visit(path);
+      frame.currentElement = path;
       if (newInnerHtml != null) {
         frame.setInnerHtml(newInnerHtml);
       } else {
@@ -91,7 +91,9 @@ abstract class _Inner {
       }
       _unmountInner(frame);
       print("setting text of ${path}");
-      frame..visit(path)..setInnerText(newInner);
+      frame
+        ..currentElement = path
+        ..setInnerText(newInner);
       _childText = newInner;
     } else if (newInner is View) {
       _updateChildren(path, [newInner], frame);
@@ -119,8 +121,9 @@ abstract class _Inner {
     if (_children == null) {
       StringBuffer out = new StringBuffer();
       _mountInner(out, newChildren, null);
-      frame.visit(path);
-      frame.setInnerHtml(out.toString());
+      frame
+          ..currentElement = path
+          ..setInnerHtml(out.toString());
       _children = newChildren;
       _childText = null;
       return;
@@ -145,7 +148,9 @@ abstract class _Inner {
         before.unmount(frame);
         var out = new StringBuffer();
         after.mount(out, childPath, childDepth);
-        frame..visit(path)..replaceChildElement(i, out.toString());
+        frame
+          ..currentElement = path
+          ..replaceChildElement(i, out.toString());
         updatedChildren.add(after);
       }
     }
@@ -154,14 +159,14 @@ abstract class _Inner {
     if (extraChildren < 0) {
       print("removing ${-extraChildren} children under ${path}");
       // trim to new size
-      frame.visit(path);
+      frame.currentElement = path;
       for (int i = _children.length - 1; i >= newChildren.length; i--) {
         frame.removeChild(i);
       }
     } else if (extraChildren > 0) {
       print("adding ${extraChildren} children under ${path}");
       // append  children
-      frame.visit(path);
+      frame.currentElement = path;
       for (int i = _children.length; i < newChildren.length; i++) {
         View after = newChildren[i];
         var out = new StringBuffer();

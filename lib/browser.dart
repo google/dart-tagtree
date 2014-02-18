@@ -1,3 +1,6 @@
+/**
+ * Glue code connecting the Viewlet core (which is browser-independent) to the dart:html library.
+ */
 library browser;
 
 import 'package:viewlet/core.dart' as core;
@@ -6,61 +9,71 @@ import 'dart:collection' show HashMap;
 
 int _treeIdCounter = 0;
 
-void mount(core.View root, String domQuery) {
-  _treeIdCounter++;
-  core.ViewTree tree = new core.ViewTree.mount(_treeIdCounter, new BrowserEnv(), root, domQuery, new SyncFrame());
-  listenForEvents(tree, domQuery);
+/**
+ * Starts running a View.
+ *
+ * The CSS selectors must point to a single HtmlElement.
+ * Renders the first frame inside the container, then starts listening for events.
+ * Postcondition: all Views under root are mounted and rendered.
+ */
+void mount(core.View root, String selectors) {
+  HtmlElement container = querySelectorAll(selectors).single;
+  ElementCache cache = new ElementCache(container);
+  int id = _treeIdCounter++;
+  core.ViewTree tree = new core.ViewTree.mount(id, new BrowserEnv(cache), root, new SyncFrame(cache));
+  _listenForEvents(tree, container);
 }
 
-void listenForEvents(core.ViewTree tree, String domQuery) {
-  HtmlElement container = querySelector(domQuery);
+void _listenForEvents(core.ViewTree tree, HtmlElement container) {
+
+  container.onClick.listen((Event e) {
+    String path = _getTargetPath(e.target);
+    if (path == null) {
+      return;
+    }
+    tree.dispatchEvent(new core.ViewEvent(#onClick, path));
+  });
+
   // Form events are tricky. We want an onChange event to fire every time
   // the value in a text box changes. The native 'input' event does this,
   // not 'change' which only fires after focus is lost.
-  // In React, see ChangeEventPlugin.
-  // TODO: support IE9.
+  // TODO: support IE9 (not tested other than in Chrome).
+  // (See ChangeEventPlugin in React for browser-specific workarounds.)
   container.onInput.listen((Event e) {
-    var target = e.target;
-    String value;
-    if (target is InputElement) {
-      value = target.value;
+    String path = _getTargetPath(e.target);
+    if (path == null) {
+      return;
     }
-    if (target is TextAreaElement) {
-      value = target.value;
+    String value = _getTargetValue(e.target);
+    if (value == null) {
+      print("can't get value of target: ${path}");
+      return;
     }
-    tree.dispatchEvent(new core.ChangeEvent(getTargetPath(e), value));
+    tree.dispatchEvent(new core.ChangeEvent(path, value));
   });
 
-  container.onClick.listen((Event e) {
-      tree.dispatchEvent(new core.ViewEvent(#onClick, getTargetPath(e)));
-  });
-  container.onSubmit.listen((Event e) {
-      tree.dispatchEvent(new core.ViewEvent(#onSubmit, getTargetPath(e)));
-  });
+  // TODO: implement many more events.
+  // TODO: remove handlers on unmount.
 }
 
 class BrowserEnv implements core.TreeEnv {
+  final ElementCache cache;
+
+  BrowserEnv(this.cache);
+
   @override
   void requestFrame(core.ViewTree tree) {
     window.animationFrame.then((t) {
-      tree.render(new SyncFrame());
+      tree.render(new SyncFrame(cache));
     });
   }
 }
 
-String getTargetPath(Event e) {
-  var target = e.target;
-  if (target is Element) {
-    return target.dataset["path"];
-  } else {
-    return null;
-  }
-}
-
-ElementCache elementCache = new ElementCache();
-
 class ElementCache {
-  Map<String, HtmlElement> idToNode = new HashMap();
+  final HtmlElement container;
+  final Map<String, HtmlElement> idToNode = new HashMap();
+
+  ElementCache(this.container);
 
   HtmlElement get(String path) {
     HtmlElement node = idToNode[path];
@@ -86,33 +99,40 @@ class ElementCache {
 
 /// An implementation of NextFrame that applies frame mutations immediately to the DOM.
 class SyncFrame implements core.NextFrame {
+
+  final ElementCache cache;
+
+  /// The current element. Most methods operate on this element.
   HtmlElement _elt;
 
-  void mount(String domQuery, String html) {
-    HtmlElement container = querySelector(domQuery);
-    container.setInnerHtml(html, treeSanitizer: _sanitizer);
+  SyncFrame(this.cache);
+
+  void mount(String html) {
+    cache.container.setInnerHtml(html, treeSanitizer: _sanitizer);
   }
 
   void attachElement(core.ViewTree tree, String path, String tag) {
     if (tag == "form") {
-      // onSubmit doesn't bubble correctly
-      FormElement elt = elementCache.get(path);
+      // onSubmit doesn't bubble, so install it here.
+      FormElement elt = cache.get(path);
       elt.onSubmit.listen((Event e) {
-        print("form submitted: ${path}");
+        String path = _getTargetPath(e.target);
+        if (path == null) {
+          return;
+        }
         e.preventDefault();
         e.stopPropagation();
-        tree.dispatchEvent(new core.ViewEvent(#onSubmit, getTargetPath(e)));
+        tree.dispatchEvent(new core.ViewEvent(#onSubmit, path));
       });
     }
   }
 
   void detachElement(String path) {
-    elementCache._clear(path);
+    cache._clear(path);
   }
 
-  /// Visits the element at the given path. Other methods act on the current element.
-  void visit(String path) {
-    _elt = elementCache.get(path);
+  set currentElement(String path) {
+    _elt = cache.get(path);
     assert(_elt is HtmlElement);
   }
 
@@ -167,11 +187,30 @@ class SyncFrame implements core.NextFrame {
   }
 }
 
+String _getTargetPath(EventTarget target) {
+  if (target is Element) {
+    return target.dataset["path"];
+  } else {
+    return null;
+  }
+}
+
+String _getTargetValue(EventTarget target) {
+  if (target is InputElement) {
+    return target.value;
+  } else if (target is TextAreaElement) {
+    return target.value;
+  } else {
+    return null;
+  }
+}
+
+/// A Dart HTML sanitizer that knows about data-path.
 NodeTreeSanitizer _sanitizer = new NodeTreeSanitizer(new NodeValidatorBuilder()
     ..allowHtml5()
-    ..add(new AllowDataPath()));
+    ..add(new _AllowDataPath()));
 
-class AllowDataPath implements NodeValidator {
+class _AllowDataPath implements NodeValidator {
   bool allowsAttribute(Element elt, String att, String value) => att == "data-path";
   bool allowsElement(Element elt) => false;
 }

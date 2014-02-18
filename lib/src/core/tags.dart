@@ -19,7 +19,7 @@ abstract class TagsApi {
   View Button({clazz, onClick, inner, innerHtml, ref});
 }
 
-Map<Symbol, String> allTags = {
+final Map<Symbol, String> _allTags = {
   #Div: "div",
   #Span: "span",
 
@@ -36,12 +36,12 @@ Map<Symbol, String> allTags = {
   #Button: "button"
 };
 
-Map<Symbol, String> allAtts = {
+final Map<Symbol, String> _allAtts = {
   #clazz: "class",
   #value: "value",
 };
 
-Set<Symbol> allEltProps = new Set()..addAll(allAtts.keys)..addAll(allHandlers.keys)
+final Set<Symbol> _allEltProps = new Set()..addAll(_allAtts.keys)..addAll(_allHandlers.keys)
   ..addAll([#ref, #inner, #innerHtml, #defaultValue]);
 
 /// A factory for constructing the corresponding view for each HTML Element.
@@ -49,7 +49,7 @@ Set<Symbol> allEltProps = new Set()..addAll(allAtts.keys)..addAll(allHandlers.ke
 class Tags implements TagsApi {
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {
-      String tag = allTags[inv.memberName];
+      String tag = _allTags[inv.memberName];
       if (tag != null) {
         if (!inv.positionalArguments.isEmpty) {
           throw "position arguments not supported for html tags";

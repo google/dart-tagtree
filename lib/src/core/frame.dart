@@ -1,11 +1,10 @@
 part of core;
 
-/// Encapsulates all operations used to update the DOM for the next animation frame.
+/// Encapsulates all operations used to update the DOM in a container for the next animation frame.
 abstract class NextFrame {
 
-  /// Creates the DOM for a top-level View in a given container.
-  /// The domQuery should refer to exactly one HtmlElement.
-  void mount(String domQuery, String html);
+  /// Installs the given HTML into the container element.
+  void mount(String html);
 
   /// Performs any DOM fixups needed for a mounted element.
   /// This should be called after mount() for each mounted element.
@@ -15,9 +14,10 @@ abstract class NextFrame {
   /// This should be called after unmounting an element.
   void detachElement(String path);
 
-  /// Visits the element at the given path. Other methods will act on the current element.
-  void visit(String path);
+  /// Sets the element that most other methods act on.
+  set currentElement(String path);
 
+  /// Creates a new Element with the given HTML and replaces the current element.
   void replaceElement(String html);
 
   void setAttribute(String key, String value);
@@ -28,9 +28,10 @@ abstract class NextFrame {
 
   void setInnerText(String text);
 
-  void replaceChildElement(int index, String newHtml);
-
+  /// Creates a new Element with the given HTML and appends it as the last child.
   void addChildElement(String childHtml);
 
   void removeChild(int index);
+
+  void replaceChildElement(int index, String newHtml);
 }
