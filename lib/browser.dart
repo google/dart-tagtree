@@ -4,46 +4,47 @@ import 'package:viewlet/core.dart' as core;
 import 'dart:html';
 import 'dart:collection' show HashMap;
 
-var _context = new BrowserContext();
+int _treeIdCounter = 0;
 
-void mount(core.View tree, String domQuery) => core.mountTree(_context, tree, domQuery);
+void mount(core.View root, String domQuery) {
+  _treeIdCounter++;
+  core.ViewTree tree = new core.ViewTree.mount(_treeIdCounter, new BrowserEnv(), root, domQuery, new SyncFrame());
+  listenForEvents(tree, domQuery);
+}
 
-class BrowserContext implements core.Context {
+void listenForEvents(core.ViewTree tree, String domQuery) {
+  HtmlElement container = querySelector(domQuery);
+  // Form events are tricky. We want an onChange event to fire every time
+  // the value in a text box changes. The native 'input' event does this,
+  // not 'change' which only fires after focus is lost.
+  // In React, see ChangeEventPlugin.
+  // TODO: support IE9.
+  container.onInput.listen((Event e) {
+    var target = e.target;
+    String value;
+    if (target is InputElement) {
+      value = target.value;
+    }
+    if (target is TextAreaElement) {
+      value = target.value;
+    }
+    tree.dispatchEvent(new core.ChangeEvent(getTargetPath(e), value));
+  });
 
+  container.onClick.listen((Event e) {
+      tree.dispatchEvent(new core.ViewEvent(#onClick, getTargetPath(e)));
+  });
+  container.onSubmit.listen((Event e) {
+      tree.dispatchEvent(new core.ViewEvent(#onSubmit, getTargetPath(e)));
+  });
+}
+
+class BrowserEnv implements core.TreeEnv {
   @override
-  void listenForEvents(String domQuery) {
-    HtmlElement container = querySelector(domQuery);
-    // Form events are tricky. We want an onChange event to fire every time
-    // the value in a text box changes. The native 'input' event does this,
-    // not 'change' which only fires after focus is lost.
-    // In React, see ChangeEventPlugin.
-    // TODO: support IE9.
-    container.onInput.listen((Event e) {
-      var target = e.target;
-      String value;
-      if (target is InputElement) {
-        value = target.value;
-      }
-      if (target is TextAreaElement) {
-        value = target.value;
-      }
-      core.dispatchEvent(new core.ChangeEvent(getTargetPath(e), value));
+  void requestFrame(core.ViewTree tree) {
+    window.animationFrame.then((t) {
+      tree.render(new SyncFrame());
     });
-
-    container.onClick.listen((Event e) {
-        core.dispatchEvent(new core.ViewEvent(#onClick, getTargetPath(e)));
-    });
-    container.onSubmit.listen((Event e) {
-        core.dispatchEvent(new core.ViewEvent(#onSubmit, getTargetPath(e)));
-    });
-  }
-
-  @override
-  core.NextFrame nextFrame() => new NextFrameImpl();
-
-  @override
-  void requestAnimationFrame(callback) {
-    window.animationFrame.then(callback);
   }
 }
 
@@ -83,8 +84,8 @@ class ElementCache {
   }
 }
 
-/// Encapsulates all operations used to update the DOM to the next frame.
-class NextFrameImpl implements core.NextFrame {
+/// An implementation of NextFrame that applies frame mutations immediately to the DOM.
+class SyncFrame implements core.NextFrame {
   HtmlElement _elt;
 
   void mount(String domQuery, String html) {
@@ -92,7 +93,7 @@ class NextFrameImpl implements core.NextFrame {
     container.setInnerHtml(html, treeSanitizer: _sanitizer);
   }
 
-  void attachElement(String path, String tag) {
+  void attachElement(core.ViewTree tree, String path, String tag) {
     if (tag == "form") {
       // onSubmit doesn't bubble correctly
       FormElement elt = elementCache.get(path);
@@ -100,7 +101,7 @@ class NextFrameImpl implements core.NextFrame {
         print("form submitted: ${path}");
         e.preventDefault();
         e.stopPropagation();
-        core.dispatchEvent(new core.ViewEvent(#onSubmit, getTargetPath(e)));
+        tree.dispatchEvent(new core.ViewEvent(#onSubmit, getTargetPath(e)));
       });
     }
   }

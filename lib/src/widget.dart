@@ -5,7 +5,8 @@ part of core;
 abstract class Widget extends View {
   Map<Symbol, dynamic> _props;
   State _state, _nextState;
-  View shadow;
+  View _shadow;
+  ViewTree _tree;
 
   Widget(Map<Symbol, dynamic> props) : super(props[#ref]), _props = props;
 
@@ -22,9 +23,10 @@ abstract class Widget extends View {
   /// Accessing nextState automatically marks the Widget as dirty.
   /// (Subclasses may want to override to change the return type.)
   State get nextState {
+    assert(_mounted);
     if (_nextState == null) {
       _nextState = _state.clone();
-      invalidate(this);
+      invalidate();
     }
     return _nextState;
   }
@@ -33,27 +35,33 @@ abstract class Widget extends View {
   /// Setting the nextState automatically marks the Widget as dirty.
   void set nextState(State s) {
     _nextState = s;
-    invalidate(this);
+    invalidate();
   }
 
   void mount(StringBuffer out, String path, int depth) {
     super.mount(out, path, depth);
     _state = firstState;
-    shadow = render();
-    shadow.mount(out, path, depth);
+    _shadow = render();
+    _shadow.mount(out, path, depth);
   }
 
   void traverse(callback) {
     callback(this);
-    shadow.traverse(callback);
+    _shadow.traverse(callback);
   }
 
   void unmount(NextFrame frame) {
-    if (shadow == null) {
+    if (_shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }
-    shadow.unmount(frame);
-    shadow = null;
+    _shadow.unmount(frame);
+    _shadow = null;
+  }
+
+  /// Requests that this Widget be re-rendered during the next frame.
+  void invalidate() {
+    assert(_mounted);
+    _tree._invalidate(this);
   }
 
   /// Constructs another View to be rendered in place of this Widget.
@@ -76,15 +84,15 @@ abstract class Widget extends View {
     }
 
     View newShadow = render();
-    if (shadow.canUpdateTo(newShadow)) {
-      shadow.update(newShadow, frame);
+    if (_shadow.canUpdateTo(newShadow)) {
+      _shadow.update(newShadow, frame);
     } else {
       // visit should come first because unmount clears the node cache
       frame.visit(_path);
-      shadow.unmount(frame);
-      shadow = newShadow;
+      _shadow.unmount(frame);
+      _shadow = newShadow;
       StringBuffer out = new StringBuffer();
-      shadow.mount(out, _path, _depth);
+      _shadow.mount(out, _path, _depth);
       frame.replaceElement(out.toString());
     }
   }

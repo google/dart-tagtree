@@ -9,40 +9,88 @@ part 'src/dom.dart';
 part 'src/tags.dart';
 part 'src/widget.dart';
 
-abstract class Context {
-  NextFrame nextFrame();
-  void listenForEvents(String domQuery);
-  void requestAnimationFrame(callback);
+/// Callbacks to the ViewTree's environment.
+abstract class TreeEnv {
+  /// Requests that the given tree be re-rendered.
+  void requestFrame(ViewTree tree);
 }
 
-Context context;
+/// A ViewTree contains state that's global to a mounted View and its descendants.
+class ViewTree {
+  final int id;
+  final TreeEnv env;
 
-int idCounter = 0;
-List<LifecycleHandler> didMountQueue = [];
+  /// Renders the first frame of the tree. Postcondition: it is ready to receive events.
+  ViewTree.mount(this.id, this.env, View root, String domQuery, NextFrame frame) {
 
-void mountTree(Context ctx, View tree, String domQuery) {
-  context = ctx;
+    StringBuffer treeHtml = new StringBuffer();
+    root.mount(treeHtml, "/${id}", 0);
 
-  StringBuffer out = new StringBuffer();
-  String id = "/${idCounter}"; idCounter++;
+    frame.mount(domQuery, treeHtml.toString());
 
-  tree.mount(out, id, 0);
-
-  NextFrame frame = context.nextFrame();
-  frame.mount(domQuery, out.toString());
-
-  tree.traverse((View v) {
-    if (v is Elt) {
-      frame.attachElement(v.path, v.tagName);
-    }
-  });
-
-  for (LifecycleHandler h in didMountQueue) {
-    h();
+    root.traverse((View v) {
+      if (v is Elt) {
+        frame.attachElement(this, v.path, v.tagName);
+      } else if (v is Widget) {
+        v._tree = this;
+      }
+      if (v.didMount != null) {
+        v.didMount();
+      }
+    });
   }
-  didMountQueue.clear();
 
-  context.listenForEvents(domQuery);
+  bool _inViewletEvent = false;
+
+  /// Calls any event handlers in this tree.
+  /// On return, there may be some dirty widgets to be re-rendered.
+  /// Note: widgets may also change state outside any event handler;
+  /// for example, due to a timer.
+  /// TODO: bubbling. For now, just exact match.
+  void dispatchEvent(ViewEvent e) {
+    if (_inViewletEvent) {
+      // React does this too; see EVENT_SUPPRESSION
+      print("ignored ${e.handlerKey} received while processing another event");
+      return;
+    }
+    _inViewletEvent = true;
+    try {
+      print("\n### ${e.handlerKey}");
+      if (e.path != null) {
+        EventHandler h = allHandlers[e.handlerKey][e.path];
+        if (h != null) {
+          print("dispatched");
+          h(e);
+        }
+      }
+    } finally {
+      _inViewletEvent = false;
+    }
+  }
+
+  Set<Widget> _dirty = new Set();
+
+  /// Re-renders the dirty widgets in this tree.
+  void render(NextFrame frame) {
+    List<Widget> batch = new List.from(_dirty);
+    _dirty.clear();
+
+    // Sort ancestors ahead of children.
+    batch.sort((a, b) => a._depth - b._depth);
+    for (Widget w in batch) {
+      w.update(null, frame);
+    }
+
+    // No widgets should be invalidated while rendering.
+    assert(_dirty.isEmpty);
+  }
+
+  void _invalidate(Widget w) {
+    if (_dirty.isEmpty) {
+      env.requestFrame(this);
+    }
+    _dirty.add(w);
+  }
 }
 
 /// A function called during a View's lifecycle.
@@ -103,9 +151,6 @@ abstract class View {
     _mounted = true;
     if (_ref != null) {
       _ref._set(this);
-    }
-    if (didMount != null) {
-      didMountQueue.add(didMount);
     }
   }
 

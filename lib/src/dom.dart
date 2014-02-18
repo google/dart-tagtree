@@ -1,6 +1,6 @@
 part of core;
 
-/// Encapsulates all operations used to update the DOM to the next frame.
+/// Encapsulates all operations used to update the DOM for the next animation frame.
 abstract class NextFrame {
 
   /// Creates the DOM for a top-level View in a given container.
@@ -9,7 +9,7 @@ abstract class NextFrame {
 
   /// Performs any DOM fixups needed for a mounted element.
   /// This should be called after mount() for each mounted element.
-  void attachElement(String path, String tag);
+  void attachElement(ViewTree tree, String path, String tag);
 
   /// Clears any references to the DOM element with the given path.
   /// This should be called after unmounting an element.
