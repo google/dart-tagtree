@@ -107,10 +107,6 @@ class SyncFrame implements core.NextFrame {
 
   SyncFrame(this.cache);
 
-  void mount(String html) {
-    cache.container.setInnerHtml(html, treeSanitizer: _sanitizer);
-  }
-
   void attachElement(core.ViewTree tree, String path, String tag) {
     if (tag == "form") {
       // onSubmit doesn't bubble, so install it here.
@@ -132,13 +128,21 @@ class SyncFrame implements core.NextFrame {
   }
 
   set currentElement(String path) {
+    if (path == null) {
+      _elt = null;
+      return;
+    }
     _elt = cache.get(path);
     assert(_elt is HtmlElement);
   }
 
   void replaceElement(String html) {
-    Element after = _newElement(html);
-    _elt.replaceWith(after);
+    if (_elt == null) {
+      cache.container.setInnerHtml(html, treeSanitizer: _sanitizer);
+    } else {
+      Element after = _newElement(html);
+      _elt.replaceWith(after);
+    }
   }
 
   void setAttribute(String key, String value) {
@@ -165,12 +169,6 @@ class SyncFrame implements core.NextFrame {
 
   void setInnerText(String text) {
     _elt.text = text;
-  }
-
-  void replaceChildElement(int index, String newHtml) {
-    Element oldElt = _elt.childNodes[index];
-    Element newElt = _newElement(newHtml);
-    oldElt.replaceWith(newElt);
   }
 
   void addChildElement(String childHtml) {

@@ -69,7 +69,7 @@ class Elt extends View with _Inner {
 
   bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
 
-  void update(Elt nextVersion, NextFrame frame) {
+  void update(Elt nextVersion, ViewTree tree, NextFrame frame) {
     if (nextVersion == null) {
       print("no change to Elt ${tagName}: ${_path}");
       return; // no internal state to update
@@ -79,7 +79,7 @@ class Elt extends View with _Inner {
 
     print("updating Elt ${tagName}: ${_path}");
     _updateDomProperties(oldProps, frame);
-    _updateInner(_path, _props[#inner], _props[#innerHtml], frame);
+    _updateInner(_path, _props[#inner], _props[#innerHtml], tree, frame);
   }
 
   /// Updates DOM attributes and event handlers.

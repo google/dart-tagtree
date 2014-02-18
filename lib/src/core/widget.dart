@@ -70,7 +70,7 @@ abstract class Widget extends View {
 
   bool canUpdateTo(View other) => runtimeType == other.runtimeType;
 
-  void update(Widget nextVersion, NextFrame frame) {
+  void update(Widget nextVersion, ViewTree tree, NextFrame frame) {
     assert(_mounted);
 
     print("refresh Widget: ${_path}");
@@ -85,15 +85,13 @@ abstract class Widget extends View {
 
     View newShadow = render();
     if (_shadow.canUpdateTo(newShadow)) {
-      _shadow.update(newShadow, frame);
+      _shadow.update(newShadow, tree, frame);
     } else {
       // Set the current element first because unmount clears the node cache
       frame.currentElement = path;
       _shadow.unmount(frame);
       _shadow = newShadow;
-      StringBuffer out = new StringBuffer();
-      _shadow.mount(out, _path, _depth);
-      frame.replaceElement(out.toString());
+      tree._mountSubtree(_shadow, frame, _path, _depth);
     }
   }
 

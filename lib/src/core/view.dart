@@ -94,7 +94,7 @@ abstract class View {
   ///
   /// (This should only be called by the framework; it is called within a
   /// requestAnimationFrame callback.)
-  void update(View nextVersion, NextFrame nextFrame);
+  void update(View nextVersion, ViewTree tree, NextFrame nextFrame);
 }
 
 /// Holds a reference to a view.

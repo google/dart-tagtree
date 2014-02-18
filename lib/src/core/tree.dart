@@ -13,13 +13,16 @@ class ViewTree {
 
   /// Renders the first frame of the tree. Postcondition: it is ready to receive events.
   ViewTree.mount(this.id, this.env, View root, NextFrame frame) {
+    frame.currentElement = null; // root
+    _mountSubtree(root, frame, "/${id}", 0);
+  }
 
+  /// Replaces frame.currentElement by mounting a View subtree.
+  void _mountSubtree(View top, NextFrame frame, String path, int depth) {
     StringBuffer treeHtml = new StringBuffer();
-    root.mount(treeHtml, "/${id}", 0);
-
-    frame.mount(treeHtml.toString());
-
-    root.traverse((View v) {
+    top.mount(treeHtml, path, depth);
+    frame.replaceElement(treeHtml.toString());
+    top.traverse((View v) {
       if (v is Elt) {
         frame.attachElement(this, v.path, v.tagName);
       } else if (v is Widget) {
@@ -69,7 +72,7 @@ class ViewTree {
     // Sort ancestors ahead of children.
     batch.sort((a, b) => a._depth - b._depth);
     for (Widget w in batch) {
-      w.update(null, frame);
+      w.update(null, this, frame);
     }
 
     // No widgets should be invalidated while rendering.

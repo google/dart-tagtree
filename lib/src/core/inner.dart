@@ -2,8 +2,8 @@ part of core;
 
 /// A mixin that implements the 'inner' property of an Elt.
 /// This can be text, a list of child views, or nothing.
-/// (Mixed content isn't directly supported. Instead, strings
-/// will automatically be wrapped in Text nodes.)
+/// (Mixed content isn't directly supported. Instead, Elt automatically
+/// wraps strings in Text views.)
 abstract class _Inner {
 
   // Non-null when the Elt is mounted and it has at least one child.
@@ -11,10 +11,10 @@ abstract class _Inner {
   // Non-null when the Elt is mounted and it contains just text.
   String _childText = null;
 
-  // The parent node's path.
+  // The Elt's path.
   String get path;
 
-  // The parent node's depth.
+  // The Elt's depth.
   int get depth;
 
   void _mountInner(StringBuffer out, inner, String innerHtml) {
@@ -76,7 +76,7 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mount/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(String path, newInner, newInnerHtml, NextFrame frame) {
+  void _updateInner(String path, newInner, newInnerHtml, ViewTree tree, NextFrame frame) {
     if (newInner == null) {
       _unmountInner(frame);
       frame.currentElement = path;
@@ -96,7 +96,7 @@ abstract class _Inner {
         ..setInnerText(newInner);
       _childText = newInner;
     } else if (newInner is View) {
-      _updateChildren(path, [newInner], frame);
+      _updateChildren(path, [newInner], tree, frame);
     } else if (newInner is Iterable) {
       List<View> children = [];
       for (var item in newInner) {
@@ -108,7 +108,7 @@ abstract class _Inner {
           throw "bad item in inner: ${item}";
         }
       }
-      _updateChildren(path, children, frame);
+      _updateChildren(path, children, tree, frame);
     } else {
       throw "invalid new value of inner: ${newInner.runtimeType}";
     }
@@ -116,7 +116,7 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(String path, List<View> newChildren, NextFrame frame) {
+  void _updateChildren(String path, List<View> newChildren, ViewTree tree, NextFrame frame) {
 
     if (_children == null) {
       StringBuffer out = new StringBuffer();
@@ -140,17 +140,15 @@ abstract class _Inner {
       assert(after != null);
       if (before.canUpdateTo(after)) {
         // note: update may call frame.visit()
-        before.update(after, frame);
+        before.update(after, tree, frame);
         updatedChildren.add(before);
       } else {
         String childPath = "${path}/${i}";
         print("replacing ${childPath} from ${before.runtimeType} to ${after.runtimeType}");
+        // Set current element first because unmount will clear the cache
+        frame.currentElement = childPath;
         before.unmount(frame);
-        var out = new StringBuffer();
-        after.mount(out, childPath, childDepth);
-        frame
-          ..currentElement = path
-          ..replaceChildElement(i, out.toString());
+        tree._mountSubtree(after, frame, childPath, childDepth);
         updatedChildren.add(after);
       }
     }
