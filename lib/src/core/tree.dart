@@ -19,6 +19,7 @@ class ViewTree {
     _finishMount(root, frame);
   }
 
+  /// Finishes mounting a subtree after the DOM is created.
   void _finishMount(View subtreeRoot, NextFrame frame) {
     subtreeRoot.traverse((View v) {
       if (v is Elt) {
@@ -26,9 +27,7 @@ class ViewTree {
       } else if (v is Widget) {
         v._tree = this;
       }
-      if (v.didMount != null) {
-        v.didMount();
-      }
+      v.didMount();
     });
   }
 

@@ -20,8 +20,7 @@ class Elt extends View with _Inner {
 
   Map<Symbol,dynamic> get props => _props;
 
-  void mount(StringBuffer out, String path, int depth) {
-    super.mount(out, path, depth);
+  void doMount(StringBuffer out) {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
@@ -57,13 +56,12 @@ class Elt extends View with _Inner {
     _traverseInner(callback);
   }
 
-  void unmount(NextFrame frame) {
+  void doUnmount(NextFrame frame) {
+    _unmountInner(frame);
     for (Symbol key in _allHandlers.keys) {
       Map m = _allHandlers[key];
       m.remove(path);
     }
-    _unmountInner(frame);
-    super.unmount(frame);
     print("unmount: ${_path}");
   }
 

@@ -38,11 +38,10 @@ abstract class Widget extends View {
     invalidate();
   }
 
-  void mount(StringBuffer out, String path, int depth) {
-    super.mount(out, path, depth);
+  void doMount(StringBuffer out) {
     _state = firstState;
     _shadow = render();
-    _shadow.mount(out, path, depth);
+    _shadow.mount(out, _path, _depth);
   }
 
   void traverse(callback) {
@@ -50,7 +49,7 @@ abstract class Widget extends View {
     _shadow.traverse(callback);
   }
 
-  void unmount(NextFrame frame) {
+  void doUnmount(NextFrame frame) {
     if (_shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }
@@ -88,12 +87,12 @@ abstract class Widget extends View {
       _shadow.update(newShadow, tree, frame);
     } else {
       // Set the current element first because unmount clears the node cache
-      frame.currentElement = path;
+      frame.currentElement = _path;
       _shadow.unmount(frame);
       _shadow = newShadow;
 
       StringBuffer html = new StringBuffer();
-      _shadow.mount(html, path, depth);
+      _shadow.mount(html, _path, _depth);
       frame.replaceElement(html.toString());
       tree._finishMount(_shadow, frame);
     }

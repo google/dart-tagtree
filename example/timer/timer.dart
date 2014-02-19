@@ -11,18 +11,19 @@ void main() {
 class TimerWidget extends Widget {
   Timer timer;
 
-  TimerWidget() : super({}) {
-    didMount = () {
-      timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());
-    };
-    willUnmount = () {
-      timer.cancel();
-    };
-  }
+  TimerWidget() : super({});
 
   get firstState => new TimerState();
   TimerState get state => super.state;
   TimerState get nextState => super.nextState;
+
+  didMount() {
+    timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());
+  }
+
+  willUnmount() {
+    timer.cancel();
+  }
 
   tick() {
     nextState.secondsElapsed = state.secondsElapsed + 1;

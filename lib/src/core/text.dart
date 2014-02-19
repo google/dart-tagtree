@@ -15,11 +15,12 @@ class Text extends View {
 
   Map<Symbol,dynamic> get props => {#value: value};
 
-  void mount(StringBuffer out, String path, int depth) {
-    super.mount(out, path, depth);
+  void doMount(StringBuffer out) {
     // need to surround with a span to support incremental updates to a child
-    out.write("<span data-path=${path}>${HTML_ESCAPE.convert(value)}</span>");
+    out.write("<span data-path=${_path}>${HTML_ESCAPE.convert(value)}</span>");
   }
+
+  void doUnmount(_) {}
 
   void traverse(callback) => callback(this);
 
@@ -33,7 +34,7 @@ class Text extends View {
     }
     value = nextVersion.value;
     frame
-      ..currentElement = path
+      ..currentElement = _path
       ..setInnerText(value);
   }
 }

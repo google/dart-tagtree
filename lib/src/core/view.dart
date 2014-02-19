@@ -1,8 +1,5 @@
 part of core;
 
-/// A function called during a View's lifecycle.
-typedef LifecycleHandler();
-
 /// A callback function for traversing the tree.
 typedef Visitor(View v);
 
@@ -23,13 +20,11 @@ typedef Visitor(View v);
 /// re-rendering, we attempt to preserve as many View nodes as possible by updating them
 /// in place. This is both more efficient and preserves state.
 abstract class View {
-  LifecycleHandler didMount, willUnmount;
 
   Ref _ref;
   bool _mounted = false;
   String _path;
   int _depth;
-  View _nextVersion;
 
   View(this._ref);
 
@@ -59,24 +54,36 @@ abstract class View {
     if (_ref != null) {
       _ref._set(this);
     }
+    doMount(out);
   }
-
-  /// Performs a pre-order traversal of all the views in the view tree.
-  void traverse(Visitor callback);
 
   /// Frees resources associated with this View and all its descendants
   /// and marks them as unmounted. This removes any references to the DOM,
   /// but doesn't actually change the DOM.
   void unmount(NextFrame frame) {
-    if (willUnmount != null) {
-      willUnmount();
-    }
+    willUnmount();
     if (_ref != null) {
       _ref._set(null);
     }
+    doUnmount(frame);
     frame.detachElement(_path);
     _mounted = false;
   }
+
+  /// Subclass hook for implementing mount.
+  void doMount(StringBuffer out);
+
+  /// Lifecycle method called after the DOM element is ready.
+  void didMount() {}
+
+  /// Lifecycle method called before the DOM element is removed.
+  void willUnmount() {}
+
+  /// Subclass hook for implementing unmount.
+  void doUnmount(NextFrame frame);
+
+  /// Performs a pre-order traversal of all the views in the view tree.
+  void traverse(Visitor callback);
 
   /// Returns true if we can do an in-place update that sets the props to those of the given view.
   ///
