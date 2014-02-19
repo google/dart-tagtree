@@ -145,10 +145,16 @@ abstract class _Inner {
       } else {
         String childPath = "${path}/${i}";
         print("replacing ${childPath} from ${before.runtimeType} to ${after.runtimeType}");
-        // Set current element first because unmount will clear the cache
-        frame.currentElement = childPath;
+
         before.unmount(frame);
-        tree._mountSubtree(after, frame, childPath, childDepth);
+
+        StringBuffer html = new StringBuffer();
+        after.mount(html, path, depth);
+
+        frame
+          ..currentElement = path
+          ..replaceChildElement(i, html.toString());
+        tree._finishMount(after, frame);
         updatedChildren.add(after);
       }
     }
@@ -166,11 +172,12 @@ abstract class _Inner {
       // append  children
       frame.currentElement = path;
       for (int i = _children.length; i < newChildren.length; i++) {
-        View after = newChildren[i];
+        View child = newChildren[i];
         var out = new StringBuffer();
-        after.mount(out, "${path}/${i}", childDepth);
+        child.mount(out, "${path}/${i}", childDepth);
         frame.addChildElement(out.toString());
-        updatedChildren.add(after);
+        tree._finishMount(child, frame);
+        updatedChildren.add(child);
       }
     }
     _children = updatedChildren;

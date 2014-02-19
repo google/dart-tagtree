@@ -107,6 +107,12 @@ class SyncFrame implements core.NextFrame {
 
   SyncFrame(this.cache);
 
+  @override
+  void mount(String html) {
+    cache.container.setInnerHtml(html, treeSanitizer: _sanitizer);
+  }
+
+  @override
   void attachElement(core.ViewTree tree, String path, String tag) {
     if (tag == "form") {
       // onSubmit doesn't bubble, so install it here.
@@ -123,19 +129,19 @@ class SyncFrame implements core.NextFrame {
     }
   }
 
+  @override
   void detachElement(String path) {
     cache._clear(path);
   }
 
+  @override
   set currentElement(String path) {
-    if (path == null) {
-      _elt = null;
-      return;
-    }
+    assert(path != null);
     _elt = cache.get(path);
     assert(_elt is HtmlElement);
   }
 
+  @override
   void replaceElement(String html) {
     if (_elt == null) {
       cache.container.setInnerHtml(html, treeSanitizer: _sanitizer);
@@ -145,6 +151,7 @@ class SyncFrame implements core.NextFrame {
     }
   }
 
+  @override
   void setAttribute(String key, String value) {
     print("setting attribute: ${key}='${value}'");
     _elt.setAttribute(key, value);
@@ -159,23 +166,34 @@ class SyncFrame implements core.NextFrame {
     }
   }
 
+  @override
   void removeAttribute(String key) {
     _elt.attributes.remove(key);
   }
 
+  @override
   void setInnerHtml(String html) {
     _elt.setInnerHtml(html, treeSanitizer: _sanitizer);
   }
 
+  @override
   void setInnerText(String text) {
     _elt.text = text;
   }
 
+  @override
   void addChildElement(String childHtml) {
     Element newElt = _newElement(childHtml);
     _elt.children.add(newElt);
   }
 
+  @override
+  void replaceChildElement(int index, String childHtml) {
+    Element newElt = _newElement(childHtml);
+    _elt.children[index].replaceWith(newElt);
+  }
+
+  @override
   void removeChild(int index) {
     _elt.childNodes[index].remove();
   }

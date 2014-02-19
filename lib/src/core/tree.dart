@@ -13,16 +13,14 @@ class ViewTree {
 
   /// Renders the first frame of the tree. Postcondition: it is ready to receive events.
   ViewTree.mount(this.id, this.env, View root, NextFrame frame) {
-    frame.currentElement = null; // root
-    _mountSubtree(root, frame, "/${id}", 0);
+    StringBuffer html = new StringBuffer();
+    root.mount(html, "/${id}", 0);
+    frame.mount(html.toString());
+    _finishMount(root, frame);
   }
 
-  /// Replaces frame.currentElement by mounting a View subtree.
-  void _mountSubtree(View top, NextFrame frame, String path, int depth) {
-    StringBuffer treeHtml = new StringBuffer();
-    top.mount(treeHtml, path, depth);
-    frame.replaceElement(treeHtml.toString());
-    top.traverse((View v) {
+  void _finishMount(View subtreeRoot, NextFrame frame) {
+    subtreeRoot.traverse((View v) {
       if (v is Elt) {
         frame.attachElement(this, v.path, v.tagName);
       } else if (v is Widget) {

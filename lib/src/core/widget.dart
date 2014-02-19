@@ -91,7 +91,11 @@ abstract class Widget extends View {
       frame.currentElement = path;
       _shadow.unmount(frame);
       _shadow = newShadow;
-      tree._mountSubtree(_shadow, frame, _path, _depth);
+
+      StringBuffer html = new StringBuffer();
+      _shadow.mount(html, path, depth);
+      frame.replaceElement(html.toString());
+      tree._finishMount(_shadow, frame);
     }
   }
 
