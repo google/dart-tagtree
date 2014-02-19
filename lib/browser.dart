@@ -4,6 +4,8 @@
 library browser;
 
 import 'package:viewlet/core.dart' as core;
+
+import 'dart:async' show StreamSubscription;
 import 'dart:html';
 import 'dart:collection' show HashMap;
 
@@ -101,6 +103,7 @@ class ElementCache {
 class SyncFrame implements core.NextFrame {
 
   final ElementCache cache;
+  final Map<String, StreamSubscription> formSubscriptions = {};
 
   /// The current element. Most methods operate on this element.
   HtmlElement _elt;
@@ -117,7 +120,7 @@ class SyncFrame implements core.NextFrame {
     if (tag == "form") {
       // onSubmit doesn't bubble, so install it here.
       FormElement elt = cache.get(path);
-      elt.onSubmit.listen((Event e) {
+      formSubscriptions[path] = elt.onSubmit.listen((Event e) {
         String path = _getTargetPath(e.target);
         if (path == null) {
           return;
@@ -131,6 +134,11 @@ class SyncFrame implements core.NextFrame {
 
   @override
   void detachElement(String path) {
+    StreamSubscription s = formSubscriptions[path];
+    if (s != null) {
+      s.cancel();
+      formSubscriptions.remove(path);
+    }
     cache._clear(path);
   }
 

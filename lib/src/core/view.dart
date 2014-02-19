@@ -74,8 +74,8 @@ abstract class View {
     if (_ref != null) {
       _ref._set(null);
     }
-    _mounted = false;
     frame.detachElement(_path);
+    _mounted = false;
   }
 
   /// Returns true if we can do an in-place update that sets the props to those of the given view.
