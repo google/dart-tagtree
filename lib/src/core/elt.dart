@@ -21,6 +21,21 @@ class Elt extends View with _Inner {
   Map<Symbol,dynamic> get props => _props;
 
   void doMount(StringBuffer out) {
+    _writeStartTag(out);
+
+    if (tagName == "textarea") {
+      String val = _props[#defaultValue];
+      if (val != null) {
+        out.write(HTML_ESCAPE.convert(val));
+      }
+    } else {
+      _mountInner(out, _props[#inner], _props[#innerHtml]);
+    }
+
+    _writeEndTag(out);
+  }
+
+  void _writeStartTag(StringBuffer out) {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
@@ -40,14 +55,9 @@ class Elt extends View with _Inner {
       }
     }
     out.write(">");
-    if (tagName == "textarea") {
-      String val = _props[#defaultValue];
-      if (val != null) {
-        out.write(HTML_ESCAPE.convert(val));
-      }
-    } else {
-      _mountInner(out, _props[#inner], _props[#innerHtml]);
-    }
+  }
+
+  void _writeEndTag(out) {
     out.write("</${tagName}>");
   }
 
