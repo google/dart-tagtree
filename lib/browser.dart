@@ -143,7 +143,7 @@ class SyncFrame implements core.NextFrame {
   }
 
   @override
-  set currentElement(String path) {
+  void visit(String path) {
     assert(path != null);
     _elt = cache.get(path);
     assert(_elt is HtmlElement);

@@ -87,7 +87,7 @@ abstract class Widget extends View {
       _shadow.update(newShadow, tree, frame);
     } else {
       // Set the current element first because unmount clears the node cache
-      frame.currentElement = _path;
+      frame.visit(_path);
       _shadow.unmount(frame);
       _shadow = newShadow;
 

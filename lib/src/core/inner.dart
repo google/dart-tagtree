@@ -79,7 +79,7 @@ abstract class _Inner {
   void _updateInner(String path, newInner, newInnerHtml, ViewTree tree, NextFrame frame) {
     if (newInner == null) {
       _unmountInner(frame);
-      frame.currentElement = path;
+      frame.visit(path);
       if (newInnerHtml != null) {
         frame.setInnerHtml(newInnerHtml);
       } else {
@@ -91,9 +91,7 @@ abstract class _Inner {
       }
       _unmountInner(frame);
       print("setting text of ${path}");
-      frame
-        ..currentElement = path
-        ..setInnerText(newInner);
+      frame..visit(path)..setInnerText(newInner);
       _childText = newInner;
     } else if (newInner is View) {
       _updateChildren(path, [newInner], tree, frame);
@@ -121,9 +119,7 @@ abstract class _Inner {
     if (_children == null) {
       StringBuffer out = new StringBuffer();
       _mountInner(out, newChildren, null);
-      frame
-          ..currentElement = path
-          ..setInnerHtml(out.toString());
+      frame..visit(path)..setInnerHtml(out.toString());
       _children = newChildren;
       _childText = null;
       return;
@@ -151,9 +147,7 @@ abstract class _Inner {
         StringBuffer html = new StringBuffer();
         after.mount(html, path, depth);
 
-        frame
-          ..currentElement = path
-          ..replaceChildElement(i, html.toString());
+        frame..visit(path)..replaceChildElement(i, html.toString());
         tree._finishMount(after, frame);
         updatedChildren.add(after);
       }
@@ -163,14 +157,14 @@ abstract class _Inner {
     if (extraChildren < 0) {
       print("removing ${-extraChildren} children under ${path}");
       // trim to new size
-      frame.currentElement = path;
+      frame.visit(path);
       for (int i = _children.length - 1; i >= newChildren.length; i--) {
         frame.removeChild(i);
       }
     } else if (extraChildren > 0) {
       print("adding ${extraChildren} children under ${path}");
       // append  children
-      frame.currentElement = path;
+      frame.visit(path);
       for (int i = _children.length; i < newChildren.length; i++) {
         View child = newChildren[i];
         var out = new StringBuffer();

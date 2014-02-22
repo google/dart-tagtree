@@ -21,7 +21,9 @@ typedef Visitor(View v);
 /// in place. This is both more efficient and preserves state.
 abstract class View {
 
-  Ref _ref;
+  /// The owner's reference to this View. May be null.
+  final Ref _ref;
+
   bool _mounted = false;
   String _path;
   int _depth;

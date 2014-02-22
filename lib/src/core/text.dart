@@ -33,8 +33,6 @@ class Text extends View {
       return; // no internal state to update
     }
     value = nextVersion.value;
-    frame
-      ..currentElement = _path
-      ..setInnerText(value);
+    frame..visit(_path)..setInnerText(value);
   }
 }

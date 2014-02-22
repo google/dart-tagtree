@@ -92,7 +92,7 @@ class Elt extends View with _Inner {
 
   /// Updates DOM attributes and event handlers.
   void _updateDomProperties(Map<Symbol, dynamic> oldProps, NextFrame frame) {
-    frame.currentElement = _path;
+    frame.visit(_path);
 
     // Delete any removed props
     for (Symbol key in oldProps.keys) {

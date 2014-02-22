@@ -15,7 +15,7 @@ abstract class NextFrame {
   void detachElement(String path);
 
   /// Sets the element that most other methods act on.
-  set currentElement(String path);
+  void visit(String path);
 
   /// Creates a new Element with the given HTML and replaces the current element.
   void replaceElement(String html);
