@@ -5,8 +5,10 @@ class Elt extends View with _Inner {
   final String tagName;
   Map<Symbol, dynamic> _props;
 
-  Elt(this.tagName, Map<Symbol, dynamic> props) : super(props[#ref]),
-      _props = props {
+  Elt(this.tagName, Map<Symbol, dynamic> props)
+    : _props = props,
+    super(props[#ref]) {
+
     for (Symbol key in props.keys) {
       if (!_allEltProps.contains(key)) {
         throw "property not supported: ${key}";

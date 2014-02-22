@@ -3,12 +3,12 @@ part of core;
 /// A Widget is a View that acts as a template. Its render() method typically
 /// returns elements to be rendered
 abstract class Widget extends View {
-  Map<Symbol, dynamic> _props;
+  Props _props;
   State _state, _nextState;
   View _shadow;
   ViewTree _tree;
 
-  Widget(Map<Symbol, dynamic> props) : super(props[#ref]), _props = props;
+  Widget(Map<Symbol, dynamic> props) : _props = new Props(props), super(props[#ref]);
 
   /// Constructs the initial state when the Widget is mounted.
   /// (Stateful widgets should override.)
@@ -98,7 +98,7 @@ abstract class Widget extends View {
     }
   }
 
-  Props get props => new Props(_props);
+  Props get props => _props;
 }
 
 /// The internal state of a stateful Widget.
