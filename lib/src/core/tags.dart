@@ -57,7 +57,6 @@ class Tags implements TagsApi {
         return new Elt(tag, inv.namedArguments);
       }
     }
-    throw new NoSuchMethodError(this,
-        inv.memberName, inv.positionalArguments, inv.namedArguments);
+    return super.noSuchMethod(inv);
   }
 }

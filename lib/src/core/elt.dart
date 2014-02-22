@@ -18,7 +18,7 @@ class Elt extends View with _Inner {
     assert(_props[#value] == null || _props[#defaultValue] == null);
   }
 
-  Map<Symbol,dynamic> get props => _props;
+  Props get props => new Props(_props);
 
   void doMount(StringBuffer out) {
     _writeStartTag(out);

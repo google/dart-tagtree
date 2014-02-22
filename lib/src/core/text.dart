@@ -13,7 +13,7 @@ class Text extends View {
   String value;
   Text(this.value, {Ref ref}) : super(ref);
 
-  Map<Symbol,dynamic> get props => {#value: value};
+  Props get props => new Props({#value: value});
 
   void doMount(StringBuffer out) {
     // need to surround with a span to support incremental updates to a child

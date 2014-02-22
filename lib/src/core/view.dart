@@ -38,8 +38,8 @@ abstract class View {
   /// The depth of this node in the view tree. Non-null when mounted;
   int get depth => _depth;
 
-  /// Returns the view's current props (for debugging).
-  Map<Symbol,dynamic> get props;
+  /// Returns the view's current props.
+  Props get props;
 
   /// Writes the view tree to HTML and assigns an id to each View.
   ///
@@ -117,5 +117,22 @@ class Ref {
 
   void _set(View target) {
     _view = target;
+  }
+}
+
+/// A wrapper allowing a View's props to be accessed using dot notation.
+@proxy
+class Props {
+  final Map<Symbol, dynamic> _props;
+
+  Props(this._props);
+
+  dynamic noSuchMethod(Invocation inv) {
+    if (inv.isGetter) {
+      if (_props.containsKey(inv.memberName)) {
+        return _props[inv.memberName];
+      }
+    }
+    return super.noSuchMethod(inv);
   }
 }

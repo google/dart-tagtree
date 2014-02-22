@@ -98,7 +98,7 @@ abstract class Widget extends View {
     }
   }
 
-  Map<Symbol, dynamic> get props => _props;
+  Props get props => new Props(_props);
 }
 
 /// The internal state of a stateful Widget.

@@ -8,24 +8,18 @@ void main() {
 }
 
 class Clicker extends Widget {
-  bool reversed = false;
-
-  Clicker(value) : super({#value: value});
+  Clicker(label) : super({#label: label});
 
   get firstState => new ClickerState();
   ClickerState get state => super.state;
   ClickerState get nextState => super.nextState;
 
   onClick(e) {
-    nextState
-      ..reversed = !state.reversed;
+    nextState.reversed = !state.reversed;
   }
 
   View render() {
-    var text = props[#value];
-    if (state.reversed) {
-      text = reverseString(props[#value]);
-    }
+    var text = state.reversed ? reverseString(props.label) : props.label;
     return $.Div(clazz: "sample_text", onClick: onClick, inner: text);
   }
 }

@@ -12,7 +12,7 @@ class TodoList extends Widget {
 
   View render() {
     createItem(itemText) => $.Li(inner: itemText);
-    return $.Ul(inner: props[#items].map(createItem));
+    return $.Ul(inner: props.items.map(createItem));
   }
 }
 

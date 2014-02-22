@@ -11,5 +11,5 @@ class HelloMessage extends Widget {
   HelloMessage(String name) : super({#name: name});
 
   View render() =>
-      $.Div(inner: "Hello, ${props[#name]}");
+      $.Div(inner: "Hello, ${props.name}");
 }
