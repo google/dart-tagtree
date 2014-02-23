@@ -168,7 +168,7 @@ class SyncFrame implements core.NextFrame {
       HtmlElement elt = _elt;
       if (elt is InputElement) {
         elt.value = value;
-      } else if(elt is TextAreaElement) {
+      } else if (elt is TextAreaElement) {
         elt.value = value;
       }
     }
@@ -235,6 +235,7 @@ NodeTreeSanitizer _sanitizer = new NodeTreeSanitizer(new NodeValidatorBuilder()
     ..add(new _AllowDataPath()));
 
 class _AllowDataPath implements NodeValidator {
-  bool allowsAttribute(Element elt, String att, String value) => att == "data-path";
+  bool allowsAttribute(Element elt, String att, String value) =>
+      att == "data-path";
   bool allowsElement(Element elt) => false;
 }

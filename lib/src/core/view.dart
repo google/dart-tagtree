@@ -127,7 +127,7 @@ class Props {
 
   Props(this._props);
 
-  dynamic noSuchMethod(Invocation inv) {
+  noSuchMethod(Invocation inv) {
     if (inv.isGetter) {
       if (_props.containsKey(inv.memberName)) {
         return _props[inv.memberName];
