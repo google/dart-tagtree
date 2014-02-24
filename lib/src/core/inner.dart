@@ -91,7 +91,9 @@ abstract class _Inner {
       }
       _unmountInner(frame);
       print("setting text of ${path}");
-      frame..visit(path)..setInnerText(newInner);
+      frame
+          ..visit(path)
+          ..setInnerText(newInner);
       _childText = newInner;
     } else if (newInner is View) {
       _updateChildren(path, [newInner], tree, frame);
@@ -114,12 +116,15 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(String path, List<View> newChildren, ViewTree tree, NextFrame frame) {
+  void _updateChildren(String path, List<View> newChildren, ViewTree
+      tree, NextFrame frame) {
 
     if (_children == null) {
       StringBuffer out = new StringBuffer();
       _mountInner(out, newChildren, null);
-      frame..visit(path)..setInnerHtml(out.toString());
+      frame
+          ..visit(path)
+          ..setInnerHtml(out.toString());
       _children = newChildren;
       _childText = null;
       return;
@@ -147,7 +152,9 @@ abstract class _Inner {
         StringBuffer html = new StringBuffer();
         after.mount(html, path, depth);
 
-        frame..visit(path)..replaceChildElement(i, html.toString());
+        frame
+            ..visit(path)
+            ..replaceChildElement(i, html.toString());
         tree._finishMount(after, frame);
         updatedChildren.add(after);
       }

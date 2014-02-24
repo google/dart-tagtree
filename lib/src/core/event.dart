@@ -22,7 +22,7 @@ class ChangeEvent extends ViewEvent {
   /// The new value in the <input> or <textarea> element.
   final value;
 
-  ChangeEvent(String path, this.value) : super(#onChange, path);
+  ChangeEvent(String path, this.value): super(#onChange, path);
 }
 
 typedef EventHandler(ViewEvent e);

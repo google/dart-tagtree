@@ -6,8 +6,8 @@ class Elt extends View with _Inner {
   Map<Symbol, dynamic> _props;
 
   Elt(this.tagName, Map<Symbol, dynamic> props)
-    : _props = props,
-    super(props[#ref]) {
+      : _props = props,
+        super(props[#ref]) {
 
     for (Symbol key in props.keys) {
       if (!_allEltProps.contains(key)) {
@@ -104,7 +104,7 @@ class Elt extends View with _Inner {
 
       if (_allHandlers.containsKey(key)) {
         _allHandlers[key].remove(path);
-      } else if(_allAtts.containsKey(key)) {
+      } else if (_allAtts.containsKey(key)) {
         print("removing property: ${tagName}");
         frame.removeAttribute(_allAtts[key]);
       }
