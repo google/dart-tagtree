@@ -11,9 +11,11 @@ part of core;
 /// special case and the Text class isn't used.
 class Text extends View {
   String value;
-  Text(this.value, {Ref ref}) : super(ref);
+  Text(this.value, {Ref ref}): super(ref);
 
-  Props get props => new Props({#value: value});
+  Props get props => new Props({
+    #value: value
+  });
 
   void doMount(StringBuffer out) {
     // need to surround with a span to support incremental updates to a child
@@ -33,6 +35,8 @@ class Text extends View {
       return; // no internal state to update
     }
     value = nextVersion.value;
-    frame..visit(_path)..setInnerText(value);
+    frame
+        ..visit(_path)
+        ..setInnerText(value);
   }
 }

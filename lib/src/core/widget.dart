@@ -8,7 +8,9 @@ abstract class Widget extends View {
   View _shadow;
   ViewTree _tree;
 
-  Widget(Map<Symbol, dynamic> props) : _props = new Props(props), super(props[#ref]);
+  Widget(Map<Symbol, dynamic> props)
+      : _props = new Props(props),
+        super(props[#ref]);
 
   /// Constructs the initial state when the Widget is mounted.
   /// (Stateful widgets should override.)
