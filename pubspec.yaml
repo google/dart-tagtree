@@ -5,3 +5,4 @@ description: A framework for building HTML views using reactive programming.  In
 dependencies:
   browser: any
   markdown: any
+  unittest: any

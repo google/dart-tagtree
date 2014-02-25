@@ -41,10 +41,17 @@ final Map<Symbol, String> _allAtts = {
   #value: "value",
 };
 
+final Map<Symbol, String> _eltPropToField = {
+  #ref: "ref",
+  #inner: "inner",
+  #innerHtml: "innerHtml",
+  #defaultValue: "defaultValue"
+}
+  ..addAll(_allAtts);
+
 final Set<Symbol> _allEltProps = new Set()
-    ..addAll(_allAtts.keys)
     ..addAll(_allHandlers.keys)
-    ..addAll([#ref, #inner, #innerHtml, #defaultValue]);
+    ..addAll(_eltPropToField.keys);
 
 /// A factory for constructing the corresponding view for each HTML Element.
 /// (Typically assigned to '$'.)
