@@ -31,7 +31,7 @@ class ViewTree {
     });
   }
 
-  bool _inViewletEvent = false;
+  bool _inViewEvent = false;
 
   /// Calls any event handlers in this tree.
   /// On return, there may be some dirty widgets to be re-rendered.
@@ -39,12 +39,12 @@ class ViewTree {
   /// for example, due to a timer.
   /// TODO: bubbling. For now, just exact match.
   void dispatchEvent(ViewEvent e) {
-    if (_inViewletEvent) {
+    if (_inViewEvent) {
       // React does this too; see EVENT_SUPPRESSION
       print("ignored ${e.type} received while processing another event");
       return;
     }
-    _inViewletEvent = true;
+    _inViewEvent = true;
     try {
       print("\n### ${e.type}");
       if (e.targetPath != null) {
@@ -55,7 +55,7 @@ class ViewTree {
         }
       }
     } finally {
-      _inViewletEvent = false;
+      _inViewEvent = false;
     }
   }
 
