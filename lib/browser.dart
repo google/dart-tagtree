@@ -1,9 +1,9 @@
 /**
- * Glue code connecting the Viewlet core (which is browser-independent) to the dart:html library.
+ * Glue code connecting the ViewTree core (which is browser-independent) to the dart:html library.
  */
 library browser;
 
-import 'package:viewlet/core.dart' as core;
+import 'package:viewtree/core.dart' as core;
 
 import 'dart:async' show StreamSubscription;
 import 'dart:html';

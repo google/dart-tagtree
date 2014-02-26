@@ -1,7 +1,7 @@
 /**
- * This library includes all browser-independent code of the Viewlet framework.
+ * This library includes all browser-independent code of the ViewTree framework.
  *
- * To run a viewlet in a browser, you also need package:viewlet/browser.dart.
+ * To run a view tree in a browser, you also need package:viewtree/browser.dart.
  */
 library core;
 

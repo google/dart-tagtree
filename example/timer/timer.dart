@@ -1,6 +1,6 @@
 import 'dart:async' show Timer;
-import 'package:viewlet/core.dart';
-import 'package:viewlet/browser.dart';
+import 'package:viewtree/core.dart';
+import 'package:viewtree/browser.dart';
 
 var $ = new Tags();
 
