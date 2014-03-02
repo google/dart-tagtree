@@ -16,12 +16,10 @@ class TodoList extends Widget {
   }
 }
 
-class TodoApp extends Widget {
+class TodoApp extends Widget<TodoState> {
   TodoApp() : super({});
 
   get firstState => new TodoState();
-  TodoState get state => super.state;
-  TodoState get nextState => super.nextState;
 
   void onChange(ChangeEvent e) {
     nextState.text = e.value;

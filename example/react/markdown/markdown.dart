@@ -8,12 +8,10 @@ void main() {
   mount(new MarkdownEditor(), "#container");
 }
 
-class MarkdownEditor extends Widget {
+class MarkdownEditor extends Widget<EditorState> {
   MarkdownEditor() : super({});
 
   get firstState => new EditorState();
-  EditorState get state => super.state;
-  EditorState get nextState => super.nextState;
 
   void handleChange(e) {
     nextState.value = e.value;

@@ -8,14 +8,12 @@ void main() {
   mount(new TimerWidget(), "#container");
 }
 
-class TimerWidget extends Widget {
+class TimerWidget extends Widget<TimerState> {
   Timer timer;
 
   TimerWidget() : super({});
 
   get firstState => new TimerState();
-  TimerState get state => super.state;
-  TimerState get nextState => super.nextState;
 
   didMount() {
     timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());

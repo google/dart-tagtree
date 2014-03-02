@@ -2,7 +2,7 @@ part of core;
 
 /// A Widget is a View that acts as a template. Its render() method typically
 /// returns elements to be rendered
-abstract class Widget extends View {
+abstract class Widget<S extends State> extends View {
   Props _props;
   State _state, _nextState;
   View _shadow;
@@ -14,17 +14,15 @@ abstract class Widget extends View {
 
   /// Constructs the initial state when the Widget is mounted.
   /// (Stateful widgets should override.)
-  State get firstState => null;
+  S get firstState => null;
 
   /// Returns the currently rendered state. This should be treated as read-only.
-  /// (Subclasses may want to override to change the return type.)
-  State get state => _state;
+  S get state => _state;
 
   /// Returns the state that will be rendered on the next update.
   /// This is typically used to update the state due to an event.
   /// Accessing nextState automatically marks the Widget as dirty.
-  /// (Subclasses may want to override to change the return type.)
-  State get nextState {
+  S get nextState {
     assert(_mounted);
     if (_nextState == null) {
       _nextState = _state.clone();
@@ -35,7 +33,7 @@ abstract class Widget extends View {
 
   /// Sets the state to be rendered on the next update.
   /// Setting the nextState automatically marks the Widget as dirty.
-  void set nextState(State s) {
+  void set nextState(S s) {
     _nextState = s;
     invalidate();
   }

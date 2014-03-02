@@ -28,14 +28,12 @@ void main() {
   mount(new Sunflower(), "#sunflower");
 }
 
-class Sunflower extends Widget {
+class Sunflower extends Widget<SunflowerState> {
   final _canvas = new ElementRef<CanvasElement>();
 
   Sunflower() : super({});
 
   get firstState => new SunflowerState();
-  SunflowerState get state => super.state;
-  SunflowerState get nextState => super.nextState;
 
   void onChange(ChangeEvent e) {
     nextState.seeds = int.parse(e.value);
