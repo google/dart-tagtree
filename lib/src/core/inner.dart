@@ -90,7 +90,6 @@ abstract class _Inner {
         return;
       }
       _unmountInner(frame);
-      print("setting text of ${path}");
       frame
           ..visit(path)
           ..setInnerText(newInner);
@@ -145,7 +144,6 @@ abstract class _Inner {
         updatedChildren.add(before);
       } else {
         String childPath = "${path}/${i}";
-        print("replacing ${childPath} from ${before.runtimeType} to ${after.runtimeType}");
 
         before.unmount(frame);
 
@@ -162,14 +160,12 @@ abstract class _Inner {
 
     int extraChildren = newChildren.length - _children.length;
     if (extraChildren < 0) {
-      print("removing ${-extraChildren} children under ${path}");
       // trim to new size
       frame.visit(path);
       for (int i = _children.length - 1; i >= newChildren.length; i--) {
         frame.removeChild(i);
       }
     } else if (extraChildren > 0) {
-      print("adding ${extraChildren} children under ${path}");
       // append  children
       frame.visit(path);
       for (int i = _children.length; i < newChildren.length; i++) {

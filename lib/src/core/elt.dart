@@ -66,8 +66,8 @@ class Elt extends View with _Inner implements Jsonable {
   }
 
   void traverse(Visitor callback) {
-    callback(this);
     _traverseInner(callback);
+    callback(this);
   }
 
   void doUnmount(NextFrame frame) {
@@ -76,20 +76,17 @@ class Elt extends View with _Inner implements Jsonable {
       Map m = _allHandlers[key];
       m.remove(path);
     }
-    print("unmount: ${_path}");
   }
 
   bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
 
   void update(Elt nextVersion, ViewTree tree, NextFrame frame) {
     if (nextVersion == null) {
-      print("no change to Elt ${tagName}: ${_path}");
       return; // no internal state to update
     }
     Map<Symbol, dynamic> oldProps = _props;
     _props = nextVersion._props;
 
-    print("updating Elt ${tagName}: ${_path}");
     _updateDomProperties(oldProps, frame);
     _updateInner(_path, _props[#inner], _props[#innerHtml], tree, frame);
   }
@@ -107,7 +104,6 @@ class Elt extends View with _Inner implements Jsonable {
       if (_allHandlers.containsKey(key)) {
         _allHandlers[key].remove(path);
       } else if (_allAtts.containsKey(key)) {
-        print("removing property: ${tagName}");
         frame.removeAttribute(_allAtts[key]);
       }
     }
@@ -149,6 +145,8 @@ String _makeDomVal(Symbol key, val) {
     } else {
       throw "bad argument for clazz: ${val}";
     }
+  } else if (val is int) {
+    return val.toString();
   } else {
     return val;
   }

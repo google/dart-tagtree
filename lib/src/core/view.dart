@@ -84,7 +84,7 @@ abstract class View {
   /// Subclass hook for implementing unmount.
   void doUnmount(NextFrame frame);
 
-  /// Performs a pre-order traversal of all the views in the view tree.
+  /// Performs a post-order traversal of all the views in the view tree.
   void traverse(Visitor callback);
 
   /// Returns true if we can do an in-place update that sets the props to those of the given view.
@@ -104,6 +104,9 @@ abstract class View {
   /// (This should only be called by the framework; it is called within a
   /// requestAnimationFrame callback.)
   void update(View nextVersion, ViewTree tree, NextFrame nextFrame);
+
+  /// Lifecycle hook called after the DOM has been updated.
+  void didUpdate() {}
 }
 
 /// Holds a reference to a view.
@@ -115,8 +118,14 @@ class Ref {
 
   View get view => _view;
 
+  /// Subclass hook for cleaning up on unmount.
+  void onDetach() {}
+
   void _set(View target) {
     _view = target;
+    if (_view == null) {
+      onDetach();
+    }
   }
 }
 

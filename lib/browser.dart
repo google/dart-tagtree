@@ -11,19 +11,31 @@ import 'dart:collection' show HashMap;
 
 int _treeIdCounter = 0;
 
-/**
- * Starts running a View.
- *
- * The CSS selectors must point to a single HtmlElement.
- * Renders the first frame inside the container, then starts listening for events.
- * Postcondition: all Views under root are mounted and rendered.
- */
+
+/// Starts running a View.
+///
+/// The CSS selectors must point to a single HtmlElement.
+/// Renders the first frame inside the container, then starts listening for events.
+/// Postcondition: all Views under root are mounted and rendered.
 void mount(core.View root, String selectors) {
   HtmlElement container = querySelectorAll(selectors).single;
-  ElementCache cache = new ElementCache(container);
+  _ElementCache cache = new _ElementCache(container);
   int id = _treeIdCounter++;
-  core.ViewTree tree = new core.ViewTree.mount(id, new BrowserEnv(cache), root, new SyncFrame(cache));
+  core.ViewTree tree = new core.ViewTree.mount(id, new _BrowserEnv(cache), root, new _SyncFrame(cache));
   _listenForEvents(tree, container);
+}
+
+/// A reference that also allows access to the DOM Element corresponding
+/// to a View.
+class ElementRef<E extends HtmlElement> extends core.Ref {
+  _ElementCache cache;
+
+  /// Returns the element, if mounted.
+  E get elt => cache.get(view.path);
+
+  onDetach() {
+    cache = null;
+  }
 }
 
 void _listenForEvents(core.ViewTree tree, HtmlElement container) {
@@ -58,24 +70,24 @@ void _listenForEvents(core.ViewTree tree, HtmlElement container) {
   // TODO: remove handlers on unmount.
 }
 
-class BrowserEnv implements core.TreeEnv {
-  final ElementCache cache;
+class _BrowserEnv implements core.TreeEnv {
+  final _ElementCache cache;
 
-  BrowserEnv(this.cache);
+  _BrowserEnv(this.cache);
 
   @override
   void requestFrame(core.ViewTree tree) {
     window.animationFrame.then((t) {
-      tree.render(new SyncFrame(cache));
+      tree.render(new _SyncFrame(cache));
     });
   }
 }
 
-class ElementCache {
+class _ElementCache {
   final HtmlElement container;
   final Map<String, HtmlElement> idToNode = new HashMap();
 
-  ElementCache(this.container);
+  _ElementCache(this.container);
 
   HtmlElement get(String path) {
     HtmlElement node = idToNode[path];
@@ -100,15 +112,16 @@ class ElementCache {
 }
 
 /// An implementation of NextFrame that applies frame mutations immediately to the DOM.
-class SyncFrame implements core.NextFrame {
+class _SyncFrame implements core.NextFrame {
 
-  final ElementCache cache;
+  final _ElementCache cache;
   final Map<String, StreamSubscription> formSubscriptions = {};
 
   /// The current element. Most methods operate on this element.
   HtmlElement _elt;
+  String _path;
 
-  SyncFrame(this.cache);
+  _SyncFrame(this.cache);
 
   @override
   void mount(String html) {
@@ -116,7 +129,7 @@ class SyncFrame implements core.NextFrame {
   }
 
   @override
-  void attachElement(core.ViewTree tree, String path, String tag) {
+  void attachElement(core.ViewTree tree, core.Ref ref, String path, String tag) {
     if (tag == "form") {
       // onSubmit doesn't bubble, so install it here.
       FormElement elt = cache.get(path);
@@ -129,6 +142,9 @@ class SyncFrame implements core.NextFrame {
         e.stopPropagation();
         tree.dispatchEvent(new core.ViewEvent(#onSubmit, path));
       });
+    }
+    if (ref is ElementRef) {
+      ref.cache = cache;
     }
   }
 
@@ -146,6 +162,7 @@ class SyncFrame implements core.NextFrame {
   void visit(String path) {
     assert(path != null);
     _elt = cache.get(path);
+    _path = path;
     assert(_elt is HtmlElement);
   }
 
@@ -161,7 +178,6 @@ class SyncFrame implements core.NextFrame {
 
   @override
   void setAttribute(String key, String value) {
-    print("setting attribute: ${key}='${value}'");
     _elt.setAttribute(key, value);
     // Setting the "value" attribute on an input element doesn't actually change what's in the text box.
     if (key == "value") {

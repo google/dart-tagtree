@@ -47,8 +47,8 @@ abstract class Widget extends View {
   }
 
   void traverse(callback) {
-    callback(this);
     _shadow.traverse(callback);
+    callback(this);
   }
 
   void doUnmount(NextFrame frame) {
@@ -74,8 +74,6 @@ abstract class Widget extends View {
   void update(Widget nextVersion, ViewTree tree, NextFrame frame) {
     assert(_mounted);
 
-    print("refresh Widget: ${_path}");
-
     if (_nextState != null) {
       _state = _nextState;
       _nextState = null;
@@ -98,6 +96,7 @@ abstract class Widget extends View {
       frame.replaceElement(html.toString());
       tree._finishMount(_shadow, frame);
     }
+    tree._updated.add(this);
   }
 
   Props get props => _props;

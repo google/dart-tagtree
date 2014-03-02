@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-var $ = new Tags();
+final $ = new Tags();
 
 void main() {
   mount(new TodoApp(), "#container");

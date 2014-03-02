@@ -23,7 +23,7 @@ class ViewTree {
   void _finishMount(View subtreeRoot, NextFrame frame) {
     subtreeRoot.traverse((View v) {
       if (v is Elt) {
-        frame.attachElement(this, v.path, v.tagName);
+        frame.attachElement(this, v._ref, v.path, v.tagName);
       } else if (v is Widget) {
         v._tree = this;
       }
@@ -50,7 +50,6 @@ class ViewTree {
       if (e.targetPath != null) {
         EventHandler h = _allHandlers[e.type][e.targetPath];
         if (h != null) {
-          print("dispatched");
           h(e);
         }
       }
@@ -60,9 +59,11 @@ class ViewTree {
   }
 
   Set<Widget> _dirty = new Set();
+  Set<Widget> _updated = new Set();
 
   /// Re-renders the dirty widgets in this tree.
   void render(NextFrame frame) {
+    assert(_updated.isEmpty);
     List<Widget> batch = new List.from(_dirty);
     _dirty.clear();
 
@@ -71,6 +72,11 @@ class ViewTree {
     for (Widget w in batch) {
       w.update(null, this, frame);
     }
+
+    for (Widget w in _updated) {
+      w.didUpdate();
+    }
+    _updated.clear();
 
     // No widgets should be invalidated while rendering.
     assert(_dirty.isEmpty);

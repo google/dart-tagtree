@@ -2,7 +2,7 @@ import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 import 'package:markdown/markdown.dart' show markdownToHtml;
 
-var $ = new Tags();
+final $ = new Tags();
 
 void main() {
   mount(new MarkdownEditor(), "#container");
