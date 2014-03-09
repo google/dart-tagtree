@@ -1,8 +1,9 @@
 name: viewtree
 version: 0.1.0
 author: Brian Slesinsky
-description: A framework for building HTML views using reactive programming.  Inspired by the React JavaScript library.
+description: A framework for building HTML views using reactive programming. Inspired by the React JavaScript library.
 dependencies:
   browser: any
+dev_dependencies:
   markdown: any
   unittest: any

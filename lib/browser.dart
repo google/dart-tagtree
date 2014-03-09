@@ -11,18 +11,39 @@ import 'dart:collection' show HashMap;
 
 int _treeIdCounter = 0;
 
+Map<String, core.ViewTree> _idToTree = {};
 
 /// Starts running a View.
 ///
 /// The CSS selectors must point to a single HtmlElement.
+/// If the element already contains a View, it will be updated or replaced.
 /// Renders the first frame inside the container, then starts listening for events.
 /// Postcondition: all Views under root are mounted and rendered.
 void mount(core.View root, String selectors) {
   HtmlElement container = querySelectorAll(selectors).single;
+  var prev = getTreeByContainer(container);
+  if (prev != null) {
+    prev.replaceRoot(root);
+    return;
+  }
   _ElementCache cache = new _ElementCache(container);
   int id = _treeIdCounter++;
   core.ViewTree tree = new core.ViewTree.mount(id, new _BrowserEnv(cache), root, new _SyncFrame(cache));
   _listenForEvents(tree, container);
+}
+
+core.ViewTree getTreeByContainer(HtmlElement container) {
+  var first = container.firstChild;
+  if (first == null) {
+    return null;
+  }
+  if (first is Element) {
+    String id = first.getAttribute("data-path");
+    if (id != null) {
+      return _idToTree[id];
+    }
+  }
+  return null;
 }
 
 /// A reference that also allows access to the DOM Element corresponding

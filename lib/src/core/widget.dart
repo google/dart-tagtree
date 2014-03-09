@@ -2,7 +2,7 @@ part of core;
 
 /// A Widget is a View that acts as a template. Its render() method typically
 /// returns elements to be rendered
-abstract class Widget<S extends State> extends View {
+abstract class Widget<S extends State> extends View implements _Redrawable {
   Props _props;
   State _state, _nextState;
   View _shadow;
@@ -66,6 +66,8 @@ abstract class Widget<S extends State> extends View {
   /// Constructs another View to be rendered in place of this Widget.
   /// (This is somewhat similar to "shadow DOM".)
   View render();
+
+  void _redraw(ViewTree tree, NextFrame frame) => update(null, tree, frame);
 
   bool canUpdateTo(View other) => runtimeType == other.runtimeType;
 

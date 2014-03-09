@@ -5,6 +5,7 @@ part of core;
 abstract class TagsApi {
   View Div({id, clazz, onClick, inner, innerHtml, ref});
   View Span({id, clazz, onClick, inner, innerHtml, ref});
+
   View Header({id, clazz, onClick, inner, innerHtml, ref});
   View Footer({id, clazz, onClick, inner, innerHtml, ref});
 
@@ -13,6 +14,7 @@ abstract class TagsApi {
   View H3({id, clazz, onClick, inner, innerHtml, ref});
 
   View P({id, clazz, onClick, inner, innerHtml, ref});
+  View Pre({id, clazz, onClick, inner, innerHtml, ref});
 
   View Ul({id, clazz, onClick, inner, innerHtml, ref});
   View Li({id, clazz, onClick, inner, innerHtml, ref});
@@ -37,6 +39,7 @@ final Map<Symbol, String> _allTags = {
   #H3: "h3",
 
   #P: "p",
+  #Pre: "pre",
 
   #Ul: "ul",
   #Li: "li",
