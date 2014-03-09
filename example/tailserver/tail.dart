@@ -11,24 +11,30 @@ final SAFE_FILE_PATH = new RegExp(r"^/(\w+/)*\w+(\.\w+)*$");
 final FILE_EXTENSION = new RegExp(r"\.(\w+)$");
 
 main(List<String> args) {
-  if (args.length != 1) {
+  if (args.length == 0) {
+    start(new File(Platform.script.toFilePath()));
+  } else if (args.length == 1) {
+    start(new File(args[0]));
+  } else {
     exitUsage();
   }
+}
+
+start(File tailFile) {
   if (!FileSystemEntity.isWatchSupported) {
     print("Sorry, file watching isn't supported on this OS.");
     exit(1);
   }
-  var tailFile = new File(args[0]);
   if (!tailFile.existsSync()) {
-    print("file doesn't exist: ${args[0]}");
+    print("file doesn't exist: ${tailFile}");
     exitUsage();
   }
 
   String webDir = Platform.script.resolve("web").toFilePath();
-  String packagesDir = Platform.script.resolve('../../../packages').toFilePath();
+  String packagesDir = Platform.script.resolve('packages').toFilePath();
 
   HttpServer.bind("localhost", 8080).then((server) {
-    print("server is ready at http://localhost:8080/");
+    print("\nThe server is ready. Please connect to http://localhost:8080 using Dartium\n");
     server.listen((request) {
       String path = request.uri.path;
       if (path == "/") {
@@ -105,7 +111,6 @@ sendFile(HttpRequest request, String filePath) {
     String extension = (m == null) ? null : m.group(1);
     var type = chooseContentType(extension);
 
-    print("sending file for ${request.uri.path} as ${type}");
     request.response.headers.contentType = type;
     f.openRead().pipe(request.response).then((_) {
       request.response.close();
@@ -171,4 +176,3 @@ Future<List<String>> lastLines(File f, int linesWanted, {int sizeGuess}) {
     });
   });
 }
-
