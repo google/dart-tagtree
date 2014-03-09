@@ -171,3 +171,4 @@ Future<List<String>> lastLines(File f, int linesWanted, {int sizeGuess}) {
     });
   });
 }
+

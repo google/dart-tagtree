@@ -11,17 +11,19 @@ import 'dart:collection' show HashMap;
 
 int _treeIdCounter = 0;
 
-Map<String, core.ViewTree> _idToTree = {};
-
 /// Starts running a View.
 ///
-/// The CSS selectors must point to a single HtmlElement.
-/// If the element already contains a View, it will be updated or replaced.
-/// Renders the first frame inside the container, then starts listening for events.
-/// Postcondition: all Views under root are mounted and rendered.
+/// The CSS selectors must point to a single container element of type HtmlElement.
+///
+/// If the container element is empty, immediately renders the first frame inside the
+/// container and starts listening for events. Postcondition: all Views under root are
+/// mounted and rendered.
+///
+/// If the container element already contains a View, it will be replaced when the next
+/// animation frame is rendered.
 void mount(core.View root, String selectors) {
   HtmlElement container = querySelectorAll(selectors).single;
-  var prev = getTreeByContainer(container);
+  var prev = _getTreeByContainer(container);
   if (prev != null) {
     prev.replaceRoot(root);
     return;
@@ -29,21 +31,25 @@ void mount(core.View root, String selectors) {
   _ElementCache cache = new _ElementCache(container);
   int id = _treeIdCounter++;
   core.ViewTree tree = new core.ViewTree.mount(id, new _BrowserEnv(cache), root, new _SyncFrame(cache));
+  _pathToTree[tree.path] = tree;
   _listenForEvents(tree, container);
 }
 
-core.ViewTree getTreeByContainer(HtmlElement container) {
-  var first = container.firstChild;
-  if (first == null) {
-    return null;
+/// Mounts a stream of views deserialized from a websocket.
+///
+/// The CSS selectors point to the container element where the views will be displayed.
+/// The ruleSet will be used to deserialize the stream. (Only tags defined in the ruleset
+/// can be deserialized.)
+void mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) {
+  if (rules == null) {
+    rules = core.Elt.rules;
   }
-  if (first is Element) {
-    String id = first.getAttribute("data-path");
-    if (id != null) {
-      return _idToTree[id];
-    }
-  }
-  return null;
+  var ws = new WebSocket(webSocketUrl);
+  ws.onMessage.listen((MessageEvent e) {
+    print("\nrendering view from socket");
+    core.View view = rules.decodeTree(e.data);
+    mount(view, "#view");
+  });
 }
 
 /// A reference that also allows access to the DOM Element corresponding
@@ -57,6 +63,22 @@ class ElementRef<E extends HtmlElement> extends core.Ref {
   onDetach() {
     cache = null;
   }
+}
+
+Map<String, core.ViewTree> _pathToTree = {};
+
+core.ViewTree _getTreeByContainer(HtmlElement container) {
+  var first = container.firstChild;
+  if (first == null) {
+    return null;
+  }
+  if (first is Element) {
+    String id = first.getAttribute("data-path");
+    if (id != null) {
+      return _pathToTree[id];
+    }
+  }
+  return null;
 }
 
 void _listenForEvents(core.ViewTree tree, HtmlElement container) {
