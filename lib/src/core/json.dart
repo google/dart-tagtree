@@ -39,6 +39,11 @@ class JsonRuleSet {
     _rules[rule.tag] = rule;
   }
 
+  /// Returns true if there is a rule for the given tag.
+  bool supportsTag(String tag) {
+    return _rules.containsKey(tag);
+  }
+
   /// Converts a tree of Dart objects to JSON. The tree may contain values directly
   /// encodable as JSON (String, Map, List, and so on) and instances of
   /// Jsonable where [Jsonable.jsonTag] matches a rule in this ruleset.

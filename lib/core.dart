@@ -1,7 +1,8 @@
 /**
- * This library includes all browser-independent code of the ViewTree framework.
+ * This library includes all the shared code of the ViewTree framework.
  *
- * To run a view tree in a browser, you also need package:viewtree/browser.dart.
+ * To display a View in a browser, you also need package:viewtree/browser.dart.
+ * To create Views on the server, you also need package:viewtree/server.dart.
  */
 library core;
 
