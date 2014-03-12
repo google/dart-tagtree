@@ -41,7 +41,7 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
   void doMount(StringBuffer out) {
     _state = firstState;
     _shadow = render();
-    _shadow.mount(out, _path, _depth);
+    _shadow.mount(out, _path, _depth + 1);
   }
 
   void traverse(callback) {
@@ -92,7 +92,7 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
       _shadow = newShadow;
 
       StringBuffer html = new StringBuffer();
-      _shadow.mount(html, _path, _depth);
+      _shadow.mount(html, _path, _depth + 1);
       frame.replaceElement(html.toString());
       tree._finishMount(_shadow, frame);
     }
