@@ -37,18 +37,18 @@ abstract class ServerWidget extends core.View {
   void update(core.View nextVersion, core.ViewTree tree, core.NextFrame nextFrame) {}
 }
 
-/// A view container that renders to a WebSocket.
-class WebSocketViewSink {
+/// A view tree container that renders to a WebSocket.
+class WebSocketRoot {
   final WebSocket _socket;
   final core.JsonRuleSet _ruleSet;
 
-  WebSocketViewSink(this._socket, {core.JsonRuleSet rules}) :
+  WebSocketRoot(this._socket, {core.JsonRuleSet rules}) :
       _ruleSet = (rules == null) ? core.Elt.rules : rules;
 
   /// Replaces the view with a new version.
   ///
   /// Views that are supported by the ruleSet will be sent over the wire (including their children).
-  /// Widgets that cannot be sent over the wire will be rendered (recursively) until a
+  /// ServerWidgets cannot be sent over the wire and instead will be rendered (recursively) until a
   /// View is found that can be sent.
   void mount(core.View nextView) {
     while (!_canEncode(nextView)) {

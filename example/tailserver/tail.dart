@@ -49,10 +49,10 @@ start(File tailFile) {
       } else if (path == "/ws") {
         WebSocketTransformer.upgrade(request).then((WebSocket socket) {
           print("websocket connected");
-          var sink = new WebSocketViewSink(socket);
-          sink.mount(new TailView(watcher.currentValue));
+          var root = new WebSocketRoot(socket);
+          root.mount(new TailView(watcher.currentValue));
           watcher.onChange.listen((Tail t) {
-            sink.mount(new TailView(t));
+            root.mount(new TailView(t));
           });
         });
       } else if (path.startsWith("/packages/")) {
