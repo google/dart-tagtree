@@ -79,9 +79,9 @@ final $ = new Tags();
 
 /// TailView renders the tail of a file as a ViewTree.
 /// (This is an example of a server-side View.)
-class TailView extends Widget {
-  TailView(Tail tail) : super({#tail: tail});
-  Tail get tail => props.tail;
+class TailView extends ServerWidget {
+  final Tail tail;
+  TailView(this.tail);
 
   @override
   View render() {
@@ -224,4 +224,3 @@ ContentType chooseContentType(String extension) {
     return new ContentType("application", "binary");
   }
 }
-
