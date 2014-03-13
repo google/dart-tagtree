@@ -47,9 +47,8 @@ class WebSocketRoot {
 
   /// Replaces the view with a new version.
   ///
-  /// Views that are supported by the ruleSet will be sent over the wire (including their children).
-  /// ServerWidgets cannot be sent over the wire and instead will be rendered (recursively) until a
-  /// View is found that can be sent.
+  /// The previous view will be unmounted. Supports ServerWidget and Elts by default. Additional views
+  /// may be supported by passing a JsonRuleSet in the contructor.
   void mount(core.View nextView) {
     while (!_canEncode(nextView)) {
       if (nextView is ServerWidget) {
