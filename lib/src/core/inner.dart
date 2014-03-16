@@ -17,7 +17,7 @@ abstract class _Inner {
   // The Elt's depth.
   int get depth;
 
-  void _mountInner(StringBuffer out, Root root, inner, String innerHtml) {
+  void _mountInner(Transaction tx, StringBuffer out, inner, String innerHtml) {
     if (inner == null) {
       if (innerHtml != null) {
         // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)
@@ -27,7 +27,7 @@ abstract class _Inner {
       out.write(HTML_ESCAPE.convert(inner));
       _childText = inner;
     } else if (inner is View) {
-      _children = _mountChildren(out, root, [inner]);
+      _children = _mountChildren(tx, out, [inner]);
     } else if (inner is Iterable) {
       List<View> children = [];
       for (var item in inner) {
@@ -39,7 +39,7 @@ abstract class _Inner {
           throw "bad item in inner: ${item}";
         }
       }
-      _children = _mountChildren(out, root, children);
+      _children = _mountChildren(tx, out, children);
     }
   }
 
@@ -51,7 +51,7 @@ abstract class _Inner {
     }
   }
 
-  List<View> _mountChildren(StringBuffer out, Root root, List<View> children) {
+  List<View> _mountChildren(Transaction tx, StringBuffer out, List<View> children) {
     if (children.isEmpty) {
       return null;
     }
@@ -59,7 +59,7 @@ abstract class _Inner {
     String parentPath = path;
     int childDepth = depth + 1;
     for (int i = 0; i < children.length; i++) {
-      children[i].mount(out, root, "${parentPath}/${i}", childDepth);
+      children[i].mount(tx, out, "${parentPath}/${i}", childDepth);
     }
     return children;
   }
@@ -119,7 +119,7 @@ abstract class _Inner {
 
     if (_children == null) {
       StringBuffer out = new StringBuffer();
-      _mountInner(out, tx.root, newChildren, null);
+      _mountInner(tx, out, newChildren, null);
       tx.frame
           ..visit(path)
           ..setInnerHtml(out.toString());

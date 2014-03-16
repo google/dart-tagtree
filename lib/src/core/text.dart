@@ -17,7 +17,7 @@ class Text extends View {
     #value: value
   });
 
-  void doMount(StringBuffer out, Root _) {
+  void doMount(Transaction tx, StringBuffer out) {
     // need to surround with a span to support incremental updates to a child
     out.write("<span data-path=${_path}>${HTML_ESCAPE.convert(value)}</span>");
   }

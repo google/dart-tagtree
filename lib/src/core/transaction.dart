@@ -11,9 +11,9 @@ class Transaction {
     assert(next != null);
     if (current == null) {
       StringBuffer html = new StringBuffer();
-      next.mount(html, root, root.path, 0);
+      next.mount(this, html, root.path, 0);
       frame.mount(html.toString());
-      root._finishMount(next, frame);
+      _finishMount(next, frame);
       return next;
     } else if (root._top.canUpdateTo(next)) {
       print("updating current view at ${root.path}");
@@ -27,9 +27,9 @@ class Transaction {
       current.unmount(frame);
 
       var html = new StringBuffer();
-      next.mount(html, root, root.path, 0);
+      next.mount(this, html, root.path, 0);
       frame.replaceElement(html.toString());
-      root._finishMount(next, frame);
+      _finishMount(next, frame);
       return next;
     }
   }
@@ -41,26 +41,48 @@ class Transaction {
     owner._shadow.unmount(frame);
 
     var html = new StringBuffer();
-    owner._shadow.mount(html, root, path, owner.depth + 1);
+    owner._shadow.mount(this, html, path, owner.depth + 1);
     frame.replaceElement(html.toString());
-    root._finishMount(newShadow, frame);
+    _finishMount(newShadow, frame);
   }
 
   void mountNewChild(_Inner parent, View child, int childIndex) {
     var html = new StringBuffer();
-    child.mount(html, root, "${parent.path}/${childIndex}", parent.depth + 1);
+    child.mount(this, html, "${parent.path}/${childIndex}", parent.depth + 1);
     frame
       ..visit(parent.path)
       ..addChildElement(html.toString());
-    root._finishMount(child, frame);
+    _finishMount(child, frame);
   }
 
   void mountReplacementChild(_Inner parent, View child, int childIndex) {
     StringBuffer html = new StringBuffer();
-    child.mount(html, root, "${parent.path}/${childIndex}", parent.depth + 1);
+    child.mount(this, html, "${parent.path}/${childIndex}", parent.depth + 1);
     frame
         ..visit(parent.path)
         ..replaceChildElement(childIndex, html.toString());
-    root._finishMount(child, frame);
+    _finishMount(child, frame);
+  }
+
+  final List<Ref> _mountedRefs = <Ref>[];
+  final List<Elt> _mountedForms = <Elt>[];
+  final List<StreamSink> _didMountStreams = <StreamSink>[];
+
+  /// Finishes mounting a subtree after the DOM is created.
+  void _finishMount(View subtree, NextFrame frame) {
+    for (Ref r in _mountedRefs) {
+      frame.onRefMounted(r);
+    }
+    _mountedRefs.clear();
+
+    for (Elt form in _mountedForms) {
+      frame.onFormMounted(root, form.path);
+    }
+    _mountedForms.clear();
+
+    for (var s in _didMountStreams) {
+      s.add(true);
+    }
+    _didMountStreams.clear();
   }
 }

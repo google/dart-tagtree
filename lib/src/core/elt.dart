@@ -24,7 +24,7 @@ class Elt extends View with _Inner implements Jsonable {
 
   Props get props => new Props(_props);
 
-  void doMount(StringBuffer out, Root root) {
+  void doMount(Transaction tx, StringBuffer out) {
     _writeStartTag(out);
 
     if (tagName == "textarea") {
@@ -33,13 +33,13 @@ class Elt extends View with _Inner implements Jsonable {
         out.write(HTML_ESCAPE.convert(val));
       }
     } else {
-      _mountInner(out, root, _props[#inner], _props[#innerHtml]);
+      _mountInner(tx, out, _props[#inner], _props[#innerHtml]);
     }
 
     _writeEndTag(out);
 
     if (tagName == "form") {
-      root._mountedForms.add(this);
+      tx._mountedForms.add(this);
     }
   }
 

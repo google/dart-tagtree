@@ -45,13 +45,13 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
   Stream get didUpdate => _didUpdate.stream;
   Stream get willUnmount => _willUnmount.stream;
 
-  void doMount(StringBuffer out, Root root) {
-    _root = root;
+  void doMount(Transaction tx, StringBuffer out) {
+    _root = tx.root;
     _state = firstState;
     _shadow = render();
-    _shadow.mount(out, root, _path, _depth + 1);
+    _shadow.mount(tx, out, _path, _depth + 1);
     if (_didMount.hasListener) {
-      root._didMountStreams.add(_didMount.sink);
+      tx._didMountStreams.add(_didMount.sink);
     }
   }
 

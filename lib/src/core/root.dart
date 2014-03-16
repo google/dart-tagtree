@@ -39,28 +39,6 @@ class Root implements _Redrawable {
     _top = tx.mountAtRoot(_top, next);
   }
 
-  final List<Ref> _mountedRefs = <Ref>[];
-  final List<Elt> _mountedForms = <Elt>[];
-  final List<StreamSink> _didMountStreams = <StreamSink>[];
-
-  /// Finishes mounting a subtree after the DOM is created.
-  void _finishMount(View subtree, NextFrame frame) {
-    for (Ref r in _mountedRefs) {
-      frame.onRefMounted(r);
-    }
-    _mountedRefs.clear();
-
-    for (Elt form in _mountedForms) {
-      frame.onFormMounted(this, form.path);
-    }
-    _mountedForms.clear();
-
-    for (var s in _didMountStreams) {
-      s.add(true);
-    }
-    _didMountStreams.clear();
-  }
-
   bool _inViewEvent = false;
 
   /// Calls any event handlers in this tree.

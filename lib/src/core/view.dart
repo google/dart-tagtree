@@ -49,14 +49,14 @@ abstract class View {
   /// parent. When rendered to HTML, the path will show up in the data-path attribute.
   ///
   /// A Widget has the same path as the root node in its shadow tree (recursively).
-  void mount(StringBuffer out, Root root, String path, int depth) {
+  void mount(Transaction tx, StringBuffer out, String path, int depth) {
     _path = path;
     _depth = depth;
     _mounted = true;
-    doMount(out, root);
+    doMount(tx, out);
     if (_ref != null) {
       _ref._set(this);
-      root._mountedRefs.add(_ref);
+      tx._mountedRefs.add(_ref);
     }
   }
 
@@ -73,7 +73,7 @@ abstract class View {
   }
 
   /// Subclass hook for implementing mount.
-  void doMount(StringBuffer out, Root root);
+  void doMount(Transaction tx, StringBuffer out);
 
   /// Subclass hook for implementing unmount.
   void doUnmount(NextFrame frame);
