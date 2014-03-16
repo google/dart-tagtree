@@ -8,6 +8,7 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
   View _shadow;
   Root _root;
   final _didMount = new StreamController.broadcast();
+  final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
   Widget(Map<Symbol, dynamic> props)
@@ -41,7 +42,7 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
   }
 
   Stream get didMount => _didMount.stream;
-
+  Stream get didUpdate => _didUpdate.stream;
   Stream get willUnmount => _willUnmount.stream;
 
   void doMount(StringBuffer out, Root root) {
@@ -109,7 +110,9 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
       frame.replaceElement(html.toString());
       root._finishMount(_shadow, frame);
     }
-    root._updated.add(this);
+    if (_didUpdate.hasListener) {
+      root._needDidUpdate.add(_didUpdate.sink);
+    }
   }
 
   Props get props => _props;

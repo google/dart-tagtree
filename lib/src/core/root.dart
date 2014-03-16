@@ -61,7 +61,7 @@ class Root implements _Redrawable {
     }
   }
 
-  List<StreamSink> _needDidMount = new List<StreamSink>();
+  List<StreamSink> _needDidMount = <StreamSink>[];
 
   /// Finishes mounting a subtree after the DOM is created.
   void _finishMount(View subtree, NextFrame frame) {
@@ -106,11 +106,11 @@ class Root implements _Redrawable {
   }
 
   Set<_Redrawable> _dirty = new Set();
-  Set<Widget> _updated = new Set();
+  List<StreamSink> _needDidUpdate = <StreamSink>[];
 
   /// Re-renders the dirty widgets in this tree.
   void render(NextFrame frame) {
-    assert(_updated.isEmpty);
+    assert(_needDidUpdate.isEmpty);
     List<_Redrawable> batch = new List.from(_dirty);
     _dirty.clear();
 
@@ -120,10 +120,10 @@ class Root implements _Redrawable {
       r._redraw(frame);
     }
 
-    for (Widget w in _updated) {
-      w.didUpdate();
+    for (var s in _needDidUpdate) {
+      s.add(true);
     }
-    _updated.clear();
+    _needDidUpdate.clear();
 
     // No widgets should be invalidated while rendering.
     assert(_dirty.isEmpty);

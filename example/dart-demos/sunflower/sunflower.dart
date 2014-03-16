@@ -32,7 +32,8 @@ class Sunflower extends Widget<SunflowerState> {
   final _canvas = new ElementRef<CanvasElement>();
 
   Sunflower() : super({}) {
-    didMount.listen((_) => draw(_canvas.elt.context2D));
+    didMount.listen((_) => draw());
+    didUpdate.listen((_) => draw());
   }
 
   get firstState => new SunflowerState();
@@ -59,11 +60,9 @@ class Sunflower extends Widget<SunflowerState> {
     ]);
   }
 
-  @override
-  void didUpdate() => draw(_canvas.elt.context2D);
-
   /// Draw the complete figure for the current number of seeds.
-  void draw(CanvasRenderingContext2D context) {
+  void draw() {
+    CanvasRenderingContext2D context = _canvas.elt.context2D;
     int seeds = state.seeds;
     context.clearRect(0, 0, MAX_D, MAX_D);
     for (var i = 0; i < seeds; i++) {
