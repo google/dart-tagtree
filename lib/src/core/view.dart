@@ -84,26 +84,11 @@ abstract class View {
   /// Subclass hook for implementing unmount.
   void doUnmount(NextFrame frame);
 
-  /// Performs a post-order traversal of all the views in the view tree.
-  void traverse(Visitor callback);
-
   /// Returns true if we can do an in-place update that sets the props to those of the given view.
   ///
   /// If so, we can call refresh(). Otherwise, we must unmount the view and mount its replacement,
   /// so all state will be lost.
   bool canUpdateTo(View nextVersion);
-
-  /// Updates a view in place.
-  ///
-  /// After the update, it should have the same props as nextVersion and any DOM changes
-  /// needed should have been sent to nextFrame for rendering.
-  ///
-  /// If nextVersion is null, the props are unchanged, but a stateful view may apply any pending
-  /// state.
-  ///
-  /// (This should only be called by the framework; it is called within a
-  /// requestAnimationFrame callback.)
-  void update(View nextVersion, Transaction tx);
 }
 
 /// Holds a reference to a view.

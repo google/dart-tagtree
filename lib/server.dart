@@ -26,15 +26,7 @@ abstract class ServerWidget extends core.View {
   }
 
   @override
-  void traverse(callback(core.View v)) {
-    throw "not implemented";
-  }
-
-  @override
   bool canUpdateTo(core.View nextVersion) => false;
-
-  @override
-  void update(core.View nextVersion, core.Transaction tx) {}
 }
 
 /// A view tree container that renders to a WebSocket.

@@ -69,11 +69,6 @@ class Elt extends View with _Inner implements Jsonable {
     out.write("</${tagName}>");
   }
 
-  void traverse(Visitor callback) {
-    _traverseInner(callback);
-    callback(this);
-  }
-
   void doUnmount(NextFrame frame) {
     _unmountInner(frame);
     for (Symbol key in _allHandlers.keys) {
@@ -92,43 +87,8 @@ class Elt extends View with _Inner implements Jsonable {
     Map<Symbol, dynamic> oldProps = _props;
     _props = nextVersion._props;
 
-    _updateDomProperties(oldProps, tx.frame);
+    tx._updateDomProperties(_path, oldProps, _props);
     _updateInner(_path, _props[#inner], _props[#innerHtml], tx);
-  }
-
-  /// Updates DOM attributes and event handlers.
-  void _updateDomProperties(Map<Symbol, dynamic> oldProps, NextFrame frame) {
-    frame.visit(_path);
-
-    // Delete any removed props
-    for (Symbol key in oldProps.keys) {
-      if (_props.containsKey(key)) {
-        continue;
-      }
-
-      if (_allHandlers.containsKey(key)) {
-        _allHandlers[key].remove(path);
-      } else if (_allAtts.containsKey(key)) {
-        frame.removeAttribute(_allAtts[key]);
-      }
-    }
-
-    // Update any new or changed props
-    for (Symbol key in _props.keys) {
-      var oldVal = oldProps[key];
-      var newVal = _props[key];
-      if (oldVal == newVal) {
-        continue;
-      }
-
-      if (_allHandlers.containsKey(key)) {
-        _allHandlers[key][path] = newVal;
-      } else if (_allAtts.containsKey(key)) {
-        String name = _allAtts[key];
-        String val = _makeDomVal(key, newVal);
-        frame.setAttribute(name, val);
-      }
-    }
   }
 
   /// A ruleSet that can encode any Elt as JSON.

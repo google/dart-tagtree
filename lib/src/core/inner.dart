@@ -43,14 +43,6 @@ abstract class _Inner {
     }
   }
 
-  void _traverseInner(Visitor callback) {
-    if (_children != null) {
-      for (View child in _children) {
-        child.traverse(callback);
-      }
-    }
-  }
-
   List<View> _mountChildren(Transaction tx, StringBuffer out, List<View> children) {
     if (children.isEmpty) {
       return null;
@@ -139,7 +131,7 @@ abstract class _Inner {
       assert(after != null);
       if (before.canUpdateTo(after)) {
         // note: update may call frame.visit()
-        before.update(after, tx);
+        tx.update(before, after);
         updatedChildren.add(before);
       } else {
         before.unmount(tx.frame);

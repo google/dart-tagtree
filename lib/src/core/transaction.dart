@@ -28,7 +28,7 @@ class Transaction {
     _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
 
     for (Widget w in _widgetsToUpdate) {
-      w.update(null, this);
+      update(w, null);
     }
 
     _finish();
@@ -61,7 +61,7 @@ class Transaction {
       return next;
     } else if (current.canUpdateTo(next)) {
       print("updating current view at ${path}");
-      current.update(next, this);
+      update(current, next);
       return current;
     } else {
       print("replacing current view ${path}");
@@ -101,5 +101,83 @@ class Transaction {
     frame
         ..visit(parent.path)
         ..replaceChildElement(childIndex, html.toString());
+  }
+
+  /// Updates a view in place.
+  ///
+  /// After the update, it should have the same props as nextVersion and any DOM changes
+  /// needed should have been sent to nextFrame for rendering.
+  ///
+  /// If nextVersion is null, the props are unchanged, but a stateful view may apply any pending
+  /// state.
+  void update(View current, View nextVersion) {
+    if (current is Text) {
+      _updateText(current, nextVersion);
+    } else if (current is Widget) {
+      _updateWidget(current, nextVersion);
+    } else if (current is Elt) {
+      current.update(nextVersion, this);
+    } else {
+      throw "cannot update: ${current.runtimeType}";
+    }
+  }
+
+  void _updateText(Text current, Text next) {
+    if (next == null || current.value == next.value) {
+      return; // no internal state to update
+    }
+    current.value = next.value;
+    frame
+        ..visit(current.path)
+        ..setInnerText(current.value);
+  }
+
+  void _updateWidget(Widget current, Widget next) {
+    View newShadow = current._updateAndRender(next);
+
+    if (current._shadow.canUpdateTo(newShadow)) {
+      update(current._shadow, newShadow);
+    } else {
+      mountShadow(current, newShadow);
+      current._shadow = newShadow;
+    }
+    if (current._didUpdate.hasListener) {
+      _updatedWidgets.add(current);
+    }
+  }
+
+  /// Updates DOM attributes and event handlers of an Elt.
+  void _updateDomProperties(String eltPath, Map<Symbol, dynamic> oldProps, Map<Symbol, dynamic> newProps) {
+    frame.visit(eltPath);
+
+    // Delete any removed props
+    for (Symbol key in oldProps.keys) {
+      if (newProps.containsKey(key)) {
+        continue;
+      }
+
+      if (_allHandlers.containsKey(key)) {
+        _allHandlers[key].remove(eltPath);
+      } else if (_allAtts.containsKey(key)) {
+        frame.removeAttribute(_allAtts[key]);
+      }
+    }
+
+    // Update any new or changed props
+    for (Symbol key in newProps.keys) {
+      var oldVal = oldProps[key];
+      var newVal = newProps[key];
+      if (oldVal == newVal) {
+        continue;
+      }
+
+      if (_allHandlers.containsKey(key)) {
+        _allHandlers[key][eltPath] = newVal;
+      } else if (_allAtts.containsKey(key)) {
+        String name = _allAtts[key];
+        String val = _makeDomVal(key, newVal);
+        frame.setAttribute(name, val);
+      }
+    }
   }
 }

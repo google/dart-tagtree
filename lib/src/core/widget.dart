@@ -55,11 +55,6 @@ abstract class Widget<S extends State> extends View {
     }
   }
 
-  void traverse(callback) {
-    _shadow.traverse(callback);
-    callback(this);
-  }
-
   void doUnmount(NextFrame frame) {
     if (_shadow == null) {
       throw "not mounted: ${this.runtimeType}";
@@ -81,7 +76,10 @@ abstract class Widget<S extends State> extends View {
 
   bool canUpdateTo(View other) => runtimeType == other.runtimeType;
 
-  void update(Widget nextVersion, Transaction tx) {
+  /// Applies state and property changes and renders the new tree.
+  /// Postcondition: the widget is still in a partially updated state
+  /// because the shadow isn't updated yet.
+  View _updateAndRender(Widget nextVersion) {
     assert(_mounted);
     assert(_root != null);
 
@@ -92,17 +90,7 @@ abstract class Widget<S extends State> extends View {
     if (nextVersion != null) {
       _props = nextVersion._props;
     }
-
-    View newShadow = render();
-    if (_shadow.canUpdateTo(newShadow)) {
-      _shadow.update(newShadow, tx);
-    } else {
-      tx.mountShadow(this, newShadow);
-      _shadow = newShadow;
-    }
-    if (_didUpdate.hasListener) {
-      tx._updatedWidgets.add(this);
-    }
+    return render();
   }
 
   Props get props => _props;

@@ -24,18 +24,5 @@ class Text extends View {
 
   void doUnmount(_) {}
 
-  void traverse(callback) => callback(this);
-
   bool canUpdateTo(View other) => (other is Text);
-
-  void update(Text nextVersion, Transaction tx) {
-
-    if (nextVersion == null || value == nextVersion.value) {
-      return; // no internal state to update
-    }
-    value = nextVersion.value;
-    tx.frame
-        ..visit(_path)
-        ..setInnerText(value);
-  }
 }
