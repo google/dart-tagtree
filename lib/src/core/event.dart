@@ -27,10 +27,5 @@ class ChangeEvent extends ViewEvent {
 
 typedef EventHandler(ViewEvent e);
 
-/// All installed event handlers. The submap's key is the View's path.
-/// TODO: make this a field in a ViewTree instead of a global?
-Map<Symbol, Map<String, EventHandler>> _allHandlers = {
-  #onChange: {},
-  #onClick: {},
-  #onSubmit: {}
-};
+Set<Symbol> _allHandlerKeys = new Set.from([#onChange, #onClick, #onSubmit]);
+

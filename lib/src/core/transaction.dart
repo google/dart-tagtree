@@ -67,7 +67,7 @@ class Transaction {
       print("replacing current view ${path}");
       // Set the current element first because unmount clears the node cache
       frame.visit(path);
-      current.unmount(frame);
+      current.unmount(this);
 
       var html = new StringBuffer();
       next.mount(this, html, path, 0);
@@ -80,7 +80,7 @@ class Transaction {
     // Set the current element first because unmount clears the node cache
     String path = owner.path;
     frame.visit(path);
-    owner._shadow.unmount(frame);
+    owner._shadow.unmount(this);
 
     var html = new StringBuffer();
     owner._shadow.mount(this, html, path, owner.depth + 1);
@@ -156,8 +156,8 @@ class Transaction {
         continue;
       }
 
-      if (_allHandlers.containsKey(key)) {
-        _allHandlers[key].remove(eltPath);
+      if (root._allHandlers.containsKey(key)) {
+        root._allHandlers[key].remove(eltPath);
       } else if (_allAtts.containsKey(key)) {
         frame.removeAttribute(_allAtts[key]);
       }
@@ -171,8 +171,8 @@ class Transaction {
         continue;
       }
 
-      if (_allHandlers.containsKey(key)) {
-        _allHandlers[key][eltPath] = newVal;
+      if (root._allHandlers.containsKey(key)) {
+        root._allHandlers[key][eltPath] = newVal;
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];
         String val = _makeDomVal(key, newVal);

@@ -21,7 +21,7 @@ abstract class ServerWidget extends core.View {
   }
 
   @override
-  void doUnmount(core.NextFrame frame) {
+  void doUnmount(_) {
     throw "not implemented";
   }
 

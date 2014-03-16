@@ -76,7 +76,7 @@ final Map<Symbol, String> _eltPropToField = {
   ..addAll(_allAtts);
 
 final Set<Symbol> _allEltProps = new Set()
-    ..addAll(_allHandlers.keys)
+    ..addAll(_allHandlerKeys)
     ..addAll(_eltPropToField.keys);
 
 /// A factory for constructing the corresponding view for each HTML Element.

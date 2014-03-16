@@ -25,7 +25,7 @@ class Elt extends View with _Inner implements Jsonable {
   Props get props => new Props(_props);
 
   void doMount(Transaction tx, StringBuffer out) {
-    _writeStartTag(out);
+    _writeStartTag(tx, out);
 
     if (tagName == "textarea") {
       String val = _props[#defaultValue];
@@ -43,12 +43,12 @@ class Elt extends View with _Inner implements Jsonable {
     }
   }
 
-  void _writeStartTag(StringBuffer out) {
+  void _writeStartTag(Transaction tx, StringBuffer out) {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
-      if (_allHandlers.containsKey(key)) {
-        _allHandlers[key][path] = val;
+      if (tx.root._allHandlers.containsKey(key)) {
+        tx.root._allHandlers[key][path] = val;
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
@@ -69,10 +69,10 @@ class Elt extends View with _Inner implements Jsonable {
     out.write("</${tagName}>");
   }
 
-  void doUnmount(NextFrame frame) {
-    _unmountInner(frame);
-    for (Symbol key in _allHandlers.keys) {
-      Map m = _allHandlers[key];
+  void doUnmount(Transaction tx) {
+    _unmountInner(tx);
+    for (Symbol key in tx.root._allHandlers.keys) {
+      Map m = tx.root._allHandlers[key];
       m.remove(path);
     }
   }

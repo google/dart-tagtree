@@ -56,10 +56,10 @@ abstract class _Inner {
     return children;
   }
 
-  void _unmountInner(NextFrame frame) {
+  void _unmountInner(Transaction tx) {
     if (_children != null) {
       for (View child in _children) {
-        child.unmount(frame);
+        child.unmount(tx);
       }
       _children = null;
     }
@@ -70,7 +70,7 @@ abstract class _Inner {
   /// (Postcondition: _children and _childText are updated.)
   void _updateInner(String path, newInner, newInnerHtml, Transaction tx) {
     if (newInner == null) {
-      _unmountInner(tx.frame);
+      _unmountInner(tx);
       tx.frame.visit(path);
       if (newInnerHtml != null) {
         tx.frame.setInnerHtml(newInnerHtml);
@@ -81,7 +81,7 @@ abstract class _Inner {
       if (newInner == _childText) {
         return;
       }
-      _unmountInner(tx.frame);
+      _unmountInner(tx);
       tx.frame
           ..visit(path)
           ..setInnerText(newInner);
@@ -134,7 +134,7 @@ abstract class _Inner {
         tx.update(before, after);
         updatedChildren.add(before);
       } else {
-        before.unmount(tx.frame);
+        before.unmount(tx);
         tx.mountReplacementChild(this, after, i);
         updatedChildren.add(after);
       }

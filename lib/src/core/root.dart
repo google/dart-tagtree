@@ -18,7 +18,14 @@ class Root {
   View _nextTop;
   final Set<Widget> _widgetsToUpdate = new Set();
 
-  Root(this.id, this.env);
+  /// All installed event handlers. The submap's key is the View's path.
+  final _allHandlers = <Symbol, Map<String, EventHandler>>{};
+
+  Root(this.id, this.env) {
+    for (Symbol key in _allHandlerKeys) {
+      _allHandlers[key] = {};
+    }
+  }
 
   String get path => "/${id}";
 
