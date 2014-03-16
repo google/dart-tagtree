@@ -3,36 +3,38 @@ part of core;
 /// Callbacks to the ViewTree's environment.
 abstract class TreeEnv {
   /// Requests that the given tree be re-rendered.
-  void requestFrame(ViewTree tree);
+  void requestFrame(Root root);
 }
 
 /// Something that can be added to a ViewTree's dirty queue.
 abstract class _Redrawable {
   int get depth;
-  void _redraw(ViewTree tree, NextFrame frame);
+  void _redraw(NextFrame frame);
 }
 
-/// A ViewTree contains state that's global to a mounted View and its descendants.
-class ViewTree implements _Redrawable {
+/// A Root contains state that's global to a mounted View and its descendants.
+class Root implements _Redrawable {
   final int id;
   final TreeEnv env;
-  View _root, _nextRoot;
+  View _top, _nextTop;
+
+  Root(this.id, this.env);
 
   /// Renders the first frame of the tree. Postcondition: it is ready to receive events.
-  ViewTree.mount(this.id, this.env, View root, NextFrame frame) {
+  mount(View top, NextFrame frame) {
     StringBuffer html = new StringBuffer();
-    root.mount(html, "/${id}", 0);
+    top.mount(html, "/${id}", 0);
     frame.mount(html.toString());
-    _finishMount(root, frame);
-    _root = root;
+    _finishMount(top, frame);
+    _top = top;
   }
 
   /// Schedules the root to be replaced on the next frame.
   /// (If this is called too quickly, frames will be dropped; only
   /// the View from the last call to replaceRoot will actually be mounted.)
-  void replaceRoot(View nextRoot) {
-    assert(_root != null);
-    _nextRoot = nextRoot;
+  void remount(View nextTop) {
+    assert(_top != null);
+    _nextTop = nextTop;
     _invalidate(this);
   }
 
@@ -40,35 +42,35 @@ class ViewTree implements _Redrawable {
 
   int get depth => 0;
 
-  void _redraw(ViewTree tree, NextFrame frame) {
-    assert(_root != null && _nextRoot != null);
-    if (_root.canUpdateTo(_nextRoot)) {
+  void _redraw(NextFrame frame) {
+    assert(_top != null && _nextTop != null);
+    if (_top.canUpdateTo(_nextTop)) {
       print("updating tree ${id} in place");
-      _root.update(_nextRoot, this, frame);
-      _nextRoot = null;
+      _top.update(_nextTop, this, frame);
+      _nextTop = null;
     } else {
       print("replacing tree ${id}");
-      String path = _root._path;
+      String path = _top._path;
       // Set the current element first because unmount clears the node cache
       frame.visit(path);
-      _root.unmount(frame);
-      _root = _nextRoot;
-      _nextRoot = null;
+      _top.unmount(frame);
+      _top = _nextTop;
+      _nextTop = null;
 
       StringBuffer html = new StringBuffer();
-      _root.mount(html, "/${id}", 0);
+      _top.mount(html, "/${id}", 0);
       frame.replaceElement(html.toString());
-      _finishMount(_root, frame);
+      _finishMount(_top, frame);
     }
   }
 
   /// Finishes mounting a subtree after the DOM is created.
-  void _finishMount(View subtreeRoot, NextFrame frame) {
-    subtreeRoot.traverse((View v) {
+  void _finishMount(View subtree, NextFrame frame) {
+    subtree.traverse((View v) {
       if (v is Elt) {
         frame.attachElement(this, v._ref, v.path, v.tagName);
       } else if (v is Widget) {
-        v._tree = this;
+        v._root = this;
       }
       v.didMount();
     });
@@ -113,7 +115,7 @@ class ViewTree implements _Redrawable {
     // Sort ancestors ahead of children.
     batch.sort((a, b) => a.depth - b.depth);
     for (_Redrawable r in batch) {
-      r._redraw(this, frame);
+      r._redraw(frame);
     }
 
     for (Widget w in _updated) {

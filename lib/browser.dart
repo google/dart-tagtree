@@ -21,18 +21,19 @@ int _treeIdCounter = 0;
 ///
 /// If the container element already contains a View, it will be replaced when the next
 /// animation frame is rendered.
-void mount(core.View root, String selectors) {
+void mount(core.View view, String selectors) {
   HtmlElement container = querySelectorAll(selectors).single;
-  var prev = _getTreeByContainer(container);
+  var prev = _findRoot(container);
   if (prev != null) {
-    prev.replaceRoot(root);
+    prev.remount(view);
     return;
   }
   _ElementCache cache = new _ElementCache(container);
   int id = _treeIdCounter++;
-  core.ViewTree tree = new core.ViewTree.mount(id, new _BrowserEnv(cache), root, new _SyncFrame(cache));
-  _pathToTree[tree.path] = tree;
-  _listenForEvents(tree, container);
+  core.Root root = new core.Root(id, new _BrowserEnv(cache));
+  root.mount(view, new _SyncFrame(cache));
+  _pathToRoot[root.path] = root;
+  _listenForEvents(root, container);
 }
 
 /// Mounts a stream of views deserialized from a websocket.
@@ -65,30 +66,30 @@ class ElementRef<E extends HtmlElement> extends core.Ref {
   }
 }
 
-Map<String, core.ViewTree> _pathToTree = {};
+Map<String, core.Root> _pathToRoot = {};
 
-core.ViewTree _getTreeByContainer(HtmlElement container) {
+core.Root _findRoot(HtmlElement container) {
   var first = container.firstChild;
   if (first == null) {
     return null;
   }
   if (first is Element) {
-    String id = first.getAttribute("data-path");
-    if (id != null) {
-      return _pathToTree[id];
+    String path = first.getAttribute("data-path");
+    if (path != null) {
+      return _pathToRoot[path];
     }
   }
   return null;
 }
 
-void _listenForEvents(core.ViewTree tree, HtmlElement container) {
+void _listenForEvents(core.Root root, HtmlElement container) {
 
   container.onClick.listen((Event e) {
     String path = _getTargetPath(e.target);
     if (path == null) {
       return;
     }
-    tree.dispatchEvent(new core.ViewEvent(#onClick, path));
+    root.dispatchEvent(new core.ViewEvent(#onClick, path));
   });
 
   // Form events are tricky. We want an onChange event to fire every time
@@ -106,7 +107,7 @@ void _listenForEvents(core.ViewTree tree, HtmlElement container) {
       print("can't get value of target: ${path}");
       return;
     }
-    tree.dispatchEvent(new core.ChangeEvent(path, value));
+    root.dispatchEvent(new core.ChangeEvent(path, value));
   });
 
   // TODO: implement many more events.
@@ -119,9 +120,9 @@ class _BrowserEnv implements core.TreeEnv {
   _BrowserEnv(this.cache);
 
   @override
-  void requestFrame(core.ViewTree tree) {
+  void requestFrame(core.Root root) {
     window.animationFrame.then((t) {
-      tree.render(new _SyncFrame(cache));
+      root.render(new _SyncFrame(cache));
     });
   }
 }
@@ -172,7 +173,7 @@ class _SyncFrame implements core.NextFrame {
   }
 
   @override
-  void attachElement(core.ViewTree tree, core.Ref ref, String path, String tag) {
+  void attachElement(core.Root root, core.Ref ref, String path, String tag) {
     if (tag == "form") {
       // onSubmit doesn't bubble, so install it here.
       FormElement elt = cache.get(path);
@@ -183,7 +184,7 @@ class _SyncFrame implements core.NextFrame {
         }
         e.preventDefault();
         e.stopPropagation();
-        tree.dispatchEvent(new core.ViewEvent(#onSubmit, path));
+        root.dispatchEvent(new core.ViewEvent(#onSubmit, path));
       });
     }
     if (ref is ElementRef) {

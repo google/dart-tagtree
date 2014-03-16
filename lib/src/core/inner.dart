@@ -76,7 +76,7 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mount/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(String path, newInner, newInnerHtml, ViewTree tree, NextFrame frame) {
+  void _updateInner(String path, newInner, newInnerHtml, Root tree, NextFrame frame) {
     if (newInner == null) {
       _unmountInner(frame);
       frame.visit(path);
@@ -115,7 +115,7 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(String path, List<View> newChildren, ViewTree
+  void _updateChildren(String path, List<View> newChildren, Root
       tree, NextFrame frame) {
 
     if (_children == null) {

@@ -28,7 +28,7 @@ class Text extends View {
 
   bool canUpdateTo(View other) => (other is Text);
 
-  void update(Text nextVersion, ViewTree tree, NextFrame frame) {
+  void update(Text nextVersion, Root _, NextFrame frame) {
 
     if (nextVersion == null || value == nextVersion.value) {
       return; // no internal state to update

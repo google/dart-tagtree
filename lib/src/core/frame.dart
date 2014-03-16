@@ -8,7 +8,7 @@ abstract class NextFrame {
 
   /// Performs any DOM fixups needed for a mounted element.
   /// This should be called after mount() for each mounted element.
-  void attachElement(ViewTree tree, Ref ref, String path, String tag);
+  void attachElement(Root root, Ref ref, String path, String tag);
 
   /// Clears any references to the DOM element with the given path.
   /// This should be called after unmounting an element.

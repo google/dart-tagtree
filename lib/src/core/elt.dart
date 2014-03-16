@@ -80,7 +80,7 @@ class Elt extends View with _Inner implements Jsonable {
 
   bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
 
-  void update(Elt nextVersion, ViewTree tree, NextFrame frame) {
+  void update(Elt nextVersion, Root root, NextFrame frame) {
     assert(_path != null);
     if (nextVersion == null) {
       return; // no internal state to update
@@ -89,7 +89,7 @@ class Elt extends View with _Inner implements Jsonable {
     _props = nextVersion._props;
 
     _updateDomProperties(oldProps, frame);
-    _updateInner(_path, _props[#inner], _props[#innerHtml], tree, frame);
+    _updateInner(_path, _props[#inner], _props[#innerHtml], root, frame);
   }
 
   /// Updates DOM attributes and event handlers.

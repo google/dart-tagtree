@@ -6,7 +6,7 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
   Props _props;
   State _state, _nextState;
   View _shadow;
-  ViewTree _tree;
+  Root _root;
 
   Widget(Map<Symbol, dynamic> props)
       : _props = new Props(props),
@@ -60,19 +60,21 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
   /// Requests that this Widget be re-rendered during the next frame.
   void invalidate() {
     assert(_mounted);
-    _tree._invalidate(this);
+    _root._invalidate(this);
   }
 
   /// Constructs another View to be rendered in place of this Widget.
   /// (This is somewhat similar to "shadow DOM".)
   View render();
 
-  void _redraw(ViewTree tree, NextFrame frame) => update(null, tree, frame);
+  @override
+  void _redraw(NextFrame frame) => update(null, _root, frame);
 
   bool canUpdateTo(View other) => runtimeType == other.runtimeType;
 
-  void update(Widget nextVersion, ViewTree tree, NextFrame frame) {
+  void update(Widget nextVersion, Root root, NextFrame frame) {
     assert(_mounted);
+    assert(_root != null);
 
     if (_nextState != null) {
       _state = _nextState;
@@ -84,7 +86,7 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
 
     View newShadow = render();
     if (_shadow.canUpdateTo(newShadow)) {
-      _shadow.update(newShadow, tree, frame);
+      _shadow.update(newShadow, root, frame);
     } else {
       // Set the current element first because unmount clears the node cache
       frame.visit(_path);
@@ -94,9 +96,9 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
       StringBuffer html = new StringBuffer();
       _shadow.mount(html, _path, _depth + 1);
       frame.replaceElement(html.toString());
-      tree._finishMount(_shadow, frame);
+      root._finishMount(_shadow, frame);
     }
-    tree._updated.add(this);
+    root._updated.add(this);
   }
 
   Props get props => _props;

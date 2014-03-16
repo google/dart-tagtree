@@ -103,7 +103,7 @@ abstract class View {
   ///
   /// (This should only be called by the framework; it is called within a
   /// requestAnimationFrame callback.)
-  void update(View nextVersion, ViewTree tree, NextFrame nextFrame);
+  void update(View nextVersion, Root root, NextFrame nextFrame);
 
   /// Lifecycle hook called after the DOM has been updated.
   void didUpdate() {}

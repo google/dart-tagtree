@@ -34,7 +34,7 @@ abstract class ServerWidget extends core.View {
   bool canUpdateTo(core.View nextVersion) => false;
 
   @override
-  void update(core.View nextVersion, core.ViewTree tree, core.NextFrame nextFrame) {}
+  void update(core.View nextVersion, core.Root root, core.NextFrame nextFrame) {}
 }
 
 /// A view tree container that renders to a WebSocket.
