@@ -80,11 +80,11 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
   View render();
 
   @override
-  void _redraw(NextFrame frame) => update(null, _root, frame);
+  void _redraw(Transaction tx) => update(null, tx);
 
   bool canUpdateTo(View other) => runtimeType == other.runtimeType;
 
-  void update(Widget nextVersion, Root root, NextFrame frame) {
+  void update(Widget nextVersion, Transaction tx) {
     assert(_mounted);
     assert(_root != null);
 
@@ -98,20 +98,13 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
 
     View newShadow = render();
     if (_shadow.canUpdateTo(newShadow)) {
-      _shadow.update(newShadow, root, frame);
+      _shadow.update(newShadow, tx);
     } else {
-      // Set the current element first because unmount clears the node cache
-      frame.visit(_path);
-      _shadow.unmount(frame);
+      tx.mountShadow(this, newShadow);
       _shadow = newShadow;
-
-      StringBuffer html = new StringBuffer();
-      _shadow.mount(html, root, _path, _depth + 1);
-      frame.replaceElement(html.toString());
-      root._finishMount(_shadow, frame);
     }
     if (_didUpdate.hasListener) {
-      root._didUpdateStreams.add(_didUpdate.sink);
+      tx.root._didUpdateStreams.add(_didUpdate.sink);
     }
   }
 

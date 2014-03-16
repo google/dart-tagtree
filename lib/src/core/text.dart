@@ -28,13 +28,13 @@ class Text extends View {
 
   bool canUpdateTo(View other) => (other is Text);
 
-  void update(Text nextVersion, Root _, NextFrame frame) {
+  void update(Text nextVersion, Transaction tx) {
 
     if (nextVersion == null || value == nextVersion.value) {
       return; // no internal state to update
     }
     value = nextVersion.value;
-    frame
+    tx.frame
         ..visit(_path)
         ..setInnerText(value);
   }

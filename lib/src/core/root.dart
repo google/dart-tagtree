@@ -9,7 +9,7 @@ abstract class TreeEnv {
 /// Something that can be added to a ViewTree's dirty queue.
 abstract class _Redrawable {
   int get depth;
-  void _redraw(NextFrame frame);
+  void _redraw(Transaction tx);
 }
 
 /// A Root contains state that's global to a mounted View and its descendants.
@@ -32,33 +32,11 @@ class Root implements _Redrawable {
 
   int get depth => 0;
 
-  void _redraw(NextFrame frame) {
+  void _redraw(Transaction tx) {
     assert(_nextTop != null);
     View next = _nextTop;
     _nextTop = null;
-    if (_top == null) {
-      StringBuffer html = new StringBuffer();
-      next.mount(html, this, "/${id}", 0);
-      _top = next;
-      frame.mount(html.toString());
-      _finishMount(next, frame);
-
-    } else if (_top.canUpdateTo(next)) {
-      print("updating tree ${id} in place");
-      _top.update(next, this, frame);
-    } else {
-      print("replacing tree ${id}");
-      String path = _top._path;
-      // Set the current element first because unmount clears the node cache
-      frame.visit(path);
-      _top.unmount(frame);
-
-      StringBuffer html = new StringBuffer();
-      next.mount(html, this, "/${id}", 0);
-      _top = next;
-      frame.replaceElement(html.toString());
-      _finishMount(_top, frame);
-    }
+    _top = tx.mountAtRoot(_top, next);
   }
 
   final List<Ref> _mountedRefs = <Ref>[];
@@ -118,11 +96,12 @@ class Root implements _Redrawable {
     assert(_didUpdateStreams.isEmpty);
     List<_Redrawable> batch = new List.from(_dirty);
     _dirty.clear();
+    Transaction tx = new Transaction(this, frame);
 
     // Sort ancestors ahead of children.
     batch.sort((a, b) => a.depth - b.depth);
     for (_Redrawable r in batch) {
-      r._redraw(frame);
+      r._redraw(tx);
     }
 
     for (var s in _didUpdateStreams) {
