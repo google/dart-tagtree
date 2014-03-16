@@ -109,15 +109,15 @@ void _listenForEvents(core.Root root, HtmlElement container) {
   // TODO: remove handlers on unmount.
 }
 
-class _BrowserEnv implements core.TreeEnv {
+class _BrowserEnv implements core.RootEnv {
   final _ElementCache cache;
 
   _BrowserEnv(this.cache);
 
   @override
-  void requestFrame(core.Root root) {
+  void requestAnimationFrame(core.RenderFunction render) {
     window.animationFrame.then((t) {
-      root.renderFrame(new _SyncFrame(cache));
+      render(new _SyncFrame(cache));
     });
   }
 }

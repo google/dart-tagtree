@@ -1,15 +1,17 @@
 part of core;
 
-/// Callbacks to the ViewTree's environment.
-abstract class TreeEnv {
-  /// Requests that the given tree be re-rendered.
-  void requestFrame(Root root);
+typedef void RenderFunction(NextFrame frame);
+
+/// Callbacks to the Root's environment.
+abstract class RootEnv {
+  /// Requests a callback during the next animation frame.
+  void requestAnimationFrame(RenderFunction callback);
 }
 
 /// A Root contains a view tree that's rendered to the DOM.
 class Root {
   final int id;
-  final TreeEnv env;
+  final RootEnv env;
   View _top;
 
   bool _frameRequested = false;
@@ -37,14 +39,12 @@ class Root {
   void _requestFrame() {
     if (!_frameRequested) {
       _frameRequested = true;
-      env.requestFrame(this);
+      env.requestAnimationFrame(_renderFrame);
     }
   }
 
-  /// Performs all scheduled updates and renders an animation frame.
-  ///
-  /// (Called by the TreeEnv when it's time to render a frame.)
-  void renderFrame(NextFrame frame) {
+  /// Performs all scheduled updates and renders the DOM.
+  void _renderFrame(NextFrame frame) {
     Transaction tx = new Transaction(this, frame, _nextTop, _widgetsToUpdate);
 
     _frameRequested = false;
