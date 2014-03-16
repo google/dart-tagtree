@@ -30,12 +30,14 @@ abstract class View {
 
   View(this._ref);
 
-  /// Returns a unique id used to find the view's HTML element.
+  /// The unique id used to find the view's HTML element.
   ///
   /// Non-null when mounted.
   String get path => _path;
 
-  /// The depth of this node in the view tree. Non-null when mounted;
+  /// The depth of this node in the view tree (not in the DOM).
+  ///
+  /// Non-null when mounted.
   int get depth => _depth;
 
   /// Returns the view's current props.
@@ -44,11 +46,15 @@ abstract class View {
   /// Writes the view tree to HTML and assigns an id to each View.
   ///
   /// The path should be a string starting with "/" and using "/" as a separator,
-  /// for example "/asdf/1/2/3", chosen to ensure uniqueness in the DOM.
-  /// The path of a child View is created by appending a suffix starting with "/" to its
-  /// parent. When rendered to HTML, the path will show up in the data-path attribute.
+  /// for example "/asdf/1/2/3", chosen to ensure uniqueness in the DOM. The path
+  /// of a child View is created by appending a suffix starting with "/" to its
+  /// parent. When rendered to HTML, the path will show up in the data-path
+  /// attribute.
   ///
-  /// A Widget has the same path as the root node in its shadow tree (recursively).
+  /// The depth is used to sort updates at render time. It's the depth in the
+  /// view tree, not the depth in the DOM tree (like the path). For example,
+  /// the root of a Widget's shadow tree has the same path, but its depth is
+  /// incremented.
   void mount(Transaction tx, StringBuffer out, String path, int depth) {
     _path = path;
     _depth = depth;

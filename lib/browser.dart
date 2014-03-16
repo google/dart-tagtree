@@ -20,14 +20,14 @@ void mount(core.View view, String containerSelectors) {
   HtmlElement container = querySelectorAll(containerSelectors).single;
   var prev = _findRoot(container);
   if (prev != null) {
-    prev.mount(view);
+    prev.requestMount(view);
     return;
   }
   _ElementCache cache = new _ElementCache(container);
   int id = _treeIdCounter++;
   core.Root root = new core.Root(id, new _BrowserEnv(cache));
   _pathToRoot[root.path] = root;
-  root.mount(view);
+  root.requestMount(view);
   _listenForEvents(root, container);
 }
 
@@ -117,7 +117,7 @@ class _BrowserEnv implements core.TreeEnv {
   @override
   void requestFrame(core.Root root) {
     window.animationFrame.then((t) {
-      root.render(new _SyncFrame(cache));
+      root.renderFrame(new _SyncFrame(cache));
     });
   }
 }

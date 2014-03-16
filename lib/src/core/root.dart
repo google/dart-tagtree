@@ -6,31 +6,55 @@ abstract class TreeEnv {
   void requestFrame(Root root);
 }
 
-/// A Root contains state that's global to a mounted View and its descendants.
-class Root implements _Redrawable {
+/// A Root contains a view tree that's rendered to the DOM.
+class Root {
   final int id;
   final TreeEnv env;
-  View _top, _nextTop;
+  View _top;
+
+  bool _frameRequested = false;
+  View _nextTop;
+  final Set<Widget> _widgetsToUpdate = new Set();
 
   Root(this.id, this.env);
 
-  /// Schedules the view tree to be replaced during the next rendered frame.
-  /// (If this is called too quickly, frames will be dropped; only
-  /// the View from the last call to replaceRoot will actually be mounted.)
-  void mount(View nextTop) {
-    _nextTop = nextTop;
-    _invalidate(this);
-  }
-
   String get path => "/${id}";
 
-  int get depth => 0;
+  /// Schedules the view tree to be replaced before the next rendered frame.
+  /// (If called more than once within a single frame, only the last call will
+  /// have any effect.)
+  void requestMount(View nextTop) {
+    _nextTop = nextTop;
+    _requestFrame();
+  }
 
-  void _redraw(Transaction tx) {
-    assert(_nextTop != null);
-    View next = _nextTop;
+  /// Schedules a widget to be updated before the next rendered frame.
+  void requestWidgetUpdate(Widget w) {
+    _widgetsToUpdate.add(w);
+    _requestFrame();
+  }
+
+  void _requestFrame() {
+    if (!_frameRequested) {
+      _frameRequested = true;
+      env.requestFrame(this);
+    }
+  }
+
+  /// Performs all scheduled updates and renders an animation frame.
+  ///
+  /// (Called by the TreeEnv when it's time to render a frame.)
+  void renderFrame(NextFrame frame) {
+    Transaction tx = new Transaction(this, frame, _nextTop, _widgetsToUpdate);
+
+    _frameRequested = false;
     _nextTop = null;
-    _top = tx.mountAtRoot(_top, next);
+    _widgetsToUpdate.clear();
+
+    tx.run();
+
+    // No widgets should be invalidated while rendering.
+    assert(_widgetsToUpdate.isEmpty);
   }
 
   bool _inViewEvent = false;
@@ -58,24 +82,5 @@ class Root implements _Redrawable {
     } finally {
       _inViewEvent = false;
     }
-  }
-
-  final Set<_Redrawable> _dirty = new Set();
-
-  void _invalidate(_Redrawable r) {
-    if (_dirty.isEmpty) {
-      env.requestFrame(this);
-    }
-    _dirty.add(r);
-  }
-
-  /// Re-renders the dirty widgets in this tree.
-  void render(NextFrame frame) {
-    Transaction tx = new Transaction(this, frame, _dirty);
-    _dirty.clear();
-    tx.run();
-
-    // No widgets should be invalidated while rendering.
-    assert(_dirty.isEmpty);
   }
 }

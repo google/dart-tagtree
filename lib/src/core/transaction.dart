@@ -1,18 +1,13 @@
 part of core;
 
-/// Something that can be added to a  dirty queue.
-abstract class _Redrawable {
-  int get depth;
-  void _redraw(Transaction tx);
-}
-
 /// A transaction that renders one animation frame for one Root.
 class Transaction {
   final Root root;
   final NextFrame frame;
 
   // What to do
-  final List<_Redrawable> _dirty;
+  final View nextTop;
+  final List<Widget> _widgetsToUpdate;
 
   // What was done
   final List<Ref> _mountedRefs = <Ref>[];
@@ -20,15 +15,20 @@ class Transaction {
   final List<Widget> _mountedWidgets = <Widget>[];
   final List<Widget> _updatedWidgets = <Widget>[];
 
-  Transaction(this.root, this.frame, Iterable<_Redrawable> dirty)
-      : _dirty = new List.from(dirty);
+  Transaction(this.root, this.frame, this.nextTop, Iterable<Widget> widgetsToUpdate)
+      : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
   void run() {
-    // Sort ancestors ahead of children.
-    _dirty.sort((a, b) => a.depth - b.depth);
+    if (nextTop != null) {
+      // Repace the entire tree.
+      root._top = _mountAtRoot(root.path, root._top, nextTop);
+    }
 
-    for (_Redrawable r in _dirty) {
-      r._redraw(this);
+    // Sort ancestors ahead of children.
+    _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
+
+    for (Widget w in _widgetsToUpdate) {
+      w.update(null, this);
     }
 
     _finish();
@@ -53,26 +53,24 @@ class Transaction {
   }
 
   // Returns the new top view.
-  View mountAtRoot(View current, View next) {
-    assert(next != null);
+  View _mountAtRoot(String path, View current, View next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
-      next.mount(this, html, root.path, 0);
+      next.mount(this, html, path, 0);
       frame.mount(html.toString());
       return next;
-    } else if (root._top.canUpdateTo(next)) {
-      print("updating current view at ${root.path}");
+    } else if (current.canUpdateTo(next)) {
+      print("updating current view at ${path}");
       current.update(next, this);
       return current;
     } else {
-      print("replacing current view ${root.path}");
-      String path = current.path;
+      print("replacing current view ${path}");
       // Set the current element first because unmount clears the node cache
       frame.visit(path);
       current.unmount(frame);
 
       var html = new StringBuffer();
-      next.mount(this, html, root.path, 0);
+      next.mount(this, html, path, 0);
       frame.replaceElement(html.toString());
       return next;
     }
