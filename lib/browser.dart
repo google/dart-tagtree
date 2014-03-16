@@ -11,28 +11,23 @@ import 'dart:collection' show HashMap;
 
 int _treeIdCounter = 0;
 
-/// Starts running a View.
+/// Schedules the view to be mounted during the next rendered frame.
 ///
 /// The CSS selectors must point to a single container element of type HtmlElement.
 ///
-/// If the container element is empty, immediately renders the first frame inside the
-/// container and starts listening for events. Postcondition: all Views under root are
-/// mounted and rendered.
-///
-/// If the container element already contains a View, it will be replaced when the next
-/// animation frame is rendered.
-void mount(core.View view, String selectors) {
-  HtmlElement container = querySelectorAll(selectors).single;
+/// If the container element already contains a View, it will be replaced.
+void mount(core.View view, String containerSelectors) {
+  HtmlElement container = querySelectorAll(containerSelectors).single;
   var prev = _findRoot(container);
   if (prev != null) {
-    prev.remount(view);
+    prev.mount(view);
     return;
   }
   _ElementCache cache = new _ElementCache(container);
   int id = _treeIdCounter++;
   core.Root root = new core.Root(id, new _BrowserEnv(cache));
-  root.mount(view, new _SyncFrame(cache));
   _pathToRoot[root.path] = root;
+  root.mount(view);
   _listenForEvents(root, container);
 }
 

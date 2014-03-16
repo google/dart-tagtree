@@ -20,20 +20,10 @@ class Root implements _Redrawable {
 
   Root(this.id, this.env);
 
-  /// Renders the first frame of the tree. Postcondition: it is ready to receive events.
-  mount(View top, NextFrame frame) {
-    StringBuffer html = new StringBuffer();
-    top.mount(html, "/${id}", 0);
-    frame.mount(html.toString());
-    _finishMount(top, frame);
-    _top = top;
-  }
-
-  /// Schedules the root to be replaced on the next frame.
+  /// Schedules the view tree to be replaced during the next rendered frame.
   /// (If this is called too quickly, frames will be dropped; only
   /// the View from the last call to replaceRoot will actually be mounted.)
-  void remount(View nextTop) {
-    assert(_top != null);
+  void mount(View nextTop) {
     _nextTop = nextTop;
     _invalidate(this);
   }
@@ -43,22 +33,29 @@ class Root implements _Redrawable {
   int get depth => 0;
 
   void _redraw(NextFrame frame) {
-    assert(_top != null && _nextTop != null);
-    if (_top.canUpdateTo(_nextTop)) {
+    assert(_nextTop != null);
+    View next = _nextTop;
+    _nextTop = null;
+    if (_top == null) {
+      StringBuffer html = new StringBuffer();
+      next.mount(html, "/${id}", 0);
+      _top = next;
+      frame.mount(html.toString());
+      _finishMount(next, frame);
+
+    } else if (_top.canUpdateTo(next)) {
       print("updating tree ${id} in place");
-      _top.update(_nextTop, this, frame);
-      _nextTop = null;
+      _top.update(next, this, frame);
     } else {
       print("replacing tree ${id}");
       String path = _top._path;
       // Set the current element first because unmount clears the node cache
       frame.visit(path);
       _top.unmount(frame);
-      _top = _nextTop;
-      _nextTop = null;
 
       StringBuffer html = new StringBuffer();
-      _top.mount(html, "/${id}", 0);
+      next.mount(html, "/${id}", 0);
+      _top = next;
       frame.replaceElement(html.toString());
       _finishMount(_top, frame);
     }
