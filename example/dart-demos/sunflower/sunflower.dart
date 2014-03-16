@@ -31,7 +31,9 @@ void main() {
 class Sunflower extends Widget<SunflowerState> {
   final _canvas = new ElementRef<CanvasElement>();
 
-  Sunflower() : super({});
+  Sunflower() : super({}) {
+    didMount.listen((_) => draw(_canvas.elt.context2D));
+  }
 
   get firstState => new SunflowerState();
 
@@ -56,9 +58,6 @@ class Sunflower extends Widget<SunflowerState> {
         ]),
     ]);
   }
-
-  @override
-  void didMount() => draw(_canvas.elt.context2D);
 
   @override
   void didUpdate() => draw(_canvas.elt.context2D);

@@ -38,7 +38,7 @@ class Root implements _Redrawable {
     _nextTop = null;
     if (_top == null) {
       StringBuffer html = new StringBuffer();
-      next.mount(html, "/${id}", 0);
+      next.mount(html, this, "/${id}", 0);
       _top = next;
       frame.mount(html.toString());
       _finishMount(next, frame);
@@ -54,12 +54,14 @@ class Root implements _Redrawable {
       _top.unmount(frame);
 
       StringBuffer html = new StringBuffer();
-      next.mount(html, "/${id}", 0);
+      next.mount(html, this, "/${id}", 0);
       _top = next;
       frame.replaceElement(html.toString());
       _finishMount(_top, frame);
     }
   }
+
+  List<StreamSink> _needDidMount = new List<StreamSink>();
 
   /// Finishes mounting a subtree after the DOM is created.
   void _finishMount(View subtree, NextFrame frame) {
@@ -69,8 +71,11 @@ class Root implements _Redrawable {
       } else if (v is Widget) {
         v._root = this;
       }
-      v.didMount();
     });
+    for (var s in _needDidMount) {
+      s.add(true);
+    }
+    _needDidMount.clear();
   }
 
   bool _inViewEvent = false;

@@ -49,37 +49,30 @@ abstract class View {
   /// parent. When rendered to HTML, the path will show up in the data-path attribute.
   ///
   /// A Widget has the same path as the root node in its shadow tree (recursively).
-  void mount(StringBuffer out, String path, int depth) {
+  void mount(StringBuffer out, Root root, String path, int depth) {
     _path = path;
     _depth = depth;
     _mounted = true;
     if (_ref != null) {
       _ref._set(this);
     }
-    doMount(out);
+    doMount(out, root);
   }
 
   /// Frees resources associated with this View and all its descendants
   /// and marks them as unmounted. This removes any references to the DOM,
   /// but doesn't actually change the DOM.
   void unmount(NextFrame frame) {
-    willUnmount();
+    doUnmount(frame);
     if (_ref != null) {
       _ref._set(null);
     }
-    doUnmount(frame);
     frame.detachElement(_path);
     _mounted = false;
   }
 
   /// Subclass hook for implementing mount.
-  void doMount(StringBuffer out);
-
-  /// Lifecycle method called after the DOM element is ready.
-  void didMount() {}
-
-  /// Lifecycle method called before the DOM element is removed.
-  void willUnmount() {}
+  void doMount(StringBuffer out, Root root);
 
   /// Subclass hook for implementing unmount.
   void doUnmount(NextFrame frame);

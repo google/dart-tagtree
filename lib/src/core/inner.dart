@@ -17,7 +17,7 @@ abstract class _Inner {
   // The Elt's depth.
   int get depth;
 
-  void _mountInner(StringBuffer out, inner, String innerHtml) {
+  void _mountInner(StringBuffer out, Root root, inner, String innerHtml) {
     if (inner == null) {
       if (innerHtml != null) {
         // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)
@@ -27,7 +27,7 @@ abstract class _Inner {
       out.write(HTML_ESCAPE.convert(inner));
       _childText = inner;
     } else if (inner is View) {
-      _children = _mountChildren(out, [inner]);
+      _children = _mountChildren(out, root, [inner]);
     } else if (inner is Iterable) {
       List<View> children = [];
       for (var item in inner) {
@@ -39,7 +39,7 @@ abstract class _Inner {
           throw "bad item in inner: ${item}";
         }
       }
-      _children = _mountChildren(out, children);
+      _children = _mountChildren(out, root, children);
     }
   }
 
@@ -51,7 +51,7 @@ abstract class _Inner {
     }
   }
 
-  List<View> _mountChildren(StringBuffer out, List<View> children) {
+  List<View> _mountChildren(StringBuffer out, Root root, List<View> children) {
     if (children.isEmpty) {
       return null;
     }
@@ -59,7 +59,7 @@ abstract class _Inner {
     String parentPath = path;
     int childDepth = depth + 1;
     for (int i = 0; i < children.length; i++) {
-      children[i].mount(out, "${parentPath}/${i}", childDepth);
+      children[i].mount(out, root, "${parentPath}/${i}", childDepth);
     }
     return children;
   }
@@ -115,12 +115,11 @@ abstract class _Inner {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(String path, List<View> newChildren, Root
-      tree, NextFrame frame) {
+  void _updateChildren(String path, List<View> newChildren, Root root, NextFrame frame) {
 
     if (_children == null) {
       StringBuffer out = new StringBuffer();
-      _mountInner(out, newChildren, null);
+      _mountInner(out, root, newChildren, null);
       frame
           ..visit(path)
           ..setInnerHtml(out.toString());
@@ -140,7 +139,7 @@ abstract class _Inner {
       assert(after != null);
       if (before.canUpdateTo(after)) {
         // note: update may call frame.visit()
-        before.update(after, tree, frame);
+        before.update(after, root, frame);
         updatedChildren.add(before);
       } else {
         String childPath = "${path}/${i}";
@@ -148,12 +147,12 @@ abstract class _Inner {
         before.unmount(frame);
 
         StringBuffer html = new StringBuffer();
-        after.mount(html, path, depth);
+        after.mount(html, root, path, depth);
 
         frame
             ..visit(path)
             ..replaceChildElement(i, html.toString());
-        tree._finishMount(after, frame);
+        root._finishMount(after, frame);
         updatedChildren.add(after);
       }
     }
@@ -171,9 +170,9 @@ abstract class _Inner {
       for (int i = _children.length; i < newChildren.length; i++) {
         View child = newChildren[i];
         var out = new StringBuffer();
-        child.mount(out, "${path}/${i}", childDepth);
+        child.mount(out, root, "${path}/${i}", childDepth);
         frame.addChildElement(out.toString());
-        tree._finishMount(child, frame);
+        root._finishMount(child, frame);
         updatedChildren.add(child);
       }
     }

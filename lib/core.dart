@@ -6,6 +6,7 @@
  */
 library core;
 
+import 'dart:async' show Stream, StreamController, StreamSink;
 import 'dart:convert';
 
 part 'src/core/elt.dart';

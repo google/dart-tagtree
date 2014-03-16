@@ -16,7 +16,7 @@ abstract class ServerWidget extends core.View {
   core.View render();
 
   @override
-  void doMount(StringBuffer out) {
+  void doMount(StringBuffer out, core.Root _) {
     throw "not implemented";
   }
 
