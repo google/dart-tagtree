@@ -6,12 +6,6 @@ abstract class TreeEnv {
   void requestFrame(Root root);
 }
 
-/// Something that can be added to a ViewTree's dirty queue.
-abstract class _Redrawable {
-  int get depth;
-  void _redraw(Transaction tx);
-}
-
 /// A Root contains state that's global to a mounted View and its descendants.
 class Root implements _Redrawable {
   final int id;
@@ -67,34 +61,21 @@ class Root implements _Redrawable {
   }
 
   final Set<_Redrawable> _dirty = new Set();
-  final List<StreamSink> _didUpdateStreams = <StreamSink>[];
-
-  /// Re-renders the dirty widgets in this tree.
-  void render(NextFrame frame) {
-    assert(_didUpdateStreams.isEmpty);
-    List<_Redrawable> batch = new List.from(_dirty);
-    _dirty.clear();
-    Transaction tx = new Transaction(this, frame);
-
-    // Sort ancestors ahead of children.
-    batch.sort((a, b) => a.depth - b.depth);
-    for (_Redrawable r in batch) {
-      r._redraw(tx);
-    }
-
-    for (var s in _didUpdateStreams) {
-      s.add(true);
-    }
-    _didUpdateStreams.clear();
-
-    // No widgets should be invalidated while rendering.
-    assert(_dirty.isEmpty);
-  }
 
   void _invalidate(_Redrawable r) {
     if (_dirty.isEmpty) {
       env.requestFrame(this);
     }
     _dirty.add(r);
+  }
+
+  /// Re-renders the dirty widgets in this tree.
+  void render(NextFrame frame) {
+    Transaction tx = new Transaction(this, frame, _dirty);
+    _dirty.clear();
+    tx.run();
+
+    // No widgets should be invalidated while rendering.
+    assert(_dirty.isEmpty);
   }
 }

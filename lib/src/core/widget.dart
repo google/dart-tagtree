@@ -51,7 +51,7 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
     _shadow = render();
     _shadow.mount(tx, out, _path, _depth + 1);
     if (_didMount.hasListener) {
-      tx._didMountStreams.add(_didMount.sink);
+      tx._mountedWidgets.add(this);
     }
   }
 
@@ -104,7 +104,7 @@ abstract class Widget<S extends State> extends View implements _Redrawable {
       _shadow = newShadow;
     }
     if (_didUpdate.hasListener) {
-      tx.root._didUpdateStreams.add(_didUpdate.sink);
+      tx._updatedWidgets.add(this);
     }
   }
 

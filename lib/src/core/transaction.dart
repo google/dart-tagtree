@@ -1,10 +1,56 @@
 part of core;
 
+/// Something that can be added to a  dirty queue.
+abstract class _Redrawable {
+  int get depth;
+  void _redraw(Transaction tx);
+}
+
+/// A transaction that renders one animation frame for one Root.
 class Transaction {
   final Root root;
   final NextFrame frame;
 
-  Transaction(this.root, this.frame);
+  // What to do
+  final List<_Redrawable> _dirty;
+
+  // What was done
+  final List<Ref> _mountedRefs = <Ref>[];
+  final List<Elt> _mountedForms = <Elt>[];
+  final List<Widget> _mountedWidgets = <Widget>[];
+  final List<Widget> _updatedWidgets = <Widget>[];
+
+  Transaction(this.root, this.frame, Iterable<_Redrawable> dirty)
+      : _dirty = new List.from(dirty);
+
+  void run() {
+    // Sort ancestors ahead of children.
+    _dirty.sort((a, b) => a.depth - b.depth);
+
+    for (_Redrawable r in _dirty) {
+      r._redraw(this);
+    }
+
+    _finish();
+  }
+
+  void _finish() {
+    for (Ref r in _mountedRefs) {
+      frame.onRefMounted(r);
+    }
+
+    for (Elt form in _mountedForms) {
+      frame.onFormMounted(root, form.path);
+    }
+
+    for (var w in _mountedWidgets) {
+      w._didMount.add(true);
+    }
+
+    for (var w in _updatedWidgets) {
+      w._didUpdate.add(true);
+    }
+  }
 
   // Returns the new top view.
   View mountAtRoot(View current, View next) {
@@ -13,7 +59,6 @@ class Transaction {
       StringBuffer html = new StringBuffer();
       next.mount(this, html, root.path, 0);
       frame.mount(html.toString());
-      _finishMount(next, frame);
       return next;
     } else if (root._top.canUpdateTo(next)) {
       print("updating current view at ${root.path}");
@@ -29,7 +74,6 @@ class Transaction {
       var html = new StringBuffer();
       next.mount(this, html, root.path, 0);
       frame.replaceElement(html.toString());
-      _finishMount(next, frame);
       return next;
     }
   }
@@ -43,7 +87,6 @@ class Transaction {
     var html = new StringBuffer();
     owner._shadow.mount(this, html, path, owner.depth + 1);
     frame.replaceElement(html.toString());
-    _finishMount(newShadow, frame);
   }
 
   void mountNewChild(_Inner parent, View child, int childIndex) {
@@ -52,7 +95,6 @@ class Transaction {
     frame
       ..visit(parent.path)
       ..addChildElement(html.toString());
-    _finishMount(child, frame);
   }
 
   void mountReplacementChild(_Inner parent, View child, int childIndex) {
@@ -61,28 +103,5 @@ class Transaction {
     frame
         ..visit(parent.path)
         ..replaceChildElement(childIndex, html.toString());
-    _finishMount(child, frame);
-  }
-
-  final List<Ref> _mountedRefs = <Ref>[];
-  final List<Elt> _mountedForms = <Elt>[];
-  final List<StreamSink> _didMountStreams = <StreamSink>[];
-
-  /// Finishes mounting a subtree after the DOM is created.
-  void _finishMount(View subtree, NextFrame frame) {
-    for (Ref r in _mountedRefs) {
-      frame.onRefMounted(r);
-    }
-    _mountedRefs.clear();
-
-    for (Elt form in _mountedForms) {
-      frame.onFormMounted(root, form.path);
-    }
-    _mountedForms.clear();
-
-    for (var s in _didMountStreams) {
-      s.add(true);
-    }
-    _didMountStreams.clear();
   }
 }
