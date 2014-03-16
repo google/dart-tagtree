@@ -6,9 +6,11 @@ abstract class NextFrame {
   /// Installs the given html inside the container.
   void mount(String html);
 
-  /// Performs any DOM fixups needed for a mounted element.
-  /// This should be called after mount() for each mounted element.
-  void attachElement(Root root, Ref ref, String path, String tag);
+  /// Hook called after mounting a Ref.
+  void onRefMounted(Ref ref);
+
+  /// Hook called after mounting a form.
+  void onFormMounted(Root root, String path);
 
   /// Clears any references to the DOM element with the given path.
   /// This should be called after unmounting an element.

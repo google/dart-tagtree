@@ -53,10 +53,11 @@ abstract class View {
     _path = path;
     _depth = depth;
     _mounted = true;
+    doMount(out, root);
     if (_ref != null) {
       _ref._set(this);
+      root._mountedRefs.add(_ref);
     }
-    doMount(out, root);
   }
 
   /// Frees resources associated with this View and all its descendants

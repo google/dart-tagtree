@@ -168,23 +168,24 @@ class _SyncFrame implements core.NextFrame {
   }
 
   @override
-  void attachElement(core.Root root, core.Ref ref, String path, String tag) {
-    if (tag == "form") {
-      // onSubmit doesn't bubble, so install it here.
-      FormElement elt = cache.get(path);
-      formSubscriptions[path] = elt.onSubmit.listen((Event e) {
-        String path = _getTargetPath(e.target);
-        if (path == null) {
-          return;
-        }
-        e.preventDefault();
-        e.stopPropagation();
-        root.dispatchEvent(new core.ViewEvent(#onSubmit, path));
-      });
-    }
+  void onRefMounted(core.Ref ref) {
     if (ref is ElementRef) {
       ref.cache = cache;
     }
+  }
+
+  @override
+  void onFormMounted(core.Root root, String formPath) {
+    // onSubmit doesn't bubble, so install it here.
+    FormElement elt = cache.get(formPath);
+    formSubscriptions[formPath] = elt.onSubmit.listen((Event e) {
+      String path = _getTargetPath(e.target);
+      if (path != null) {
+        e.preventDefault();
+        e.stopPropagation();
+        root.dispatchEvent(new core.ViewEvent(#onSubmit, path));
+      }
+    });
   }
 
   @override

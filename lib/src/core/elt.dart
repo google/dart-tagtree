@@ -37,6 +37,10 @@ class Elt extends View with _Inner implements Jsonable {
     }
 
     _writeEndTag(out);
+
+    if (tagName == "form") {
+      root._mountedForms.add(this);
+    }
   }
 
   void _writeStartTag(StringBuffer out) {
