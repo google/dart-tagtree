@@ -4,7 +4,6 @@ typedef void RenderFunction(NextFrame frame);
 
 /// Callbacks to the Root's environment.
 abstract class RootEnv {
-  /// Requests a callback during the next animation frame.
   void requestAnimationFrame(RenderFunction callback);
 }
 
@@ -12,47 +11,44 @@ abstract class RootEnv {
 class Root {
   final int id;
   final RootEnv env;
+  final _dispatcher = new EventDispatcher();
   View _top;
 
   bool _frameRequested = false;
   View _nextTop;
   final Set<Widget> _widgetsToUpdate = new Set();
 
-  /// All installed event handlers. The submap's key is the View's path.
-  final _allHandlers = <Symbol, Map<String, EventHandler>>{};
-
-  Root(this.id, this.env) {
-    for (Symbol key in _allHandlerKeys) {
-      _allHandlers[key] = {};
-    }
-  }
+  Root(this.id, this.env);
 
   String get path => "/${id}";
 
-  /// Schedules the view tree to be replaced before the next rendered frame.
+  /// Schedules the view tree to be replaced just before the next rendered frame.
   /// (If called more than once within a single frame, only the last call will
   /// have any effect.)
   void requestMount(View nextTop) {
     _nextTop = nextTop;
-    _requestFrame();
+    _requestAnimationFrame();
   }
 
-  /// Schedules a widget to be updated before the next rendered frame.
+  /// Schedules a widget to be updated just before rendering the next frame.
+  /// (That is, marks the Widget as "dirty".)
   void requestWidgetUpdate(Widget w) {
     _widgetsToUpdate.add(w);
-    _requestFrame();
+    _requestAnimationFrame();
   }
 
-  void _requestFrame() {
+  /// Calls any event handlers for this root.
+  void dispatchEvent(ViewEvent e) => _dispatcher.dispatch(e);
+
+  void _requestAnimationFrame() {
     if (!_frameRequested) {
       _frameRequested = true;
       env.requestAnimationFrame(_renderFrame);
     }
   }
 
-  /// Performs all scheduled updates and renders the DOM.
   void _renderFrame(NextFrame frame) {
-    Transaction tx = new Transaction(this, frame, _nextTop, _widgetsToUpdate);
+    Transaction tx = new Transaction(this, frame, _dispatcher, _nextTop, _widgetsToUpdate);
 
     _frameRequested = false;
     _nextTop = null;
@@ -62,32 +58,5 @@ class Root {
 
     // No widgets should be invalidated while rendering.
     assert(_widgetsToUpdate.isEmpty);
-  }
-
-  bool _inViewEvent = false;
-
-  /// Calls any event handlers in this tree.
-  /// On return, there may be some dirty widgets to be re-rendered.
-  /// Note: widgets may also change state outside any event handler;
-  /// for example, due to a timer.
-  /// TODO: bubbling. For now, just exact match.
-  void dispatchEvent(ViewEvent e) {
-    if (_inViewEvent) {
-      // React does this too; see EVENT_SUPPRESSION
-      print("ignored ${e.type} received while processing another event");
-      return;
-    }
-    _inViewEvent = true;
-    try {
-      print("\n### ${e.type}");
-      if (e.targetPath != null) {
-        EventHandler h = _allHandlers[e.type][e.targetPath];
-        if (h != null) {
-          h(e);
-        }
-      }
-    } finally {
-      _inViewEvent = false;
-    }
   }
 }

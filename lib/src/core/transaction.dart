@@ -1,9 +1,10 @@
 part of core;
 
-/// A transaction that renders one animation frame for one Root.
+/// A Transaction renders one animation frame for one Root.
 class Transaction {
   final Root root;
   final NextFrame frame;
+  final EventDispatcher dispatcher;
 
   // What to do
   final View nextTop;
@@ -15,7 +16,7 @@ class Transaction {
   final List<Widget> _mountedWidgets = <Widget>[];
   final List<Widget> _updatedWidgets = <Widget>[];
 
-  Transaction(this.root, this.frame, this.nextTop, Iterable<Widget> widgetsToUpdate)
+  Transaction(this.root, this.frame, this.dispatcher, this.nextTop, Iterable<Widget> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
   void run() {
@@ -156,8 +157,8 @@ class Transaction {
         continue;
       }
 
-      if (root._allHandlers.containsKey(key)) {
-        root._allHandlers[key].remove(eltPath);
+      if (dispatcher.isHandlerKey(key)) {
+        dispatcher.removeHandler(key, eltPath);
       } else if (_allAtts.containsKey(key)) {
         frame.removeAttribute(_allAtts[key]);
       }
@@ -171,8 +172,8 @@ class Transaction {
         continue;
       }
 
-      if (root._allHandlers.containsKey(key)) {
-        root._allHandlers[key][eltPath] = newVal;
+      if (dispatcher.isHandlerKey(key)) {
+        dispatcher.setHandler(key, eltPath, newVal);
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];
         String val = _makeDomVal(key, newVal);

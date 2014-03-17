@@ -47,8 +47,8 @@ class Elt extends View with _Inner implements Jsonable {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
-      if (tx.root._allHandlers.containsKey(key)) {
-        tx.root._allHandlers[key][path] = val;
+      if (tx.dispatcher.isHandlerKey(key)) {
+        tx.dispatcher.setHandler(key, path, val);
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
@@ -71,10 +71,7 @@ class Elt extends View with _Inner implements Jsonable {
 
   void doUnmount(Transaction tx) {
     _unmountInner(tx);
-    for (Symbol key in tx.root._allHandlers.keys) {
-      Map m = tx.root._allHandlers[key];
-      m.remove(path);
-    }
+    tx.dispatcher.removeHandlersForPath(path);
   }
 
   bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
