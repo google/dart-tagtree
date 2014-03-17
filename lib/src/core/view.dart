@@ -43,27 +43,10 @@ abstract class View {
   /// Returns the view's current props.
   Props get props;
 
-  /// Writes the view tree to HTML and assigns an id to each View.
-  ///
-  /// The path should be a string starting with "/" and using "/" as a separator,
-  /// for example "/asdf/1/2/3", chosen to ensure uniqueness in the DOM. The path
-  /// of a child View is created by appending a suffix starting with "/" to its
-  /// parent. When rendered to HTML, the path will show up in the data-path
-  /// attribute.
-  ///
-  /// The depth is used to sort updates at render time. It's the depth in the
-  /// view tree, not the depth in the DOM tree (like the path). For example,
-  /// the root of a Widget's shadow tree has the same path, but its depth is
-  /// incremented.
-  void mount(Transaction tx, StringBuffer out, String path, int depth) {
+  void _mount(String path, int depth) {
     _path = path;
     _depth = depth;
     _mounted = true;
-    doMount(tx, out);
-    if (_ref != null) {
-      _ref._set(this);
-      tx._mountedRefs.add(_ref);
-    }
   }
 
   /// Frees resources associated with this View and all its descendants
@@ -77,9 +60,6 @@ abstract class View {
     tx._unmountedPaths.add(_path);
     _mounted = false;
   }
-
-  /// Subclass hook for implementing mount.
-  void doMount(Transaction tx, StringBuffer out);
 
   /// Subclass hook for implementing unmount.
   void doUnmount(Transaction tx);

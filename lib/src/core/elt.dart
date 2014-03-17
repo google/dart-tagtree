@@ -24,51 +24,6 @@ class Elt extends View with _Inner implements Jsonable {
 
   Props get props => new Props(_props);
 
-  void doMount(Transaction tx, StringBuffer out) {
-    _writeStartTag(tx, out);
-
-    if (tagName == "textarea") {
-      String val = _props[#defaultValue];
-      if (val != null) {
-        out.write(HTML_ESCAPE.convert(val));
-      }
-    } else {
-      _mountInner(tx, out, _props[#inner], _props[#innerHtml]);
-    }
-
-    _writeEndTag(out);
-
-    if (tagName == "form") {
-      tx._mountedForms.add(this);
-    }
-  }
-
-  void _writeStartTag(Transaction tx, StringBuffer out) {
-    out.write("<${tagName} data-path=\"${path}\"");
-    for (Symbol key in _props.keys) {
-      var val = _props[key];
-      if (tx.dispatcher.isHandlerKey(key)) {
-        tx.dispatcher.setHandler(key, path, val);
-      } else if (_allAtts.containsKey(key)) {
-        String name = _allAtts[key];
-        String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
-        out.write(" ${name}=\"${escaped}\"");
-      }
-    }
-    if (tagName == "input") {
-      String val = _props[#defaultValue];
-      if (val != null) {
-        String escaped = HTML_ESCAPE.convert(val);
-        out.write(" value=\"${escaped}\"");
-      }
-    }
-    out.write(">");
-  }
-
-  void _writeEndTag(out) {
-    out.write("</${tagName}>");
-  }
-
   void doUnmount(Transaction tx) {
     _unmountInner(tx);
     tx.dispatcher.removeHandlersForPath(path);
@@ -99,22 +54,6 @@ class Elt extends View with _Inner implements Jsonable {
     }
     return rs;
   }();
-}
-
-String _makeDomVal(Symbol key, val) {
-  if (key == #clazz) {
-    if (val is String) {
-      return val;
-    } else if (val is List) {
-      return val.join(" ");
-    } else {
-      throw "bad argument for clazz: ${val}";
-    }
-  } else if (val is int) {
-    return val.toString();
-  } else {
-    return val;
-  }
 }
 
 /// Encodes an Elt as tagged JSON.

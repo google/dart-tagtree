@@ -1,7 +1,7 @@
 part of core;
 
 /// A Transaction renders one animation frame for one Root.
-class Transaction {
+class Transaction extends _Mount {
   final Root root;
   final NextFrame frame;
   final EventDispatcher dispatcher;
@@ -11,11 +11,8 @@ class Transaction {
   final List<Widget> _widgetsToUpdate;
 
   // What was done
-  final List<Ref> _mountedRefs = [];
-  final List<Elt> _mountedForms = [];
   final List<String> _unmountedFormPaths = [];
   final List<String> _unmountedPaths = [];
-  final List<Widget> _mountedWidgets = [];
   final List<Widget> _updatedWidgets = [];
 
   Transaction(this.root, this.frame, this.dispatcher, this.nextTop, Iterable<Widget> widgetsToUpdate)
@@ -24,7 +21,7 @@ class Transaction {
   void run() {
     if (nextTop != null) {
       // Repace the entire tree.
-      root._top = _mountAtRoot(root.path, root._top, nextTop);
+      root._top = _updateRoot(root.path, root._top, nextTop);
     }
 
     // Sort ancestors ahead of children.
@@ -64,10 +61,10 @@ class Transaction {
   }
 
   // Returns the new top view.
-  View _mountAtRoot(String path, View current, View next) {
+  View _updateRoot(String path, View current, View next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
-      next.mount(this, html, path, 0);
+      mountView(next, html, path, 0);
       frame.mount(html.toString());
       return next;
     } else if (current.canUpdateTo(next)) {
@@ -81,54 +78,10 @@ class Transaction {
       current.unmount(this);
 
       var html = new StringBuffer();
-      next.mount(this, html, path, 0);
+      mountView(next, html, path, 0);
       frame.replaceElement(html.toString());
       return next;
     }
-  }
-
-  void mountShadow(StringBuffer html, Widget owner, View newShadow) {
-    newShadow.mount(this, html, owner.path, owner.depth + 1);
-    owner._shadow = newShadow;
-  }
-
-  void mountReplacementShadow(Widget owner, View newShadow) {
-    // Set the current element first because unmount clears the node cache
-    String path = owner.path;
-    frame.visit(path);
-    owner._shadow.unmount(this);
-
-    var html = new StringBuffer();
-    owner._shadow.mount(this, html, path, owner.depth + 1);
-    frame.replaceElement(html.toString());
-  }
-
-  List<View> mountChildren(StringBuffer out, String parentPath, int parentDepth, List<View> children) {
-    if (children.isEmpty) {
-      return null;
-    }
-
-    int childDepth = parentDepth + 1;
-    for (int i = 0; i < children.length; i++) {
-      children[i].mount(this, out, "${parentPath}/${i}", childDepth);
-    }
-    return children;
-  }
-
-  void mountNewChild(_Inner parent, View child, int childIndex) {
-    var html = new StringBuffer();
-    child.mount(this, html, "${parent.path}/${childIndex}", parent.depth + 1);
-    frame
-      ..visit(parent.path)
-      ..addChildElement(html.toString());
-  }
-
-  void mountReplacementChild(_Inner parent, View child, int childIndex) {
-    StringBuffer html = new StringBuffer();
-    child.mount(this, html, "${parent.path}/${childIndex}", parent.depth + 1);
-    frame
-        ..visit(parent.path)
-        ..replaceChildElement(childIndex, html.toString());
   }
 
   /// Updates a view in place.

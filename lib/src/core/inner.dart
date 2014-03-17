@@ -17,7 +17,7 @@ abstract class _Inner {
   // The Elt's depth.
   int get depth;
 
-  void _mountInner(Transaction tx, StringBuffer out, inner, String innerHtml) {
+  void _mountInner(_Mount tx, StringBuffer out, inner, String innerHtml) {
     if (inner == null) {
       if (innerHtml != null) {
         // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)

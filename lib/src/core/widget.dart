@@ -45,16 +45,6 @@ abstract class Widget<S extends State> extends View {
   Stream get didUpdate => _didUpdate.stream;
   Stream get willUnmount => _willUnmount.stream;
 
-  void doMount(Transaction tx, StringBuffer out) {
-    _root = tx.root;
-    _state = firstState;
-    View newShadow = render();
-    tx.mountShadow(out, this, newShadow);
-    if (_didMount.hasListener) {
-      tx._mountedWidgets.add(this);
-    }
-  }
-
   void doUnmount(Transaction tx) {
     if (_shadow == null) {
       throw "not mounted: ${this.runtimeType}";
