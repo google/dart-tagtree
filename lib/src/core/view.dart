@@ -74,7 +74,7 @@ abstract class View {
     if (_ref != null) {
       _ref._set(null);
     }
-    tx.frame.detachElement(_path);
+    tx._unmountedPaths.add(_path);
     _mounted = false;
   }
 

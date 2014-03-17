@@ -48,8 +48,8 @@ abstract class Widget<S extends State> extends View {
   void doMount(Transaction tx, StringBuffer out) {
     _root = tx.root;
     _state = firstState;
-    _shadow = render();
-    _shadow.mount(tx, out, _path, _depth + 1);
+    View newShadow = render();
+    tx.mountShadow(out, this, newShadow);
     if (_didMount.hasListener) {
       tx._mountedWidgets.add(this);
     }

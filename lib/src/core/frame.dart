@@ -12,6 +12,9 @@ abstract class NextFrame {
   /// Hook called after mounting a form.
   void onFormMounted(Root root, String path);
 
+  /// Hook called after unmounted a form.
+  void onFormUnmounted(String formPath);
+
   /// Clears any references to the DOM element with the given path.
   /// This should be called after unmounting an element.
   void detachElement(String path);

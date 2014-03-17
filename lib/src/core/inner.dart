@@ -27,7 +27,7 @@ abstract class _Inner {
       out.write(HTML_ESCAPE.convert(inner));
       _childText = inner;
     } else if (inner is View) {
-      _children = _mountChildren(tx, out, [inner]);
+      _children = tx.mountChildren(out, path, depth, [inner]);
     } else if (inner is Iterable) {
       List<View> children = [];
       for (var item in inner) {
@@ -39,21 +39,8 @@ abstract class _Inner {
           throw "bad item in inner: ${item}";
         }
       }
-      _children = _mountChildren(tx, out, children);
+      _children = tx.mountChildren(out, path, depth, children);
     }
-  }
-
-  List<View> _mountChildren(Transaction tx, StringBuffer out, List<View> children) {
-    if (children.isEmpty) {
-      return null;
-    }
-
-    String parentPath = path;
-    int childDepth = depth + 1;
-    for (int i = 0; i < children.length; i++) {
-      children[i].mount(tx, out, "${parentPath}/${i}", childDepth);
-    }
-    return children;
   }
 
   void _unmountInner(Transaction tx) {

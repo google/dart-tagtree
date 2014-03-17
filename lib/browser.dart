@@ -124,29 +124,29 @@ class _BrowserEnv implements core.RootEnv {
 
 class _ElementCache {
   final HtmlElement container;
-  final Map<String, HtmlElement> idToNode = new HashMap();
+  final Map<String, HtmlElement> pathToNode = new HashMap();
 
   _ElementCache(this.container);
 
   HtmlElement get(String path) {
-    HtmlElement node = idToNode[path];
+    HtmlElement node = pathToNode[path];
     if (node != null) {
       return node;
     }
     node = querySelector("[data-path=\"${path}\"]");
     if (node != null) {
-      idToNode[path] = node;
+      pathToNode[path] = node;
       return node;
     }
     return null;
   }
 
   void _set(String path, HtmlElement elt) {
-    idToNode[path] = elt;
+    pathToNode[path] = elt;
   }
 
   void _clear(String path) {
-    idToNode.remove(path);
+    pathToNode.remove(path);
   }
 }
 
@@ -189,12 +189,16 @@ class _SyncFrame implements core.NextFrame {
   }
 
   @override
-  void detachElement(String path) {
-    StreamSubscription s = formSubscriptions[path];
+  void onFormUnmounted(String formPath) {
+    StreamSubscription s = formSubscriptions[formPath];
     if (s != null) {
       s.cancel();
-      formSubscriptions.remove(path);
+      formSubscriptions.remove(formPath);
     }
+  }
+
+  @override
+  void detachElement(String path) {
     cache._clear(path);
   }
 

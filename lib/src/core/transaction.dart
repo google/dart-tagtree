@@ -11,10 +11,12 @@ class Transaction {
   final List<Widget> _widgetsToUpdate;
 
   // What was done
-  final List<Ref> _mountedRefs = <Ref>[];
-  final List<Elt> _mountedForms = <Elt>[];
-  final List<Widget> _mountedWidgets = <Widget>[];
-  final List<Widget> _updatedWidgets = <Widget>[];
+  final List<Ref> _mountedRefs = [];
+  final List<Elt> _mountedForms = [];
+  final List<String> _unmountedFormPaths = [];
+  final List<String> _unmountedPaths = [];
+  final List<Widget> _mountedWidgets = [];
+  final List<Widget> _updatedWidgets = [];
 
   Transaction(this.root, this.frame, this.dispatcher, this.nextTop, Iterable<Widget> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
@@ -42,6 +44,14 @@ class Transaction {
 
     for (Elt form in _mountedForms) {
       frame.onFormMounted(root, form.path);
+    }
+
+    for (String path in _unmountedFormPaths) {
+      frame.onFormUnmounted(path);
+    }
+
+    for (String path in _unmountedPaths) {
+      frame.detachElement(path);
     }
 
     for (var w in _mountedWidgets) {
@@ -77,7 +87,12 @@ class Transaction {
     }
   }
 
-  void mountShadow(Widget owner, View newShadow) {
+  void mountShadow(StringBuffer html, Widget owner, View newShadow) {
+    newShadow.mount(this, html, owner.path, owner.depth + 1);
+    owner._shadow = newShadow;
+  }
+
+  void mountReplacementShadow(Widget owner, View newShadow) {
     // Set the current element first because unmount clears the node cache
     String path = owner.path;
     frame.visit(path);
@@ -86,6 +101,18 @@ class Transaction {
     var html = new StringBuffer();
     owner._shadow.mount(this, html, path, owner.depth + 1);
     frame.replaceElement(html.toString());
+  }
+
+  List<View> mountChildren(StringBuffer out, String parentPath, int parentDepth, List<View> children) {
+    if (children.isEmpty) {
+      return null;
+    }
+
+    int childDepth = parentDepth + 1;
+    for (int i = 0; i < children.length; i++) {
+      children[i].mount(this, out, "${parentPath}/${i}", childDepth);
+    }
+    return children;
   }
 
   void mountNewChild(_Inner parent, View child, int childIndex) {
@@ -139,7 +166,7 @@ class Transaction {
     if (current._shadow.canUpdateTo(newShadow)) {
       update(current._shadow, newShadow);
     } else {
-      mountShadow(current, newShadow);
+      mountReplacementShadow(current, newShadow);
       current._shadow = newShadow;
     }
     if (current._didUpdate.hasListener) {
