@@ -16,6 +16,4 @@ class Text extends View {
   Props get props => new Props({
     #value: value
   });
-
-  bool canUpdateTo(View other) => (other is Text);
 }

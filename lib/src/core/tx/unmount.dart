@@ -26,7 +26,7 @@ abstract class _Unmount {
       v._ref._set(null);
     }
     _unmountedPaths.add(v._path);
-    v._mounted = false;
+    v._unmount();
   }
 
   void _unmountWidget(Widget w) {

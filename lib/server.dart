@@ -14,9 +14,6 @@ abstract class ServerWidget extends core.View {
   core.Props get props => new core.Props({});
 
   core.View render();
-
-  @override
-  bool canUpdateTo(core.View nextVersion) => false;
 }
 
 /// A view tree container that renders to a WebSocket.

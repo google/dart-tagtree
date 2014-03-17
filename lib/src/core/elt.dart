@@ -24,8 +24,6 @@ class Elt extends View with _Inner implements Jsonable {
 
   Props get props => new Props(_props);
 
-  bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
-
   /// A ruleSet that can encode any Elt as JSON.
   static final JsonRuleSet rules = (){
     var rs = new JsonRuleSet();

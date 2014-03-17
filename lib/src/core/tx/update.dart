@@ -6,6 +6,21 @@ abstract class _Update extends _Mount with _Unmount {
   // What was done
   final List<Widget> _updatedWidgets = [];
 
+  /// Returns true if we can call update() to do an in-place update to a new version of a
+  /// view. Otherwise, we must unmount the view and mount its replacement, so all state
+  /// will be lost.
+  bool canUpdateTo(View current, View nextVersion) {
+    if (current is Text) {
+      return (nextVersion is Text);
+    } else if (current is Widget) {
+      return current.runtimeType == nextVersion.runtimeType;
+    } else if (current is Elt) {
+      return (nextVersion is Elt) && current.tagName == nextVersion.tagName;
+    } else {
+      throw "cannot update: ${current.runtimeType}";
+    }
+  }
+
   /// Updates a view in place.
   ///
   /// After the update, it should have the same props as nextVersion and any DOM changes
@@ -38,7 +53,7 @@ abstract class _Update extends _Mount with _Unmount {
   void _updateWidget(Widget current, Widget next) {
     View newShadow = current._updateAndRender(next);
 
-    if (current._shadow.canUpdateTo(newShadow)) {
+    if (canUpdateTo(current._shadow, newShadow)) {
       update(current._shadow, newShadow);
     } else {
       _mountReplacementShadow(current, newShadow);
@@ -173,7 +188,7 @@ abstract class _Update extends _Mount with _Unmount {
       assert(before != null);
       View after = newChildren[i];
       assert(after != null);
-      if (before.canUpdateTo(after)) {
+      if (canUpdateTo(before, after)) {
         // note: update may call frame.visit()
         update(before, after);
         updatedChildren.add(before);

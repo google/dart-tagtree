@@ -24,9 +24,9 @@ abstract class View {
   /// The owner's reference to this View. May be null.
   final Ref _ref;
 
-  bool _mounted = false;
   String _path;
   int _depth;
+  bool _mounted = false;
 
   View(this._ref);
 
@@ -44,16 +44,16 @@ abstract class View {
   Props get props;
 
   void _mount(String path, int depth) {
+    assert(!_mounted);
     _path = path;
     _depth = depth;
     _mounted = true;
   }
 
-  /// Returns true if we can do an in-place update that sets the props to those of the given view.
-  ///
-  /// If so, we can call refresh(). Otherwise, we must unmount the view and mount its replacement,
-  /// so all state will be lost.
-  bool canUpdateTo(View nextVersion);
+  void _unmount() {
+    assert(_mounted);
+    _mounted = false;
+  }
 }
 
 /// Holds a reference to a view.

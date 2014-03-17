@@ -62,7 +62,7 @@ class Transaction extends _Update {
       mountView(next, html, path, 0);
       frame.mount(html.toString());
       return next;
-    } else if (current.canUpdateTo(next)) {
+    } else if (canUpdateTo(current, next)) {
       print("updating current view at ${path}");
       update(current, next);
       return current;
