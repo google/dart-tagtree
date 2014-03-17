@@ -45,15 +45,6 @@ abstract class Widget<S extends State> extends View {
   Stream get didUpdate => _didUpdate.stream;
   Stream get willUnmount => _willUnmount.stream;
 
-  void doUnmount(Transaction tx) {
-    if (_shadow == null) {
-      throw "not mounted: ${this.runtimeType}";
-    }
-    _willUnmount.add(true);
-    _shadow.unmount(tx);
-    _shadow = null;
-  }
-
   /// Requests that this Widget be re-rendered during the next frame.
   void invalidate() {
     assert(_mounted);

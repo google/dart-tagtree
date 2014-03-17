@@ -16,14 +16,4 @@ abstract class _Inner {
 
   // The Elt's depth.
   int get depth;
-
-  void _unmountInner(Transaction tx) {
-    if (_children != null) {
-      for (View child in _children) {
-        child.unmount(tx);
-      }
-      _children = null;
-    }
-    _childText = null;
-  }
 }

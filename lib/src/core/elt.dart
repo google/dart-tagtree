@@ -24,14 +24,6 @@ class Elt extends View with _Inner implements Jsonable {
 
   Props get props => new Props(_props);
 
-  void doUnmount(Transaction tx) {
-    _unmountInner(tx);
-    tx.dispatcher.removeHandlersForPath(path);
-    if (tagName == "form") {
-      tx._unmountedFormPaths.add(path);
-    }
-  }
-
   bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
 
   /// A ruleSet that can encode any Elt as JSON.

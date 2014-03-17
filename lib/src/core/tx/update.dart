@@ -1,7 +1,7 @@
 part of core;
 
 /// A Transaction mixin that implements updating views in place.
-abstract class _Update extends _Mount {
+abstract class _Update extends _Mount with _Unmount {
 
   // What was done
   final List<Widget> _updatedWidgets = [];
@@ -53,7 +53,7 @@ abstract class _Update extends _Mount {
     // TODO: no longer need to visit early
     String path = owner.path;
     frame.visit(path);
-    owner._shadow.unmount(this);
+    unmount(owner._shadow);
 
     var html = new StringBuffer();
     mountView(newShadow, html, path, owner.depth + 1);
@@ -114,7 +114,7 @@ abstract class _Update extends _Mount {
   /// (Postcondition: _children and _childText are updated.)
   void _updateInner(_Inner elt, String path, newInner, newInnerHtml) {
     if (newInner == null) {
-      elt._unmountInner(this);
+      unmountInner(elt);
       frame.visit(path);
       if (newInnerHtml != null) {
         frame.setInnerHtml(newInnerHtml);
@@ -125,7 +125,7 @@ abstract class _Update extends _Mount {
       if (newInner == elt._childText) {
         return;
       }
-      elt._unmountInner(this);
+      unmountInner(elt);
       frame
           ..visit(path)
           ..setInnerText(newInner);
@@ -178,7 +178,7 @@ abstract class _Update extends _Mount {
         update(before, after);
         updatedChildren.add(before);
       } else {
-        before.unmount(this);
+        unmount(before);
         _mountReplacementChild(elt, after, i);
         updatedChildren.add(after);
       }

@@ -16,11 +16,6 @@ abstract class ServerWidget extends core.View {
   core.View render();
 
   @override
-  void doUnmount(_) {
-    throw "not implemented";
-  }
-
-  @override
   bool canUpdateTo(core.View nextVersion) => false;
 }
 

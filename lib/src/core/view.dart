@@ -49,21 +49,6 @@ abstract class View {
     _mounted = true;
   }
 
-  /// Frees resources associated with this View and all its descendants
-  /// and marks them as unmounted. This removes any references to the DOM,
-  /// but doesn't actually change the DOM.
-  void unmount(Transaction tx) {
-    doUnmount(tx);
-    if (_ref != null) {
-      _ref._set(null);
-    }
-    tx._unmountedPaths.add(_path);
-    _mounted = false;
-  }
-
-  /// Subclass hook for implementing unmount.
-  void doUnmount(Transaction tx);
-
   /// Returns true if we can do an in-place update that sets the props to those of the given view.
   ///
   /// If so, we can call refresh(). Otherwise, we must unmount the view and mount its replacement,

@@ -10,10 +10,6 @@ class Transaction extends _Update {
   final View nextTop;
   final List<Widget> _widgetsToUpdate;
 
-  // What was done
-  final List<String> _unmountedFormPaths = [];
-  final List<String> _unmountedPaths = [];
-
   Transaction(this.root, this.frame, this.dispatcher, this.nextTop, Iterable<Widget> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
@@ -74,7 +70,7 @@ class Transaction extends _Update {
       print("replacing current view ${path}");
       // Set the current element first because unmount clears the node cache
       frame.visit(path);
-      current.unmount(this);
+      unmount(current);
 
       var html = new StringBuffer();
       mountView(next, html, path, 0);

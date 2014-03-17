@@ -21,4 +21,5 @@ part 'src/core/view.dart';
 part 'src/core/widget.dart';
 part 'src/core/tx/mount.dart';
 part 'src/core/tx/transaction.dart';
+part 'src/core/tx/unmount.dart';
 part 'src/core/tx/update.dart';
