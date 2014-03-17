@@ -19,5 +19,6 @@ part 'src/core/root.dart';
 part 'src/core/tags.dart';
 part 'src/core/text.dart';
 part 'src/core/transaction.dart';
+part 'src/core/update.dart';
 part 'src/core/view.dart';
 part 'src/core/widget.dart';

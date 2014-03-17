@@ -61,17 +61,6 @@ abstract class _Mount {
     owner._shadow = newShadow;
   }
 
-  void mountReplacementShadow(Widget owner, View newShadow) {
-    // TODO: no longer need to visit early
-    String path = owner.path;
-    frame.visit(path);
-    owner._shadow.unmount(this);
-
-    var html = new StringBuffer();
-    mountView(newShadow, html, path, owner.depth + 1);
-    frame.replaceElement(html.toString());
-  }
-
   void _mountElt(Elt elt, StringBuffer html) {
     _writeStartTag(html, elt.tagName, elt.path, elt._props);
 
@@ -81,7 +70,7 @@ abstract class _Mount {
         html.write(HTML_ESCAPE.convert(val));
       }
     } else {
-      elt._mountInner(this, html, elt._props[#inner], elt._props[#innerHtml]);
+      mountInner(elt, html, elt._props[#inner], elt._props[#innerHtml]);
     }
 
     html.write("</${elt.tagName}>");
@@ -113,7 +102,33 @@ abstract class _Mount {
     out.write(">");
   }
 
-  List<View> mountChildren(StringBuffer out, String parentPath, int parentDepth, List<View> children) {
+  void mountInner(_Inner elt, StringBuffer out, inner, String innerHtml) {
+    if (inner == null) {
+      if (innerHtml != null) {
+        // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)
+        out.write(innerHtml);
+      }
+    } else if (inner is String) {
+      out.write(HTML_ESCAPE.convert(inner));
+      elt._childText = inner;
+    } else if (inner is View) {
+      elt._children = _mountChildren(out, elt.path, elt.depth, [inner]);
+    } else if (inner is Iterable) {
+      List<View> children = [];
+      for (var item in inner) {
+        if (item is String) {
+          children.add(new Text(item));
+        } else if (item is View) {
+          children.add(item);
+        } else {
+          throw "bad item in inner: ${item}";
+        }
+      }
+      elt._children = _mountChildren(out, elt.path, elt.depth, children);
+    }
+  }
+
+  List<View> _mountChildren(StringBuffer out, String parentPath, int parentDepth, List<View> children) {
     if (children.isEmpty) {
       return null;
     }
@@ -123,22 +138,6 @@ abstract class _Mount {
       mountView(children[i], out, "${parentPath}/${i}", childDepth);
     }
     return children;
-  }
-
-  void mountNewChild(_Inner parent, View child, int childIndex) {
-    var html = new StringBuffer();
-    mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
-    frame
-      ..visit(parent.path)
-      ..addChildElement(html.toString());
-  }
-
-  void mountReplacementChild(_Inner parent, View child, int childIndex) {
-    StringBuffer html = new StringBuffer();
-    mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
-    frame
-        ..visit(parent.path)
-        ..replaceChildElement(childIndex, html.toString());
   }
 }
 

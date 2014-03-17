@@ -34,18 +34,6 @@ class Elt extends View with _Inner implements Jsonable {
 
   bool canUpdateTo(View other) => (other is Elt) && other.tagName == tagName;
 
-  void update(Elt nextVersion, Transaction tx) {
-    assert(_path != null);
-    if (nextVersion == null) {
-      return; // no internal state to update
-    }
-    Map<Symbol, dynamic> oldProps = _props;
-    _props = nextVersion._props;
-
-    tx._updateDomProperties(_path, oldProps, _props);
-    _updateInner(_path, _props[#inner], _props[#innerHtml], tx);
-  }
-
   /// A ruleSet that can encode any Elt as JSON.
   static final JsonRuleSet rules = (){
     var rs = new JsonRuleSet();
