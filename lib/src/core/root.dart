@@ -8,10 +8,10 @@ abstract class RootEnv {
 }
 
 /// A Root contains a view tree that's rendered to the DOM.
-class Root {
+class Root implements WidgetEnv {
   final int id;
   final RootEnv env;
-  final _dispatcher = new EventDispatcher();
+  final _handlers = new HandlerMap();
   View _top;
 
   bool _frameRequested = false;
@@ -32,13 +32,14 @@ class Root {
 
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
+  @override
   void requestWidgetUpdate(Widget w) {
     _widgetsToUpdate.add(w);
     _requestAnimationFrame();
   }
 
   /// Calls any event handlers for this root.
-  void dispatchEvent(ViewEvent e) => _dispatcher.dispatch(e);
+  void dispatchEvent(ViewEvent e) => dispatch(e, _handlers);
 
   void _requestAnimationFrame() {
     if (!_frameRequested) {
@@ -48,7 +49,7 @@ class Root {
   }
 
   void _renderFrame(NextFrame frame) {
-    Transaction tx = new Transaction(this, frame, _dispatcher, _nextTop, _widgetsToUpdate);
+    Transaction tx = new Transaction(this, frame, _handlers, _nextTop, _widgetsToUpdate);
 
     _frameRequested = false;
     _nextTop = null;

@@ -1,12 +1,16 @@
 part of core;
 
+abstract class WidgetEnv {
+  void requestWidgetUpdate(Widget w);
+}
+
 /// A Widget is a View that acts as a template. Its render() method typically
 /// returns elements to be rendered
 abstract class Widget<S extends State> extends View {
   Props _props;
   State _state, _nextState;
   View _shadow;
-  Root _root;
+  WidgetEnv _widgetEnv;
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
@@ -48,7 +52,7 @@ abstract class Widget<S extends State> extends View {
   /// Requests that this Widget be re-rendered during the next frame.
   void invalidate() {
     assert(_mounted);
-    _root.requestWidgetUpdate(this);
+    _widgetEnv.requestWidgetUpdate(this);
   }
 
   /// Constructs another View to be rendered in place of this Widget.
@@ -60,7 +64,7 @@ abstract class Widget<S extends State> extends View {
   /// because the shadow isn't updated yet.
   View _updateAndRender(Widget nextVersion) {
     assert(_mounted);
-    assert(_root != null);
+    assert(_widgetEnv != null);
 
     if (_nextState != null) {
       _state = _nextState;

@@ -27,20 +27,20 @@ class ChangeEvent extends ViewEvent {
 
 typedef EventHandler(ViewEvent e);
 
-Set<Symbol> _allHandlerKeys = new Set.from([#onChange, #onClick, #onSubmit]);
+final Set<Symbol> allHandlerKeys = new Set.from([#onChange, #onClick, #onSubmit]);
 
 /// Dispatches all events for one Root.
-class EventDispatcher {
+class HandlerMap {
   // A multimap from (handler key, path) to an event handler.
   final _handlers = <Symbol, Map<String, EventHandler>> {};
 
-  EventDispatcher() {
-    for (Symbol key in _allHandlerKeys) {
+  HandlerMap() {
+    for (Symbol key in allHandlerKeys) {
       _handlers[key] = {};
     }
   }
 
-  bool isHandlerKey(Symbol key) => _allHandlerKeys.contains(key);
+  EventHandler getHandler(Symbol key, String path) => _handlers[key][path];
 
   void setHandler(Symbol key, String path, EventHandler handler) {
     _handlers[key][path] = handler;
@@ -56,31 +56,31 @@ class EventDispatcher {
       m.remove(path);
     }
   }
+}
 
-  bool _inViewEvent = false;
+bool _inViewEvent = false;
 
-  /// Calls any event handlers in this tree.
-  /// On return, there may be some dirty widgets to be re-rendered.
-  /// Note: widgets may also change state outside any event handler;
-  /// for example, due to a timer.
-  /// TODO: bubbling. For now, just exact match.
-  void dispatch(ViewEvent e) {
-    if (_inViewEvent) {
-      // React does this too; see EVENT_SUPPRESSION
-      print("ignored ${e.type} received while processing another event");
-      return;
-    }
-    _inViewEvent = true;
-    try {
-      print("\n### ${e.type}");
-      if (e.targetPath != null) {
-        EventHandler h = _handlers[e.type][e.targetPath];
-        if (h != null) {
-          h(e);
-        }
+/// Calls any event handlers in this tree.
+/// On return, there may be some dirty widgets to be re-rendered.
+/// Note: widgets may also change state outside any event handler;
+/// for example, due to a timer.
+/// TODO: bubbling. For now, just exact match.
+void dispatch(ViewEvent e, HandlerMap handlers) {
+  if (_inViewEvent) {
+    // React does this too; see EVENT_SUPPRESSION
+    print("ignored ${e.type} received while processing another event");
+    return;
+  }
+  _inViewEvent = true;
+  try {
+    print("\n### ${e.type}");
+    if (e.targetPath != null) {
+      EventHandler h = handlers.getHandler(e.type, e.targetPath);
+      if (h != null) {
+        h(e);
       }
-    } finally {
-      _inViewEvent = false;
     }
+  } finally {
+    _inViewEvent = false;
   }
 }

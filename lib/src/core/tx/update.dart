@@ -2,9 +2,12 @@ part of core;
 
 /// A Transaction mixin that implements updating views in place.
 abstract class _Update extends _Mount with _Unmount {
+  NextFrame get frame;
 
-  // What was done
+  // What was changed
   final List<Widget> _updatedWidgets = [];
+  void setHandler(Symbol key, String path, EventHandler handler);
+  void removeHandler(Symbol key, String path);
 
   /// Returns true if we can call update() to do an in-place update to a new version of a
   /// view. Otherwise, we must unmount the view and mount its replacement, so all state
@@ -100,8 +103,8 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (dispatcher.isHandlerKey(key)) {
-        dispatcher.removeHandler(key, eltPath);
+      if (allHandlerKeys.contains(key)) {
+        removeHandler(key, eltPath);
       } else if (_allAtts.containsKey(key)) {
         frame.removeAttribute(_allAtts[key]);
       }
@@ -115,8 +118,8 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (dispatcher.isHandlerKey(key)) {
-        dispatcher.setHandler(key, eltPath, newVal);
+      if (allHandlerKeys.contains(key)) {
+        setHandler(key, eltPath, newVal);
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];
         String val = _makeDomVal(key, newVal);

@@ -3,14 +3,14 @@ part of core;
 /// A Transaction mixin that implements mounting views.
 abstract class _Mount {
 
-  Root get root;
-  EventDispatcher get dispatcher;
-  NextFrame get frame;
+  // Dependencies to mount
+  WidgetEnv get widgetEnv;
 
-  // What was done
+  // What was mounted
   final List<Ref> _mountedRefs = [];
   final List<Elt> _mountedForms = [];
   final List<Widget> _mountedWidgets = [];
+  void addHandler(Symbol key, String path, EventHandler val);
 
   /// Writes the view tree to HTML and assigns an id to each View.
   ///
@@ -47,7 +47,7 @@ abstract class _Mount {
   }
 
   void _mountWidget(Widget widget, StringBuffer html) {
-    widget._root = root;
+    widget._widgetEnv = widgetEnv;
     widget._state = widget.firstState;
     _mountShadow(html, widget);
     if (widget._didMount.hasListener) {
@@ -84,8 +84,8 @@ abstract class _Mount {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
-      if (dispatcher.isHandlerKey(key)) {
-        dispatcher.setHandler(key, path, val);
+      if (allHandlerKeys.contains(key)) {
+        addHandler(key, path, val);
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));

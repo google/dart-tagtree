@@ -3,11 +3,10 @@ part of core;
 /// A Transaction mixin that implements unmounting views.
 abstract class _Unmount {
 
-  EventDispatcher get dispatcher;
-
-  // What was done
+  // What was unmounted
   final List<String> _unmountedPaths = [];
   final List<String> _unmountedFormPaths = [];
+  void removeHandlersForPath(String path);
 
   /// Frees resources associated with this View and all its descendants
   /// and marks them as unmounted. This removes any references to the DOM,
@@ -42,7 +41,7 @@ abstract class _Unmount {
 
   void _unmountElt(Elt elt) {
     unmountInner(elt);
-    dispatcher.removeHandlersForPath(elt.path);
+    removeHandlersForPath(elt.path);
     if (elt.tagName == "form") {
       _unmountedFormPaths.add(elt.path);
     }
