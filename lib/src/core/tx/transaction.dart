@@ -10,10 +10,6 @@ class Transaction extends _Update {
   final View nextTop;
   final List<Widget> _widgetsToUpdate;
 
-  // What was done
-  final List<String> _unmountedPaths = [];
-  final List<String> _unmountedFormPaths = [];
-
   Transaction(this.root, this.frame, this.handlers, this.nextTop, Iterable<Widget> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
@@ -44,14 +40,6 @@ class Transaction extends _Update {
       frame.onFormMounted(root, form.path);
     }
 
-    for (String path in _unmountedFormPaths) {
-      frame.onFormUnmounted(path);
-    }
-
-    for (String path in _unmountedPaths) {
-      frame.detachElement(path);
-    }
-
     for (var w in _mountedWidgets) {
       w._didMount.add(true);
     }
@@ -74,13 +62,11 @@ class Transaction extends _Update {
       return current;
     } else {
       print("replacing current view ${path}");
-      // Set the current element first because unmount clears the node cache
-      frame.visit(path);
-      unmount(current);
+      unmount(current, willReplace: true);
 
       var html = new StringBuffer();
       mountView(next, html, path, 0);
-      frame.replaceElement(html.toString());
+      frame.replaceElement(path, html.toString());
       return next;
     }
   }
@@ -103,11 +89,8 @@ class Transaction extends _Update {
   }
 
   @override
-  void releaseElement(String path, String tag) {
-    _unmountedPaths.add(path);
-    if (tag == 'form') {
-      _unmountedFormPaths.add(path);
-    }
+  void releaseElement(String path, {bool willReplace: false}) {
+    frame.detachElement(path, willReplace: willReplace);
     handlers.removeHandlersForPath(path);
   }
 }

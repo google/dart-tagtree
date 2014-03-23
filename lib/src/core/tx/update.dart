@@ -68,14 +68,12 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   void _mountReplacementShadow(Widget owner, View newShadow) {
-    // TODO: no longer need to visit early
     String path = owner.path;
-    frame.visit(path);
-    unmount(owner._shadow);
+    unmount(owner._shadow, willReplace: true);
 
     var html = new StringBuffer();
     mountView(newShadow, html, path, owner.depth + 1);
-    frame.replaceElement(html.toString());
+    frame.replaceElement(path, html.toString());
   }
 
   void _updateElt(Elt elt, Elt nextVersion) {
@@ -196,7 +194,7 @@ abstract class _Update extends _Mount with _Unmount {
         update(before, after);
         updatedChildren.add(before);
       } else {
-        unmount(before);
+        unmount(before, willReplace: true);
         _mountReplacementChild(elt, after, i);
         updatedChildren.add(after);
       }
@@ -232,8 +230,6 @@ abstract class _Update extends _Mount with _Unmount {
   void _mountReplacementChild(_Inner parent, View child, int childIndex) {
     StringBuffer html = new StringBuffer();
     mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
-    frame
-        ..visit(parent.path)
-        ..replaceChildElement(childIndex, html.toString());
+    frame.replaceElement(child.path, html.toString());
   }
 }

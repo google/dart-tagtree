@@ -17,13 +17,15 @@ abstract class NextFrame {
 
   /// Clears any references to the DOM element with the given path.
   /// This should be called after unmounting an element.
-  void detachElement(String path);
+  /// If willReplace is set, the DOM node should be kept for a subsequent
+  /// replaceElement call.
+  void detachElement(String path, {bool willReplace: false});
 
   /// Sets the element that most other methods act on.
   void visit(String path);
 
   /// Creates a new Element with the given HTML and replaces the current element.
-  void replaceElement(String html);
+  void replaceElement(String path, String html);
 
   void setAttribute(String key, String value);
 
@@ -35,8 +37,6 @@ abstract class NextFrame {
 
   /// Creates a new Element with the given HTML and appends it as the last child.
   void addChildElement(String childHtml);
-
-  void replaceChildElement(int childIndex, String childHtml);
 
   void removeChild(int index);
 }

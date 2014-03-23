@@ -190,16 +190,19 @@ class _SyncFrame implements core.NextFrame {
 
   @override
   void onFormUnmounted(String formPath) {
-    StreamSubscription s = formSubscriptions[formPath];
-    if (s != null) {
-      s.cancel();
-      formSubscriptions.remove(formPath);
-    }
+
   }
 
   @override
-  void detachElement(String path) {
-    cache._clear(path);
+  void detachElement(String path, {bool willReplace: false}) {
+    StreamSubscription s = formSubscriptions[path];
+    if (s != null) {
+      s.cancel();
+      formSubscriptions.remove(path);
+    }
+    if (!willReplace) {
+      cache._clear(path);
+    }
   }
 
   @override
@@ -211,13 +214,11 @@ class _SyncFrame implements core.NextFrame {
   }
 
   @override
-  void replaceElement(String html) {
-    if (_elt == null) {
-      cache.container.setInnerHtml(html, treeSanitizer: _sanitizer);
-    } else {
-      Element after = _newElement(html);
-      _elt.replaceWith(after);
-    }
+  void replaceElement(String path, String html) {
+    visit(path);
+    Element after = _newElement(html);
+    _elt.replaceWith(after);
+    cache._set(path, after);
   }
 
   @override
@@ -253,12 +254,6 @@ class _SyncFrame implements core.NextFrame {
   void addChildElement(String childHtml) {
     Element newElt = _newElement(childHtml);
     _elt.children.add(newElt);
-  }
-
-  @override
-  void replaceChildElement(int index, String childHtml) {
-    Element newElt = _newElement(childHtml);
-    _elt.children[index].replaceWith(newElt);
   }
 
   @override
