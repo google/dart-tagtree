@@ -4,27 +4,25 @@ part of core;
 abstract class _Unmount {
 
   // What was unmounted
-  final List<String> _unmountedPaths = [];
-  final List<String> _unmountedFormPaths = [];
-  void removeHandlersForPath(String path);
+  void releaseElement(String path, String tag);
 
   /// Frees resources associated with this View and all its descendants
-  /// and marks them as unmounted. This removes any references to the DOM,
-  /// but doesn't actually change the DOM.
+  /// and marks them as unmounted. (Calls releaseElement but doesn't actually
+  /// change the DOM.)
   void unmount(View v) {
     if (v is Text) {
-      // nothing to do
+      releaseElement(v.path, "span");
+    } else if (v is Elt) {
+      unmountInner(v);
+      releaseElement(v.path, v.tagName);
     } else if (v is Widget) {
       _unmountWidget(v);
-    } else if (v is Elt) {
-      _unmountElt(v);
     } else {
       throw "unable to unmount ${v.runtimeType}";
     }
     if (v._ref != null) {
       v._ref._set(null);
     }
-    _unmountedPaths.add(v._path);
     v._unmount();
   }
 
@@ -37,14 +35,6 @@ abstract class _Unmount {
     }
     unmount(w._shadow);
     w._shadow = null;
-  }
-
-  void _unmountElt(Elt elt) {
-    unmountInner(elt);
-    removeHandlersForPath(elt.path);
-    if (elt.tagName == "form") {
-      _unmountedFormPaths.add(elt.path);
-    }
   }
 
   void unmountInner(_Inner elt) {

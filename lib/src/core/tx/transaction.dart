@@ -10,6 +10,10 @@ class Transaction extends _Update {
   final View nextTop;
   final List<Widget> _widgetsToUpdate;
 
+  // What was done
+  final List<String> _unmountedPaths = [];
+  final List<String> _unmountedFormPaths = [];
+
   Transaction(this.root, this.frame, this.handlers, this.nextTop, Iterable<Widget> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
@@ -99,7 +103,11 @@ class Transaction extends _Update {
   }
 
   @override
-  void removeHandlersForPath(String path) {
+  void releaseElement(String path, String tag) {
+    _unmountedPaths.add(path);
+    if (tag == 'form') {
+      _unmountedFormPaths.add(path);
+    }
     handlers.removeHandlersForPath(path);
   }
 }
