@@ -25,7 +25,7 @@ class Transaction extends _Update {
     _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
 
     for (Widget w in _widgetsToUpdate) {
-      update(w, null);
+      updateWidget(w);
     }
 
     _finish();
@@ -56,18 +56,8 @@ class Transaction extends _Update {
       mountView(next, html, path, 0);
       frame.mount(html.toString());
       return next;
-    } else if (canUpdateTo(current, next)) {
-      print("updating current view at ${path}");
-      update(current, next);
-      return current;
     } else {
-      print("replacing current view ${path}");
-      unmount(current, willReplace: true);
-
-      var html = new StringBuffer();
-      mountView(next, html, path, 0);
-      frame.replaceElement(path, html.toString());
-      return next;
+      return updateOrReplace(current, next);
     }
   }
 

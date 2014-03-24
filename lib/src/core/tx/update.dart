@@ -9,16 +9,32 @@ abstract class _Update extends _Mount with _Unmount {
   void setHandler(Symbol key, String path, EventHandler handler);
   void removeHandler(Symbol key, String path);
 
+  View updateOrReplace(View current, View next) {
+    if (canUpdateTo(current, next)) {
+      update(current, next);
+      return current;
+    } else {
+      String path = current.path;
+      int depth = current.depth;
+      unmount(current, willReplace: true);
+
+      var html = new StringBuffer();
+      mountView(next, html, path, depth);
+      frame.replaceElement(path, html.toString());
+      return next;
+    }
+  }
+
   /// Returns true if we can call update() to do an in-place update to a new version of a
   /// view. Otherwise, we must unmount the view and mount its replacement, so all state
   /// will be lost.
-  bool canUpdateTo(View current, View nextVersion) {
+  bool canUpdateTo(View current, View next) {
     if (current is Text) {
-      return (nextVersion is Text);
+      return (next is Text);
     } else if (current is Widget) {
-      return current.runtimeType == nextVersion.runtimeType;
+      return current.runtimeType == next.runtimeType;
     } else if (current is Elt) {
-      return (nextVersion is Elt) && current.tagName == nextVersion.tagName;
+      return (next is Elt) && current.tagName == next.tagName;
     } else {
       throw "cannot update: ${current.runtimeType}";
     }
@@ -51,27 +67,16 @@ abstract class _Update extends _Mount with _Unmount {
     frame.setInnerText(current.path, current.value);
   }
 
+  void updateWidget(Widget current) {
+    _updateWidget(current, null);
+  }
+
   void _updateWidget(Widget current, Widget next) {
     View newShadow = current._updateAndRender(next);
-
-    if (canUpdateTo(current._shadow, newShadow)) {
-      update(current._shadow, newShadow);
-    } else {
-      _mountReplacementShadow(current, newShadow);
-      current._shadow = newShadow;
-    }
+    current._shadow = updateOrReplace(current._shadow, newShadow);
     if (current._didUpdate.hasListener) {
       _updatedWidgets.add(current);
     }
-  }
-
-  void _mountReplacementShadow(Widget owner, View newShadow) {
-    String path = owner.path;
-    unmount(owner._shadow, willReplace: true);
-
-    var html = new StringBuffer();
-    mountView(newShadow, html, path, owner.depth + 1);
-    frame.replaceElement(path, html.toString());
   }
 
   void _updateElt(Elt elt, Elt nextVersion) {
@@ -178,18 +183,10 @@ abstract class _Update extends _Mount with _Unmount {
     int childDepth = elt.depth + 1;
     for (int i = 0; i < endBoth; i++) {
       View before = elt._children[i];
-      assert(before != null);
       View after = newChildren[i];
+      assert(before != null);
       assert(after != null);
-      if (canUpdateTo(before, after)) {
-        // note: update may call frame.visit()
-        update(before, after);
-        updatedChildren.add(before);
-      } else {
-        unmount(before, willReplace: true);
-        _mountReplacementChild(elt, after, i);
-        updatedChildren.add(after);
-      }
+      updatedChildren.add(updateOrReplace(before, after));
     }
 
     int extraChildren = newChildren.length - elt._children.length;
@@ -214,11 +211,5 @@ abstract class _Update extends _Mount with _Unmount {
     var html = new StringBuffer();
     mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
     frame.addChildElement(parent.path, html.toString());
-  }
-
-  void _mountReplacementChild(_Inner parent, View child, int childIndex) {
-    StringBuffer html = new StringBuffer();
-    mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
-    frame.replaceElement(child.path, html.toString());
   }
 }
