@@ -10,9 +10,6 @@ import 'dart:io';
 abstract class ServerWidget extends core.View {
   ServerWidget() : super(null);
 
-  @override
-  core.Props get props => new core.Props({});
-
   core.View render();
 }
 

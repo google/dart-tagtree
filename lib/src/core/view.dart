@@ -6,13 +6,13 @@ typedef Visitor(View v);
 /// A View is a node in a view tree.
 ///
 /// A View can can be an HTML Element ("Elt"), plain text ("Text"), or a Widget.
-/// Each Widget generates a "shadow" view tree to represent it. To calculate the HTML
+/// Each Widget generates a shadow view tree to represent it. To calculate the HTML
 /// that will actually be displayed, recursively replace each Widget with its shadow,
 /// resulting in a tree containing only Elt and Text nodes.
 ///
 /// Conceptually, each View has a set of *props*, which are a generalization of HTML
 /// attributes. Props are always passed in as arguments to a View constructor, but may
-/// be copied from one View to another of the same type using an updateTo() call.
+/// be copied from one View to another of the same type using an update.
 /// (Exactly how this happens depends on the view.)
 ///
 /// In addition, some views may have internal state, which can change in response to
@@ -39,9 +39,6 @@ abstract class View {
   ///
   /// Non-null when mounted.
   int get depth => _depth;
-
-  /// Returns the view's current props.
-  Props get props;
 
   void _mount(String path, int depth) {
     assert(!_mounted);
