@@ -117,7 +117,7 @@ class _BrowserEnv implements core.RootEnv {
   @override
   void requestAnimationFrame(core.RenderFunction render) {
     window.animationFrame.then((t) {
-      render(new _SyncFrame(cache));
+      render(new _NextFrame(cache));
     });
   }
 }
@@ -151,16 +151,12 @@ class _ElementCache {
 }
 
 /// An implementation of NextFrame that applies frame mutations immediately to the DOM.
-class _SyncFrame implements core.NextFrame {
+class _NextFrame implements core.NextFrame {
 
   final _ElementCache cache;
   final Map<String, StreamSubscription> formSubscriptions = {};
 
-  /// The current element. Most methods operate on this element.
-  HtmlElement _elt;
-  String _path;
-
-  _SyncFrame(this.cache);
+  _NextFrame(this.cache);
 
   @override
   void mount(String html) {
@@ -189,11 +185,6 @@ class _SyncFrame implements core.NextFrame {
   }
 
   @override
-  void onFormUnmounted(String formPath) {
-
-  }
-
-  @override
   void detachElement(String path, {bool willReplace: false}) {
     StreamSubscription s = formSubscriptions[path];
     if (s != null) {
@@ -206,27 +197,19 @@ class _SyncFrame implements core.NextFrame {
   }
 
   @override
-  void visit(String path) {
-    assert(path != null);
-    _elt = cache.get(path);
-    _path = path;
-    assert(_elt is HtmlElement);
-  }
-
-  @override
   void replaceElement(String path, String html) {
-    visit(path);
     Element after = _newElement(html);
-    _elt.replaceWith(after);
+    _visit(path).replaceWith(after);
     cache._set(path, after);
   }
 
   @override
-  void setAttribute(String key, String value) {
-    _elt.setAttribute(key, value);
-    // Setting the "value" attribute on an input element doesn't actually change what's in the text box.
+  void setAttribute(String path, String key, String value) {
+    HtmlElement elt = _visit(path);
+    elt.setAttribute(key, value);
+    // Setting the "value" attribute on an input element doesn't actually change
+    // what's in the text box.
     if (key == "value") {
-      HtmlElement elt = _elt;
       if (elt is InputElement) {
         elt.value = value;
       } else if (elt is TextAreaElement) {
@@ -236,29 +219,36 @@ class _SyncFrame implements core.NextFrame {
   }
 
   @override
-  void removeAttribute(String key) {
-    _elt.attributes.remove(key);
+  void removeAttribute(String path, String key) {
+    _visit(path).attributes.remove(key);
   }
 
   @override
-  void setInnerHtml(String html) {
-    _elt.setInnerHtml(html, treeSanitizer: _sanitizer);
+  void setInnerHtml(String path, String html) {
+    _visit(path).setInnerHtml(html, treeSanitizer: _sanitizer);
   }
 
   @override
-  void setInnerText(String text) {
-    _elt.text = text;
+  void setInnerText(String path, String text) {
+    _visit(path).text = text;
   }
 
   @override
-  void addChildElement(String childHtml) {
+  void addChildElement(String path, String childHtml) {
     Element newElt = _newElement(childHtml);
-    _elt.children.add(newElt);
+    _visit(path).children.add(newElt);
   }
 
   @override
-  void removeChild(int index) {
-    _elt.childNodes[index].remove();
+  void removeChild(String path, int index) {
+    _visit(path).childNodes[index].remove();
+  }
+
+  HtmlElement _visit(String path) {
+    assert(path != null);
+    HtmlElement elt = cache.get(path);
+    assert(elt != null);
+    return elt;
   }
 
   HtmlElement _newElement(String html) {

@@ -48,9 +48,7 @@ abstract class _Update extends _Mount with _Unmount {
       return; // no internal state to update
     }
     current.value = next.value;
-    frame
-        ..visit(current.path)
-        ..setInnerText(current.value);
+    frame.setInnerText(current.path, current.value);
   }
 
   void _updateWidget(Widget current, Widget next) {
@@ -93,7 +91,6 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates DOM attributes and event handlers of an Elt.
   void _updateDomProperties(String eltPath, Map<Symbol, dynamic> oldProps, Map<Symbol, dynamic> newProps) {
-    frame.visit(eltPath);
 
     // Delete any removed props
     for (Symbol key in oldProps.keys) {
@@ -104,7 +101,7 @@ abstract class _Update extends _Mount with _Unmount {
       if (allHandlerKeys.contains(key)) {
         removeHandler(key, eltPath);
       } else if (_allAtts.containsKey(key)) {
-        frame.removeAttribute(_allAtts[key]);
+        frame.removeAttribute(eltPath, _allAtts[key]);
       }
     }
 
@@ -121,7 +118,7 @@ abstract class _Update extends _Mount with _Unmount {
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];
         String val = _makeDomVal(key, newVal);
-        frame.setAttribute(name, val);
+        frame.setAttribute(eltPath, name, val);
       }
     }
   }
@@ -131,20 +128,17 @@ abstract class _Update extends _Mount with _Unmount {
   void _updateInner(_Inner elt, String path, newInner, newInnerHtml) {
     if (newInner == null) {
       unmountInner(elt);
-      frame.visit(path);
       if (newInnerHtml != null) {
-        frame.setInnerHtml(newInnerHtml);
+        frame.setInnerHtml(path, newInnerHtml);
       } else {
-        frame.setInnerText("");
+        frame.setInnerText(path, "");
       }
     } else if (newInner is String) {
       if (newInner == elt._childText) {
         return;
       }
       unmountInner(elt);
-      frame
-          ..visit(path)
-          ..setInnerText(newInner);
+      frame.setInnerText(path, newInner);
       elt._childText = newInner;
     } else if (newInner is View) {
       _updateChildren(elt, path, [newInner]);
@@ -172,9 +166,7 @@ abstract class _Update extends _Mount with _Unmount {
     if (elt._children == null) {
       StringBuffer out = new StringBuffer();
       mountInner(elt, out, newChildren, null);
-      frame
-          ..visit(path)
-          ..setInnerHtml(out.toString());
+      frame.setInnerHtml(path, out.toString());
       elt._children = newChildren;
       elt._childText = null;
       return;
@@ -203,9 +195,8 @@ abstract class _Update extends _Mount with _Unmount {
     int extraChildren = newChildren.length - elt._children.length;
     if (extraChildren < 0) {
       // trim to new size
-      frame.visit(path);
       for (int i = elt._children.length - 1; i >= newChildren.length; i--) {
-        frame.removeChild(i);
+        frame.removeChild(path, i);
       }
     } else if (extraChildren > 0) {
       // append  children
@@ -222,9 +213,7 @@ abstract class _Update extends _Mount with _Unmount {
   void _mountNewChild(_Inner parent, View child, int childIndex) {
     var html = new StringBuffer();
     mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
-    frame
-      ..visit(parent.path)
-      ..addChildElement(html.toString());
+    frame.addChildElement(parent.path, html.toString());
   }
 
   void _mountReplacementChild(_Inner parent, View child, int childIndex) {
