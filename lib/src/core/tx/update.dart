@@ -9,9 +9,11 @@ abstract class _Update extends _Mount with _Unmount {
   void setHandler(Symbol key, String path, EventHandler handler);
   void removeHandler(Symbol key, String path);
 
+  // Either updates a view in place or unmounts and remounts it.
+  // Returns the new view.
   View updateOrReplace(View current, View next) {
-    if (canUpdateTo(current, next)) {
-      update(current, next);
+    if (_canUpdateInPlace(current, next)) {
+      _updateInPlace(current, next);
       return current;
     } else {
       String path = current.path;
@@ -25,10 +27,7 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  /// Returns true if we can call update() to do an in-place update to a new version of a
-  /// view. Otherwise, we must unmount the view and mount its replacement, so all state
-  /// will be lost.
-  bool canUpdateTo(View current, View next) {
+  bool _canUpdateInPlace(View current, View next) {
     if (current is Text) {
       return (next is Text);
     } else if (current is Widget) {
@@ -42,36 +41,21 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates a view in place.
   ///
-  /// After the update, it should have the same props as nextVersion and any DOM changes
-  /// needed should have been sent to nextFrame for rendering.
-  ///
-  /// If nextVersion is null, the props are unchanged, but a stateful view may apply any pending
-  /// state.
-  void update(View current, View nextVersion) {
-    if (current is Text) {
-      _updateText(current, nextVersion);
-    } else if (current is Widget) {
-      _updateWidget(current, nextVersion);
+  /// After the update, current should have the same props as next and any DOM changes
+  /// needed should have been sent to frame.
+  void _updateInPlace(View current, View next) {
+    if (current is Widget) {
+      updateWidget(current, next);
+    } else if (current is Text) {
+      _updateText(current, next);
     } else if (current is Elt) {
-      _updateElt(current, nextVersion);
+      _updateElt(current, next);
     } else {
       throw "cannot update: ${current.runtimeType}";
     }
   }
 
-  void _updateText(Text current, Text next) {
-    if (next == null || current.value == next.value) {
-      return; // no internal state to update
-    }
-    current.value = next.value;
-    frame.setInnerText(current.path, current.value);
-  }
-
-  void updateWidget(Widget current) {
-    _updateWidget(current, null);
-  }
-
-  void _updateWidget(Widget current, Widget next) {
+  void updateWidget(Widget current, [Widget next]) {
     View newShadow = current._updateAndRender(next);
     current._shadow = updateOrReplace(current._shadow, newShadow);
     if (current._didUpdate.hasListener) {
@@ -79,15 +63,20 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  void _updateElt(Elt elt, Elt nextVersion) {
-    String path = elt.path;
-    assert(path != null);
-    if (nextVersion == null) {
+  void _updateText(Text current, Text next) {
+    if (current.value == next.value) {
       return; // no internal state to update
     }
+    current.value = next.value;
+    frame.setInnerText(current.path, current.value);
+  }
+
+  void _updateElt(Elt elt, Elt next) {
+    String path = elt.path;
+    assert(path != null);
 
     Map<Symbol, dynamic> oldProps = elt._props;
-    Map<Symbol, dynamic> newProps = nextVersion._props;
+    Map<Symbol, dynamic> newProps = next._props;
 
     elt._props = newProps;
     _updateDomProperties(path, oldProps, newProps);
