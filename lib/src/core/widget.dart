@@ -59,6 +59,10 @@ abstract class Widget<S extends State> extends View {
   /// (This is somewhat similar to "shadow DOM".)
   View render();
 
+  /// Determines whether the Widget will be rendered during an update.
+  /// (If false, it will be skipped.)
+  bool shouldUpdate(Widget nextVersion) => true;
+
   /// Applies state and property changes and renders the new tree.
   /// Postcondition: the widget is still in a partially updated state
   /// because the shadow isn't updated yet.

@@ -3,29 +3,73 @@ part of core;
 /// An API for constructing the corresponding view for each HTML Element.
 /// (Typically Tags is used instead.)
 abstract class TagsApi {
-  View Div({id, clazz, onClick, inner, innerHtml, ref});
-  View Span({id, clazz, onClick, inner, innerHtml, ref});
+  View Div({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
+  View Span({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
 
-  View Header({id, clazz, onClick, inner, innerHtml, ref});
-  View Footer({id, clazz, onClick, inner, innerHtml, ref});
+  View Header({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
+  View Footer({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
 
-  View H1({id, clazz, onClick, inner, innerHtml, ref});
-  View H2({id, clazz, onClick, inner, innerHtml, ref});
-  View H3({id, clazz, onClick, inner, innerHtml, ref});
+  View H1({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
+  View H2({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
+  View H3({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
 
-  View P({id, clazz, onClick, inner, innerHtml, ref});
-  View Pre({id, clazz, onClick, inner, innerHtml, ref});
+  View P({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
+  View Pre({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
 
-  View Ul({id, clazz, onClick, inner, innerHtml, ref});
-  View Li({id, clazz, onClick, inner, innerHtml, ref});
+  View Ul({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
+  View Li({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
 
-  View Img({id, clazz, onClick, inner, innerHtml, ref, width, height, src});
-  View Canvas({id, clazz, onClick, inner, innerHtml, ref, width, height});
+  View Table({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
+  View Tr({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
+  View Td({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
 
-  View Form({id, clazz, onClick, onSubmit, inner, innerHtml, ref});
-  View Input({id, clazz, onClick, onChange, value, defaultValue, ref, type, min, max});
-  View TextArea({id, clazz, onClick, onChange, value, defaultValue, ref});
-  View Button({id, clazz, onClick, inner, innerHtml, ref});
+  View Img({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref, width, height, src});
+  View Canvas({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref, width, height});
+
+  View Form({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
+    inner, innerHtml, ref});
+  View Input({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
+    value, defaultValue, ref, type, min, max});
+  View TextArea({id, clazz,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
+    value, defaultValue, ref});
+  View Button({id, clazz, onClick,
+    onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml, ref});
 }
 
 final Map<Symbol, String> _allTags = {
@@ -43,6 +87,10 @@ final Map<Symbol, String> _allTags = {
 
   #Ul: "ul",
   #Li: "li",
+
+  #Table: "table",
+  #Tr: "tr",
+  #Td: "td",
 
   #Img: "img",
   #Canvas: "canvas",

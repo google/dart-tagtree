@@ -79,13 +79,19 @@ core.Root _findRoot(HtmlElement container) {
 
 void _listenForEvents(core.Root root, HtmlElement container) {
 
-  container.onClick.listen((Event e) {
+  handle(Event e, Symbol handlerKey) {
     String path = _getTargetPath(e.target);
     if (path == null) {
       return;
     }
-    root.dispatchEvent(new core.ViewEvent(#onClick, path));
-  });
+    root.dispatchEvent(new core.ViewEvent(handlerKey, path));
+  }
+
+  container.onClick.listen((e) => handle(e, #onClick));
+  container.onMouseDown.listen((e) => handle(e, #onMouseDown));
+  container.onMouseOver.listen((e) => handle(e, #onMouseOver));
+  container.onMouseUp.listen((e) => handle(e, #onMouseUp));
+  container.onMouseOut.listen((e) => handle(e, #onMouseOut));
 
   // Form events are tricky. We want an onChange event to fire every time
   // the value in a text box changes. The native 'input' event does this,

@@ -27,7 +27,8 @@ class ChangeEvent extends ViewEvent {
 
 typedef EventHandler(ViewEvent e);
 
-final Set<Symbol> allHandlerKeys = new Set.from([#onChange, #onClick, #onSubmit]);
+final Set<Symbol> allHandlerKeys = new Set.from(
+    [#onChange, #onClick, #onMouseDown, #onMouseOver, #onMouseUp, #onMouseOut, #onSubmit]);
 
 /// Dispatches all events for one Root.
 class HandlerMap {
@@ -60,6 +61,14 @@ class HandlerMap {
 
 bool _inViewEvent = false;
 
+const bool debug = false;
+
+void debugLog(String msg) {
+  if (debug) {
+    print(msg);
+  }
+}
+
 /// Calls any event handlers in this tree.
 /// On return, there may be some dirty widgets to be re-rendered.
 /// Note: widgets may also change state outside any event handler;
@@ -73,12 +82,16 @@ void dispatch(ViewEvent e, HandlerMap handlers) {
   }
   _inViewEvent = true;
   try {
-    print("\n### ${e.type}");
     if (e.targetPath != null) {
       EventHandler h = handlers.getHandler(e.type, e.targetPath);
       if (h != null) {
+        debugLog("\n### ${e.type}");
         h(e);
+      } else {
+        debugLog("\n (${e.type})");
       }
+    } else {
+      debugLog("\n (${e.type})");
     }
   } finally {
     _inViewEvent = false;

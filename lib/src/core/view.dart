@@ -86,6 +86,7 @@ class Props {
         return _props[inv.memberName];
       }
     }
+    print("keys: ${_props.keys.join(", ")}");
     return super.noSuchMethod(inv);
   }
 }

@@ -56,6 +56,9 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   void updateWidget(Widget current, [Widget next]) {
+    if (next != null && !current.shouldUpdate(next)) {
+      return;
+    }
     View newShadow = current._updateAndRender(next);
     current._shadow = updateOrReplace(current._shadow, newShadow);
     if (current._didUpdate.hasListener) {
