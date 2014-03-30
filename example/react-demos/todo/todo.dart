@@ -4,7 +4,7 @@ import 'package:viewtree/browser.dart';
 final $ = new Tags();
 
 void main() {
-  mount(new TodoApp(), "#container");
+  root("#container").mount(new TodoApp());
 }
 
 class TodoList extends Widget {

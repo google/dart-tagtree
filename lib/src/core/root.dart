@@ -25,10 +25,13 @@ class Root implements WidgetEnv {
   /// Schedules the view tree to be replaced just before the next rendered frame.
   /// (If called more than once within a single frame, only the last call will
   /// have any effect.)
-  void requestMount(View nextTop) {
+  void mount(View nextTop) {
     _nextTop = nextTop;
     _requestAnimationFrame();
   }
+
+  /// Hook called
+  void afterFirstMount() {}
 
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
@@ -55,7 +58,11 @@ class Root implements WidgetEnv {
     _nextTop = null;
     _widgetsToUpdate.clear();
 
+    bool wasEmpty = _top == null;
     tx.run();
+    if (wasEmpty) {
+      afterFirstMount();
+    }
 
     // No widgets should be invalidated while rendering.
     assert(_widgetsToUpdate.isEmpty);

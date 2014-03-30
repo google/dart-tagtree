@@ -11,24 +11,32 @@ import 'dart:collection' show HashMap;
 
 int _treeIdCounter = 0;
 
-/// Schedules the view to be mounted during the next rendered frame.
+/// Returns the Root corresponding to the given CSS selectors, creating it if needed.
 ///
-/// The CSS selectors must point to a single container element of type HtmlElement.
-///
-/// If the container element already contains a View, it will be replaced.
-void mount(core.View view, String containerSelectors) {
+/// The selectors must point to a single container element of type HtmlElement.
+core.Root root(String containerSelectors) {
   HtmlElement container = querySelectorAll(containerSelectors).single;
   var prev = _findRoot(container);
   if (prev != null) {
-    prev.requestMount(view);
-    return;
+    return prev;
   }
-  _ElementCache cache = new _ElementCache(container);
-  int id = _treeIdCounter++;
-  core.Root root = new core.Root(id, new _BrowserEnv(cache));
+
+  var root = new _BrowserRoot(new _ElementCache(container));
   _pathToRoot[root.path] = root;
-  root.requestMount(view);
-  _listenForEvents(root, container);
+  return root;
+}
+
+class _BrowserRoot extends core.Root {
+  final _ElementCache eltCache;
+
+  _BrowserRoot(_ElementCache eltCache) :
+    this.eltCache = eltCache,
+    super(_treeIdCounter++, new _BrowserEnv(eltCache));
+
+  @override
+  void afterFirstMount() {
+    _listenForEvents(this, eltCache.container);
+  }
 }
 
 /// Mounts a stream of views deserialized from a websocket.
@@ -44,7 +52,7 @@ void mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rul
   ws.onMessage.listen((MessageEvent e) {
     print("\nrendering view from socket");
     core.View view = rules.decodeTree(e.data);
-    mount(view, "#view");
+    root("#view").mount(view);
   });
 }
 

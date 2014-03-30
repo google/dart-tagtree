@@ -5,7 +5,7 @@ import 'package:viewtree/browser.dart';
 final $ = new Tags();
 
 void main() {
-  mount(new TimerWidget(), "#container");
+  root("#container").mount(new TimerWidget());
 }
 
 class TimerWidget extends Widget<TimerState> {

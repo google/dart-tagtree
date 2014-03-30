@@ -5,7 +5,7 @@ import 'package:markdown/markdown.dart' show markdownToHtml;
 final $ = new Tags();
 
 void main() {
-  mount(new MarkdownEditor(), "#container");
+  root("#container").mount(new MarkdownEditor());
 }
 
 class MarkdownEditor extends Widget<EditorState> {

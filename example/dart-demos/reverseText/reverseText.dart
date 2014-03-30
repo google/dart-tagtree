@@ -4,7 +4,7 @@ import 'package:viewtree/browser.dart';
 var $ = new Tags();
 
 void main() {
-  mount(new Clicker("Click me!"), "#container");
+  root("#container").mount(new Clicker("Click me!"));
 }
 
 class Clicker extends Widget {

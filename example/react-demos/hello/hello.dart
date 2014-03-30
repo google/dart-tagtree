@@ -4,7 +4,7 @@ import 'package:viewtree/browser.dart';
 final $ = new Tags();
 
 void main() {
-  mount(new HelloMessage("world"), "#container");
+  root("#container").mount(new HelloMessage("world"));
 }
 
 class HelloMessage extends Widget {

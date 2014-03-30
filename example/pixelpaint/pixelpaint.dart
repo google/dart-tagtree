@@ -4,7 +4,7 @@ import 'package:viewtree/browser.dart';
 final $ = new Tags();
 
 void main() {
-  mount(new PixelPaint(50, 50), "#container");
+  root("#container").mount(new PixelPaint(50, 50));
 }
 
 class PixelPaint extends Widget<Grid> {

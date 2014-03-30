@@ -25,7 +25,7 @@ final num PHI = (sqrt(5) + 1) / 2;
 final $ = new Tags();
 
 void main() {
-  mount(new Sunflower(), "#sunflower");
+  root("#sunflower").mount(new Sunflower());
 }
 
 class Sunflower extends Widget<SunflowerState> {
