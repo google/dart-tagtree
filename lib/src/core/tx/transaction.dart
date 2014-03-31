@@ -8,9 +8,9 @@ class Transaction extends _Update {
 
   // What to do
   final Tag nextTop;
-  final List<Widget> _widgetsToUpdate;
+  final List<WidgetView> _widgetsToUpdate;
 
-  Transaction(this.root, this.frame, this.handlers, this.nextTop, Iterable<Widget> widgetsToUpdate)
+  Transaction(this.root, this.frame, this.handlers, this.nextTop, Iterable<WidgetView> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
   WidgetEnv get widgetEnv => root;
@@ -24,7 +24,7 @@ class Transaction extends _Update {
     // Sort ancestors ahead of children.
     _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (Widget w in _widgetsToUpdate) {
+    for (WidgetView w in _widgetsToUpdate) {
       updateWidget(w);
     }
 

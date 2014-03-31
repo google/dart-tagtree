@@ -18,7 +18,7 @@ abstract class _Unmount {
     } else if (v is TemplateView) {
       unmount(v._shadow);
       v._shadow = null;
-    } else if (v is Widget) {
+    } else if (v is WidgetView) {
       _unmountWidget(v, willReplace);
     } else {
       throw "unable to unmount ${v.runtimeType}";
@@ -29,7 +29,8 @@ abstract class _Unmount {
     v._unmount();
   }
 
-  void _unmountWidget(Widget w, bool willReplace) {
+  void _unmountWidget(WidgetView view, bool willReplace) {
+    Widget w = view.widget;
     if (w._shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }

@@ -49,10 +49,10 @@ abstract class _Mount {
       return view;
     } else if (def is WidgetDef) {
       Widget w = def.widgetFunc(new Props(tag.props));
-      w._def = def;
-      w._mount(path, depth);
-      _mountWidget(w, html);
-      return w;
+      WidgetView view = new WidgetView(def, w, tag.props[#ref]);
+      view._mount(path, depth);
+      _mountWidget(w, view, html);
+      return view;
     } else if (def is EltDef) {
       Elt elt = new Elt(def, tag.props);
       elt._mount(path, depth);
@@ -68,18 +68,19 @@ abstract class _Mount {
     html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
   }
 
-  void _mountWidget(Widget widget, StringBuffer html) {
+  void _mountWidget(Widget widget, WidgetView view, StringBuffer html) {
+    widget._view = view;
     widget._widgetEnv = widgetEnv;
     widget._state = widget.firstState;
-    _mountShadow(html, widget);
+    _mountShadow(html, widget, view);
     if (widget._didMount.hasListener) {
       _mountedWidgets.add(widget);
     }
   }
 
-  void _mountShadow(StringBuffer html, Widget owner) {
-    Tag newShadow = owner.render();
-    owner._shadow = mountView(newShadow, html, owner.path, owner.depth + 1);
+  void _mountShadow(StringBuffer html, Widget w, WidgetView view) {
+    Tag newShadow = w.render();
+    w._shadow = mountView(newShadow, html, view.path, view.depth + 1);
   }
 
   void _mountElt(Elt elt, StringBuffer html) {

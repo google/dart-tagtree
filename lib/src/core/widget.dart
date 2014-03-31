@@ -1,12 +1,13 @@
 part of core;
 
 abstract class WidgetEnv {
-  void requestWidgetUpdate(Widget w);
+  void requestWidgetUpdate(WidgetView  view);
 }
 
 /// A Widget is a View that acts as a template. Its render() method typically
 /// returns elements to be rendered
-abstract class Widget<S extends State> extends View {
+abstract class Widget<S extends State> {
+  WidgetView _view;
   Props _props;
   State _state, _nextState;
   View _shadow;
@@ -16,8 +17,9 @@ abstract class Widget<S extends State> extends View {
   final _willUnmount = new StreamController.broadcast();
 
   Widget(Map<Symbol, dynamic> props)
-      : _props = new Props(props),
-        super(props[#ref]);
+      : _props = new Props(props);
+
+  bool get isMounted => _view._mounted;
 
   /// Constructs the initial state when the Widget is mounted.
   /// (Stateful widgets should override.)
@@ -30,7 +32,7 @@ abstract class Widget<S extends State> extends View {
   /// This is typically used to update the state due to an event.
   /// Accessing nextState automatically marks the Widget as dirty.
   S get nextState {
-    assert(_mounted);
+    assert(isMounted);
     if (_nextState == null) {
       _nextState = _state.clone();
       invalidate();
@@ -51,8 +53,8 @@ abstract class Widget<S extends State> extends View {
 
   /// Requests that this Widget be re-rendered during the next frame.
   void invalidate() {
-    assert(_mounted);
-    _widgetEnv.requestWidgetUpdate(this);
+    assert(isMounted);
+    _widgetEnv.requestWidgetUpdate(this._view);
   }
 
   /// Constructs another View to be rendered in place of this Widget.
@@ -67,10 +69,7 @@ abstract class Widget<S extends State> extends View {
   /// Postcondition: the widget is still in a partially updated state
   /// because the shadow isn't updated yet.
   Tag _updateAndRender(Tag nextVersion) {
-    if (!_mounted) {
-      print("not mounted!");
-      throw "not mounted";
-    }
+    assert(isMounted);
     assert(_widgetEnv != null);
 
     if (_nextState != null) {
@@ -99,6 +98,13 @@ class WidgetDef extends TagDef {
   WidgetDef({WidgetFunc widget}) :
     this.widgetFunc = widget {
     assert(widget != null);
+  }
+}
+
+class WidgetView extends View {
+  Widget widget;
+  WidgetView(WidgetDef def, this.widget, Ref ref) : super(ref) {
+    _def = def;
   }
 }
 

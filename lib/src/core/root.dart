@@ -16,7 +16,7 @@ class Root implements WidgetEnv {
 
   bool _frameRequested = false;
   Tag _nextTop;
-  final Set<Widget> _widgetsToUpdate = new Set();
+  final Set<WidgetView> _widgetsToUpdate = new Set();
 
   Root(this.id, this.env);
 
@@ -36,9 +36,9 @@ class Root implements WidgetEnv {
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
   @override
-  void requestWidgetUpdate(Widget w) {
-    assert(w._mounted);
-    _widgetsToUpdate.add(w);
+  void requestWidgetUpdate(WidgetView view) {
+    assert(view._mounted);
+    _widgetsToUpdate.add(view);
     _requestAnimationFrame();
   }
 
