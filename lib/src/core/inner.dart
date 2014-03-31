@@ -7,7 +7,7 @@ part of core;
 abstract class _Inner {
 
   // Non-null when the Elt is mounted and it has at least one child.
-  List<View> _children = null;
+  List<_View> _children = null;
   // Non-null when the Elt is mounted and it contains just text.
   String _childText = null;
 

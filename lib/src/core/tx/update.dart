@@ -11,7 +11,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   // Either updates a view in place or unmounts and remounts it.
   // Returns the new view.
-  View updateOrReplace(View current, Tag next) {
+  _View updateOrReplace(_View current, Tag next) {
     if (current._def == next.def) {
       _updateInPlace(current, next);
       return current;
@@ -21,7 +21,7 @@ abstract class _Update extends _Mount with _Unmount {
       unmount(current, willReplace: true);
 
       var html = new StringBuffer();
-      View result = mountView(next, html, path, depth);
+      _View result = mountView(next, html, path, depth);
       frame.replaceElement(path, html.toString());
       return result;
     }
@@ -31,7 +31,7 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, current should have the same props as next and any DOM changes
   /// needed should have been sent to frame.
-  void _updateInPlace(View current, Tag next) {
+  void _updateInPlace(_View current, Tag next) {
     if (current is TemplateView) {
       _updateTemplate(current, next);
     } else if (current is WidgetView) {
@@ -171,12 +171,12 @@ abstract class _Update extends _Mount with _Unmount {
       return;
     }
 
-    List<View> updatedChildren = [];
+    List<_View> updatedChildren = [];
     // update or replace each child that's in both lists
     int endBoth = elt._children.length < newChildren.length ? elt._children.length : newChildren.length;
     int childDepth = elt.depth + 1;
     for (int i = 0; i < endBoth; i++) {
-      View before = elt._children[i];
+      _View before = elt._children[i];
       Tag after = newChildren[i];
       assert(before != null);
       assert(after != null);
@@ -192,7 +192,7 @@ abstract class _Update extends _Mount with _Unmount {
     } else if (extraChildren > 0) {
       // append  children
       for (int i = elt._children.length; i < newChildren.length; i++) {
-        View child = _mountNewChild(elt, newChildren[i], i);
+        _View child = _mountNewChild(elt, newChildren[i], i);
         updatedChildren.add(child);
       }
     }
@@ -200,9 +200,9 @@ abstract class _Update extends _Mount with _Unmount {
     elt._childText = null;
   }
 
-  View _mountNewChild(_Inner parent, Tag child, int childIndex) {
+  _View _mountNewChild(_Inner parent, Tag child, int childIndex) {
     var html = new StringBuffer();
-    View view = mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
+    _View view = mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
     frame.addChildElement(parent.path, html.toString());
     return view;
   }

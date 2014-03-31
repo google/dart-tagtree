@@ -1,7 +1,7 @@
 part of core;
 
 /// A virtual DOM element.
-class Elt extends View with _Inner {
+class Elt extends _View with _Inner {
   final String tagName;
   Map<Symbol, dynamic> _props;
 
@@ -17,7 +17,7 @@ class Elt extends View with _Inner {
       }
     }
     var inner = _props[#inner];
-    assert(inner == null || inner is String || inner is View || inner is Iterable);
+    assert(inner == null || inner is String || inner is _View || inner is Iterable);
     assert(inner == null || _props[#innerHtml] == null);
     assert(_props[#value] == null || _props[#defaultValue] == null);
   }

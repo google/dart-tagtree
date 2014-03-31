@@ -1,7 +1,7 @@
 part of core;
 
 /// A callback function for traversing the tree.
-typedef Visitor(View v);
+typedef Visitor(_View v);
 
 /// A View is a node in a view tree.
 ///
@@ -19,7 +19,7 @@ typedef Visitor(View v);
 /// events. When a Widget changes state, its shadow must be re-rendered. When
 /// re-rendering, we attempt to preserve as many View nodes as possible by updating them
 /// in place. This is both more efficient and preserves state.
-abstract class View {
+abstract class _View {
 
   TagDef _def;
 
@@ -30,7 +30,7 @@ abstract class View {
   int _depth;
   bool _mounted = false;
 
-  View(this._ref);
+  _View(this._ref);
 
   /// The unique id used to find the view's HTML element.
   ///
@@ -60,14 +60,14 @@ abstract class View {
 /// This is typically passed via a "ref" property. It's valid
 /// when the view is mounted and automatically cleared on unmount.
 class Ref {
-  View _view;
+  _View _view;
 
-  View get view => _view;
+  _View get view => _view;
 
   /// Subclass hook for cleaning up on unmount.
   void onDetach() {}
 
-  void _set(View target) {
+  void _set(_View target) {
     _view = target;
     if (_view == null) {
       onDetach();

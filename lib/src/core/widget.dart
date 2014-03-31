@@ -10,7 +10,7 @@ abstract class Widget<S extends State> {
   WidgetView _view;
   Props _props;
   State _state, _nextState;
-  View _shadow;
+  _View _shadow;
   WidgetEnv _widgetEnv;
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
@@ -101,7 +101,7 @@ class WidgetDef extends TagDef {
   }
 }
 
-class WidgetView extends View {
+class WidgetView extends _View {
   Widget widget;
   WidgetView(WidgetDef def, this.widget, Ref ref) : super(ref) {
     _def = def;

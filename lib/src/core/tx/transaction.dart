@@ -50,10 +50,10 @@ class Transaction extends _Update {
   }
 
   // Returns the new top view.
-  View _updateRoot(String path, View current, Tag next) {
+  _View _updateRoot(String path, _View current, Tag next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
-      View view = mountView(next, html, path, 0);
+      _View view = mountView(next, html, path, 0);
       frame.mount(html.toString());
       return view;
     } else {

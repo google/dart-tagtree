@@ -27,8 +27,8 @@ class Template extends TagDef {
   }
 }
 
-class TemplateView extends View {
-  View _shadow;
+class TemplateView extends _View {
+  _View _shadow;
   Props _shadowProps;
 
   TemplateView(Template def, Map<Symbol, dynamic> props) : super(props[#ref]) {

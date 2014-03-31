@@ -12,7 +12,7 @@ class Root implements WidgetEnv {
   final int id;
   final RootEnv env;
   final _handlers = new HandlerMap();
-  View _top;
+  _View _top;
 
   bool _frameRequested = false;
   Tag _nextTop;

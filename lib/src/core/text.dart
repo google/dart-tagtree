@@ -9,7 +9,7 @@ part of core;
 ///
 /// However, if the parent's "inner" property is just a string, it's handled as a
 /// special case and the Text class isn't used.
-class Text extends View {
+class Text extends _View {
   String value;
   Text(this.value):
     super(null) {

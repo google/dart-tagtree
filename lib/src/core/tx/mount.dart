@@ -24,8 +24,8 @@ abstract class _Mount {
   /// view tree, not the depth in the DOM tree (like the path). For example,
   /// the root of a Widget's shadow tree has the same path, but its depth is
   /// incremented.
-  View mountView(Tag tag, StringBuffer html, String path, int depth) {
-    View view = _mountTag(tag, html, path, depth);
+  _View mountView(Tag tag, StringBuffer html, String path, int depth) {
+    _View view = _mountTag(tag, html, path, depth);
     if (view._ref != null) {
       view._ref._set(view);
       _mountedRefs.add(view._ref);
@@ -33,7 +33,7 @@ abstract class _Mount {
     return view;
   }
 
-  View _mountTag(Tag tag, StringBuffer html, String path, int depth) {
+  _View _mountTag(Tag tag, StringBuffer html, String path, int depth) {
     TagDef def = tag.def;
     if (def is TextDef) {
       Text text = new Text(tag.props[#value]);
@@ -150,13 +150,13 @@ abstract class _Mount {
     }
   }
 
-  List<View> _mountChildren(StringBuffer out, String parentPath, int parentDepth, List<Tag> children) {
+  List<_View> _mountChildren(StringBuffer out, String parentPath, int parentDepth, List<Tag> children) {
     if (children.isEmpty) {
       return null;
     }
 
     int childDepth = parentDepth + 1;
-    var result = <View>[];
+    var result = <_View>[];
     for (int i = 0; i < children.length; i++) {
       result.add(mountView(children[i], out, "${parentPath}/${i}", childDepth));
     }

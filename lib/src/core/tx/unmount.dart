@@ -9,7 +9,7 @@ abstract class _Unmount {
   /// Frees resources associated with this View and all its descendants
   /// and marks them as unmounted. (Calls releaseElement but doesn't actually
   /// change the DOM.)
-  void unmount(View v, {bool willReplace: false}) {
+  void unmount(_View v, {bool willReplace: false}) {
     if (v is Text) {
       releaseElement(v.path, willReplace: willReplace);
     } else if (v is Elt) {
@@ -43,7 +43,7 @@ abstract class _Unmount {
 
   void unmountInner(_Inner elt) {
     if (elt._children != null) {
-      for (View child in elt._children) {
+      for (_View child in elt._children) {
         unmount(child);
       }
       elt._children = null;
