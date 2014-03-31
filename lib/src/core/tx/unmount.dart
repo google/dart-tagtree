@@ -15,6 +15,9 @@ abstract class _Unmount {
     } else if (v is Elt) {
       unmountInner(v);
       releaseElement(v.path, willReplace: willReplace);
+    } else if (v is TemplateView) {
+      unmount(v._shadow);
+      v._shadow = null;
     } else if (v is Widget) {
       _unmountWidget(v, willReplace);
     } else {

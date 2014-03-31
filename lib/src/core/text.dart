@@ -11,9 +11,13 @@ part of core;
 /// special case and the Text class isn't used.
 class Text extends View {
   String value;
-  Text(this.value, {Ref ref}): super(ref);
-
-  Props get props => new Props({
-    #value: value
-  });
+  Text(this.value):
+    super(null) {
+    _def = TextDef.instance;
+  }
 }
+
+class TextDef extends TagDef {
+  static final instance = new TextDef();
+}
+

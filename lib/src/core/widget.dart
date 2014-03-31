@@ -57,17 +57,20 @@ abstract class Widget<S extends State> extends View {
 
   /// Constructs another View to be rendered in place of this Widget.
   /// (This is somewhat similar to "shadow DOM".)
-  View render();
+  Tag render();
 
   /// Determines whether the Widget will be rendered during an update.
   /// (If false, it will be skipped.)
-  bool shouldUpdate(Widget nextVersion) => true;
+  bool shouldUpdate(Tag nextVersion) => true;
 
   /// Applies state and property changes and renders the new tree.
   /// Postcondition: the widget is still in a partially updated state
   /// because the shadow isn't updated yet.
-  View _updateAndRender(Widget nextVersion) {
-    assert(_mounted);
+  Tag _updateAndRender(Tag nextVersion) {
+    if (!_mounted) {
+      print("not mounted!");
+      throw "not mounted";
+    }
     assert(_widgetEnv != null);
 
     if (_nextState != null) {
@@ -75,7 +78,7 @@ abstract class Widget<S extends State> extends View {
       _nextState = null;
     }
     if (nextVersion != null) {
-      _props = nextVersion._props;
+      _props = new Props(nextVersion.props);
     }
     return render();
   }
@@ -89,3 +92,13 @@ abstract class State {
   /// Returns a copy of the state, to be rendered on the next refresh.
   State clone();
 }
+
+class WidgetDef extends TagDef {
+  final WidgetFunc widgetFunc;
+
+  WidgetDef({WidgetFunc widget}) :
+    this.widgetFunc = widget {
+    assert(widget != null);
+  }
+}
+

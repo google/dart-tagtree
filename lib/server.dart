@@ -7,11 +7,13 @@ import 'package:viewtree/core.dart' as core;
 
 import 'dart:io';
 
-abstract class ServerWidget extends core.View {
-  ServerWidget() : super(null);
+abstract class ServerWidget extends core.Tag {
+  ServerWidget() : super(null, null);
 
-  core.View render();
+  core.Tag render();
 }
+
+
 
 /// A view tree container that renders to a WebSocket.
 class WebSocketRoot {
@@ -25,16 +27,16 @@ class WebSocketRoot {
   ///
   /// The previous view will be unmounted. Supports ServerWidget and Elts by default. Additional views
   /// may be supported by passing a JsonRuleSet in the contructor.
-  void mount(core.View nextView) {
-    while (!_canEncode(nextView)) {
-      if (nextView is ServerWidget) {
-        ServerWidget w = nextView;
-        nextView = w.render();
+  void mount(core.Tag nextTag) {
+    while (!_canEncode(nextTag)) {
+      if (nextTag is ServerWidget) {
+        ServerWidget w = nextTag;
+        nextTag = w.render();
       } else {
-        throw "can't encode view: ${nextView.runtimeType}";
+        throw "can't encode view: ${nextTag.runtimeType}";
       }
     }
-    String encoded = _ruleSet.encodeTree(nextView);
+    String encoded = _ruleSet.encodeTree(nextTag);
     _socket.add(encoded);
   }
 

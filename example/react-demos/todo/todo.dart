@@ -3,11 +3,11 @@ import 'package:viewtree/browser.dart';
 
 final $ = new Tags();
 
-final TodoApp = new TagDef(
+final TodoApp = new WidgetDef(
   widget: (_) => new TodoAppWidget()
 );
 
-final TodoList = new TagDef(
+final TodoList = new Template(
   render: ({List<String> items}) {
     createItem(itemText) => $.Li(inner: itemText);
     return $.Ul(inner: items.map(createItem));
@@ -33,7 +33,7 @@ class TodoAppWidget extends Widget<TodoState> {
       ..text = "";
   }
 
-  View render() =>
+  Tag render() =>
     $.Div(inner: [
       $.H3(inner: "TODO"),
       TodoList(items: state.items),

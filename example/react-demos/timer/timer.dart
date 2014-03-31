@@ -4,7 +4,7 @@ import 'package:viewtree/browser.dart';
 
 final $ = new Tags();
 
-final SecondsElapsed = new TagDef(
+final SecondsElapsed = new WidgetDef(
   widget: (_) => new TimerWidget()
 );
 
@@ -29,7 +29,7 @@ class TimerWidget extends Widget<TimerState> {
     nextState.secondsElapsed = state.secondsElapsed + 1;
   }
 
-  View render() => $.Div(inner: "Seconds elapsed: ${state.secondsElapsed}");
+  Tag render() => $.Div(inner: "Seconds elapsed: ${state.secondsElapsed}");
 }
 
 class TimerState extends State {

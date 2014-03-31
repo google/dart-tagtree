@@ -51,8 +51,8 @@ void mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rul
   var ws = new WebSocket(webSocketUrl);
   ws.onMessage.listen((MessageEvent e) {
     print("\nrendering view from socket");
-    core.View view = rules.decodeTree(e.data);
-    root("#view").mount(view);
+    core.Tag tag = rules.decodeTree(e.data);
+    root(selectors).mount(tag);
   });
 }
 

@@ -17,6 +17,7 @@ part 'src/core/inner.dart';
 part 'src/core/json.dart';
 part 'src/core/root.dart';
 part 'src/core/tags.dart';
+part 'src/core/template.dart';
 part 'src/core/text.dart';
 part 'src/core/view.dart';
 part 'src/core/widget.dart';

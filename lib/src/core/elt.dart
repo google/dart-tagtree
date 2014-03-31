@@ -1,13 +1,15 @@
 part of core;
 
 /// A virtual DOM element.
-class Elt extends View with _Inner implements Jsonable {
+class Elt extends View with _Inner {
   final String tagName;
   Map<Symbol, dynamic> _props;
 
-  Elt(this.tagName, Map<Symbol, dynamic> props)
-      : _props = props,
-        super(props[#ref]) {
+  Elt(EltDef def, Map<Symbol, dynamic> props) :
+      tagName = def.tagName,
+      _props = props,
+      super(props[#ref]) {
+    _def = def;
 
     for (Symbol key in props.keys) {
       if (!_allEltProps.contains(key)) {
@@ -20,18 +22,31 @@ class Elt extends View with _Inner implements Jsonable {
     assert(_props[#value] == null || _props[#defaultValue] == null);
   }
 
-  String get jsonTag => tagName;
-
   Props get props => new Props(_props);
 
   /// A ruleSet that can encode any Elt as JSON.
   static final JsonRuleSet rules = (){
     var rs = new JsonRuleSet();
-    for (String tag in _allTags.values) {
-      rs.add(new EltRule(tag));
+    for (EltDef def in _eltTags.values) {
+      rs.add(new EltRule(def));
     }
     return rs;
   }();
+}
+
+class EltDef extends TagDef {
+  final String tagName;
+
+  EltDef(this.tagName);
+
+  Tag makeTag(Map<Symbol, dynamic> props) {
+    return new EltTag(this, props);
+  }
+}
+
+class EltTag extends Tag implements Jsonable {
+  EltTag(EltDef def, Map<Symbol, dynamic> props) : super(def, props);
+  String get jsonTag => def.tagName;
 }
 
 /// Encodes an Elt as tagged JSON.
@@ -39,16 +54,18 @@ class EltRule extends JsonRule {
   static final Map<Symbol, String> _symbolToFieldName = _eltPropToField;
   static final Map<String, Symbol> _fieldNameToSymbol = _invertMap(_symbolToFieldName);
 
-  EltRule(String tag) : super(tag);
+  EltDef _def;
+
+  EltRule(EltDef def) : _def = def, super(def.tagName);
 
   @override
   bool appliesTo(Jsonable instance) {
-    return instance is Elt && instance.tagName == tagName && !instance._mounted;
+    return instance is EltTag && instance.def == _def;
   }
 
   @override
-  getState(Elt instance) {
-    Map<Symbol, dynamic> props = instance.props._props;
+  getState(EltTag instance) {
+    Map<Symbol, dynamic> props = instance.props;
     var state = {};
     for (Symbol sym in props.keys) {
       var field = _symbolToFieldName[sym];
@@ -59,14 +76,14 @@ class EltRule extends JsonRule {
   }
 
   @override
-  Elt create(Map<String, dynamic> state) {
+  EltTag create(Map<String, dynamic> state) {
     var props = <Symbol, dynamic>{};
     for (String field in state.keys) {
       var sym = _fieldNameToSymbol[field];
       assert(sym != null);
       props[sym] = state[field];
     }
-    return new Elt(tagName, props);
+    return new EltTag(_def, props);
   }
 }
 

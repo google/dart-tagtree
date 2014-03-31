@@ -3,15 +3,15 @@ import 'package:viewtree/browser.dart';
 
 final $ = new Tags();
 
-final PixelPaint = new TagDef(
+final PixelPaint = new WidgetDef(
   widget: (props) => new PixelPaintWidget(props.width, props.height)
 );
 
-final GridView = new TagDef(
+final GridView = new WidgetDef(
   widget: (props) => new GridViewWidget(props.grid, props.onPaint)
 );
 
-final RowView = new TagDef(
+final RowView = new Template(
   shouldUpdate: (props, next) => !props.row.equals(next.row),
   render: ({int y, Row row,
     PixelHandler onMouseDown, PixelHandler onMouseOver, Function onMouseUp}) {
@@ -40,7 +40,7 @@ class PixelPaintWidget extends Widget<Grid> {
     nextState.set(x, y, 1);
   }
 
-  View render() => GridView(grid: state, onPaint: onPaint);
+  Tag render() => GridView(grid: state, onPaint: onPaint);
 }
 
 typedef PixelHandler(int x, int y);
@@ -71,7 +71,7 @@ class GridViewWidget extends Widget<ViewState> {
   }
 
   @override
-  View render() {
+  Tag render() {
     Grid grid = props.grid;
     var rows = [];
     for (int y = 0; y < grid.height; y++) {
@@ -91,12 +91,12 @@ class RowViewWidget extends Widget {
       #onMouseDown: onMouseDown, #onMouseOver: onMouseOver, #onMouseUp: onMouseUp});
 
   @override
-  bool shouldUpdate(Widget next) {
-    return !props.row.equals(next.props.row);
+  bool shouldUpdate(Tag next) {
+    return !props.row.equals(next.props[#row]);
   }
 
   @override
-  View render() {
+  Tag render() {
     Row row = props.row;
     PixelHandler onMouseDown = props.onMouseDown;
     PixelHandler onMouseOver = props.onMouseOver;

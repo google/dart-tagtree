@@ -3,8 +3,10 @@ import 'package:viewtree/browser.dart';
 
 var $ = new Tags();
 
-final Clicker = new TagDef(
-    widget: (props) => new ClickerWidget(props.label)
+final Clicker = new WidgetDef(
+    widget: (Props props) {
+      return new ClickerWidget(props.label);
+    }
 );
 
 void main() {
@@ -22,7 +24,7 @@ class ClickerWidget extends Widget {
     nextState.reversed = !state.reversed;
   }
 
-  View render() {
+  Tag render() {
     var text = state.reversed ? reverseString(props.label) : props.label;
     return $.Div(clazz: "sample_text", onClick: onClick, inner: text);
   }

@@ -24,36 +24,48 @@ abstract class _Mount {
   /// view tree, not the depth in the DOM tree (like the path). For example,
   /// the root of a Widget's shadow tree has the same path, but its depth is
   /// incremented.
-  void mountView(View view, StringBuffer html, String path, int depth) {
-    view._mount(path, depth);
-    if (view is Text) {
-      _mountText(view, html);
-    } else if (view is Tag) {
-      _mountTag(view, html);
-    } else if (view is Widget) {
-      _mountWidget(view, html);
-    } else if (view is Elt) {
-      _mountElt(view, html);
-    } else {
-      throw "cannot mount view: ${view.runtimeType}";
-    }
+  View mountView(Tag tag, StringBuffer html, String path, int depth) {
+    View view = _mountTag(tag, html, path, depth);
     if (view._ref != null) {
       view._ref._set(view);
       _mountedRefs.add(view._ref);
+    }
+    return view;
+  }
+
+  View _mountTag(Tag tag, StringBuffer html, String path, int depth) {
+    TagDef def = tag.def;
+    if (def is TextDef) {
+      Text text = new Text(tag.props[#value]);
+      text._mount(path, depth);
+      _mountText(text, html);
+      return text;
+    } else if (def is Template) {
+      TemplateView view = new TemplateView(def, tag.props);
+      view._mount(path, depth);
+      Tag shadow = def._render(tag.props);
+      view._shadow = mountView(shadow, html, path, depth + 1);
+      view._shadowProps = new Props(tag.props);
+      return view;
+    } else if (def is WidgetDef) {
+      Widget w = def.widgetFunc(new Props(tag.props));
+      w._def = def;
+      w._mount(path, depth);
+      _mountWidget(w, html);
+      return w;
+    } else if (def is EltDef) {
+      Elt elt = new Elt(def, tag.props);
+      elt._mount(path, depth);
+      _mountElt(elt, html);
+      return elt;
+    } else {
+      throw "can't mount tag";
     }
   }
 
   void _mountText(Text text, StringBuffer html) {
     // need to surround with a span to support incremental updates to a child
     html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
-  }
-
-  void _mountTag(Tag tag, StringBuffer html) {
-    View shadow = tag.render(tag._props);
-    Props shadowProps = new Props(tag._props);
-    mountView(shadow, html, tag.path, tag.depth + 1);
-    tag._shadow = shadow;
-    tag._shadowProps = shadowProps;
   }
 
   void _mountWidget(Widget widget, StringBuffer html) {
@@ -66,9 +78,8 @@ abstract class _Mount {
   }
 
   void _mountShadow(StringBuffer html, Widget owner) {
-    View newShadow = owner.render();
-    mountView(newShadow, html, owner.path, owner.depth + 1);
-    owner._shadow = newShadow;
+    Tag newShadow = owner.render();
+    owner._shadow = mountView(newShadow, html, owner.path, owner.depth + 1);
   }
 
   void _mountElt(Elt elt, StringBuffer html) {
@@ -121,14 +132,14 @@ abstract class _Mount {
     } else if (inner is String) {
       out.write(HTML_ESCAPE.convert(inner));
       elt._childText = inner;
-    } else if (inner is View) {
+    } else if (inner is Tag) {
       elt._children = _mountChildren(out, elt.path, elt.depth, [inner]);
     } else if (inner is Iterable) {
-      List<View> children = [];
+      List<Tag> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(new Text(item));
-        } else if (item is View) {
+          children.add(TextDef.instance.makeTag(value: item));
+        } else if (item is Tag) {
           children.add(item);
         } else {
           throw "bad item in inner: ${item}";
@@ -138,16 +149,17 @@ abstract class _Mount {
     }
   }
 
-  List<View> _mountChildren(StringBuffer out, String parentPath, int parentDepth, List<View> children) {
+  List<View> _mountChildren(StringBuffer out, String parentPath, int parentDepth, List<Tag> children) {
     if (children.isEmpty) {
       return null;
     }
 
     int childDepth = parentDepth + 1;
+    var result = <View>[];
     for (int i = 0; i < children.length; i++) {
-      mountView(children[i], out, "${parentPath}/${i}", childDepth);
+      result.add(mountView(children[i], out, "${parentPath}/${i}", childDepth));
     }
-    return children;
+    return result;
   }
 }
 

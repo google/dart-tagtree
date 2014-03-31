@@ -3,7 +3,7 @@ import 'package:viewtree/browser.dart';
 
 final $ = new Tags();
 
-final Hello = new TagDef(
+final Hello = new Template(
     render: ({String message}) => $.Div(inner: "Hello, ${message}")
 );
 

@@ -4,7 +4,7 @@ import 'package:markdown/markdown.dart' show markdownToHtml;
 
 final $ = new Tags();
 
-final MarkdownEditor = new TagDef(
+final MarkdownEditor = new WidgetDef(
   widget: (_) => new MarkdownWidget()
 );
 
@@ -21,7 +21,7 @@ class MarkdownWidget extends Widget<EditorState> {
     nextState.value = e.value;
   }
 
-  View render() =>
+  Tag render() =>
     $.Div(clazz: "MarkdownEditor", inner: [
       $.H3(inner: "Input"),
       $.TextArea(onChange: handleChange, defaultValue: state.value),

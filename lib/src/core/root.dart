@@ -15,7 +15,7 @@ class Root implements WidgetEnv {
   View _top;
 
   bool _frameRequested = false;
-  View _nextTop;
+  Tag _nextTop;
   final Set<Widget> _widgetsToUpdate = new Set();
 
   Root(this.id, this.env);
@@ -25,7 +25,7 @@ class Root implements WidgetEnv {
   /// Schedules the view tree to be replaced just before the next rendered frame.
   /// (If called more than once within a single frame, only the last call will
   /// have any effect.)
-  void mount(View nextTop) {
+  void mount(Tag nextTop) {
     _nextTop = nextTop;
     _requestAnimationFrame();
   }
@@ -37,6 +37,7 @@ class Root implements WidgetEnv {
   /// (That is, marks the Widget as "dirty".)
   @override
   void requestWidgetUpdate(Widget w) {
+    assert(w._mounted);
     _widgetsToUpdate.add(w);
     _requestAnimationFrame();
   }

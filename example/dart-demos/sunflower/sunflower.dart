@@ -24,7 +24,7 @@ final num PHI = (sqrt(5) + 1) / 2;
 
 final $ = new Tags();
 
-final Sunflower = new TagDef(
+final Sunflower = new WidgetDef(
   widget: (_) => new SunflowerWidget()
 );
 
@@ -47,7 +47,7 @@ class SunflowerWidget extends Widget<SunflowerState> {
   }
 
   @override
-  View render() {
+  Tag render() {
     return $.Div(inner: [
 
         $.Div(id: "container", inner: [

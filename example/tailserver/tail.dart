@@ -84,7 +84,7 @@ class TailView extends ServerWidget {
   TailView(this.tail);
 
   @override
-  View render() {
+  Tag render() {
     if (tail == null) {
       return $.Div(inner: "Loading...");
     }

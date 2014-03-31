@@ -21,6 +21,8 @@ typedef Visitor(View v);
 /// in place. This is both more efficient and preserves state.
 abstract class View {
 
+  TagDef _def;
+
   /// The owner's reference to this View. May be null.
   final Ref _ref;
 

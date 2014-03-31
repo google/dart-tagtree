@@ -7,7 +7,7 @@ class Transaction extends _Update {
   final HandlerMap handlers;
 
   // What to do
-  final View nextTop;
+  final Tag nextTop;
   final List<Widget> _widgetsToUpdate;
 
   Transaction(this.root, this.frame, this.handlers, this.nextTop, Iterable<Widget> widgetsToUpdate)
@@ -50,12 +50,12 @@ class Transaction extends _Update {
   }
 
   // Returns the new top view.
-  View _updateRoot(String path, View current, View next) {
+  View _updateRoot(String path, View current, Tag next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
-      mountView(next, html, path, 0);
+      View view = mountView(next, html, path, 0);
       frame.mount(html.toString());
-      return next;
+      return view;
     } else {
       return updateOrReplace(current, next);
     }
