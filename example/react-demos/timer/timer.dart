@@ -4,8 +4,12 @@ import 'package:viewtree/browser.dart';
 
 final $ = new Tags();
 
+final SecondsElapsed = new TagDef(
+  widget: (_) => new TimerWidget()
+);
+
 void main() {
-  root("#container").mount(new TimerWidget());
+  root("#container").mount(SecondsElapsed());
 }
 
 class TimerWidget extends Widget<TimerState> {

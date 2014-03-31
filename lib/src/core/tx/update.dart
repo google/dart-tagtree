@@ -30,6 +30,12 @@ abstract class _Update extends _Mount with _Unmount {
   bool _canUpdateInPlace(View current, View next) {
     if (current is Text) {
       return (next is Text);
+    } if (current is Tag) {
+      if (next is Tag) {
+        return current.def == next.def;
+      } else {
+        return false;
+      }
     } else if (current is Widget) {
       return current.runtimeType == next.runtimeType;
     } else if (current is Elt) {
@@ -44,7 +50,9 @@ abstract class _Update extends _Mount with _Unmount {
   /// After the update, current should have the same props as next and any DOM changes
   /// needed should have been sent to frame.
   void _updateInPlace(View current, View next) {
-    if (current is Widget) {
+    if (current is Tag) {
+      _updateTag(current, next);
+    } else if (current is Widget) {
       updateWidget(current, next);
     } else if (current is Text) {
       _updateText(current, next);
@@ -53,6 +61,19 @@ abstract class _Update extends _Mount with _Unmount {
     } else {
       throw "cannot update: ${current.runtimeType}";
     }
+  }
+
+  void _updateTag(Tag current, Tag nextTag) {
+    TagDef def = current.def;
+    Props next = new Props(nextTag._props);
+    if (def.shouldUpdate != null) {
+      if (!def.shouldUpdate(current._shadowProps, next)) {
+        return;
+      }
+    }
+    View newShadow = current.render(nextTag._props);
+    current._shadow = updateOrReplace(current._shadow, newShadow);
+    current._shadowProps = next;
   }
 
   void updateWidget(Widget current, [Widget next]) {

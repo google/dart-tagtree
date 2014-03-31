@@ -24,14 +24,18 @@ final num PHI = (sqrt(5) + 1) / 2;
 
 final $ = new Tags();
 
+final Sunflower = new TagDef(
+  widget: (_) => new SunflowerWidget()
+);
+
 void main() {
-  root("#sunflower").mount(new Sunflower());
+  root("#sunflower").mount(Sunflower());
 }
 
-class Sunflower extends Widget<SunflowerState> {
+class SunflowerWidget extends Widget<SunflowerState> {
   final _canvas = new ElementRef<CanvasElement>();
 
-  Sunflower() : super({}) {
+  SunflowerWidget() : super({}) {
     didMount.listen((_) => draw());
     didUpdate.listen((_) => draw());
   }

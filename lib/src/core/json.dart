@@ -13,9 +13,9 @@ abstract class JsonRule {
 
   /// A tag used on the wire to identify instances encoded using this rule.
   /// (The tag must be unique within a [JsonRuleSet].)
-  final String tag;
+  final String tagName;
 
-  JsonRule(this.tag);
+  JsonRule(this.tagName);
 
   /// Returns true if this rule can encode the instance.
   bool appliesTo(Jsonable instance);
@@ -35,8 +35,8 @@ class JsonRuleSet {
   final _rules = <String, JsonRule>{};
 
   void add(JsonRule rule) {
-    assert(!_rules.containsKey(rule.tag));
-    _rules[rule.tag] = rule;
+    assert(!_rules.containsKey(rule.tagName));
+    _rules[rule.tagName] = rule;
   }
 
   /// Returns true if there is a rule for the given tag.

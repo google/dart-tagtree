@@ -3,21 +3,23 @@ import 'package:viewtree/browser.dart';
 
 final $ = new Tags();
 
-void main() {
-  root("#container").mount(new TodoApp());
-}
+final TodoApp = new TagDef(
+  widget: (_) => new TodoAppWidget()
+);
 
-class TodoList extends Widget {
-  TodoList({List<String> items}) : super({#items: items});
-
-  View render() {
+final TodoList = new TagDef(
+  render: ({List<String> items}) {
     createItem(itemText) => $.Li(inner: itemText);
-    return $.Ul(inner: props.items.map(createItem));
+    return $.Ul(inner: items.map(createItem));
   }
+);
+
+void main() {
+  root("#container").mount(TodoApp());
 }
 
-class TodoApp extends Widget<TodoState> {
-  TodoApp() : super({});
+class TodoAppWidget extends Widget<TodoState> {
+  TodoAppWidget() : super({});
 
   get firstState => new TodoState();
 
@@ -34,7 +36,7 @@ class TodoApp extends Widget<TodoState> {
   View render() =>
     $.Div(inner: [
       $.H3(inner: "TODO"),
-      new TodoList(items: state.items),
+      TodoList(items: state.items),
       $.Form(onSubmit: handleSubmit, inner: [
         $.Input(onChange: onChange, value: state.text),
         $.Button(inner: "Add # ${state.items.length + 1}")

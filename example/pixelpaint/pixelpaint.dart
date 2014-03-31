@@ -3,12 +3,36 @@ import 'package:viewtree/browser.dart';
 
 final $ = new Tags();
 
+final PixelPaint = new TagDef(
+  widget: (props) => new PixelPaintWidget(props.width, props.height)
+);
+
+final GridView = new TagDef(
+  widget: (props) => new GridViewWidget(props.grid, props.onPaint)
+);
+
+final RowView = new TagDef(
+  shouldUpdate: (props, next) => !props.row.equals(next.row),
+  render: ({int y, Row row,
+    PixelHandler onMouseDown, PixelHandler onMouseOver, Function onMouseUp}) {
+    var cells = [];
+    for (int x = 0; x < row.width; x++) {
+      int pixel = row[x];
+      cells.add($.Td(clazz: palette[pixel],
+          onMouseDown: (_) => onMouseDown(x, y),
+          onMouseOver: (_) => onMouseOver(x, y),
+          onMouseUp: (_) => onMouseUp()));
+    }
+    return $.Tr(inner: cells);
+  }
+);
+
 void main() {
-  root("#container").mount(new PixelPaint(50, 50));
+  root("#container").mount(PixelPaint(width: 50, height: 50));
 }
 
-class PixelPaint extends Widget<Grid> {
-  PixelPaint(int width, int height) : super({#width: width, #height: height});
+class PixelPaintWidget extends Widget<Grid> {
+  PixelPaintWidget(int width, int height) : super({#width: width, #height: height});
 
   get firstState => new Grid(props.width, props.height);
 
@@ -16,13 +40,13 @@ class PixelPaint extends Widget<Grid> {
     nextState.set(x, y, 1);
   }
 
-  View render() => new GridView(state, onPaint);
+  View render() => GridView(grid: state, onPaint: onPaint);
 }
 
 typedef PixelHandler(int x, int y);
 
-class GridView extends Widget<ViewState> {
-  GridView(Grid g, PixelHandler onPaint) : super({#grid: g, #onPaint: onPaint}) {
+class GridViewWidget extends Widget<ViewState> {
+  GridViewWidget(Grid g, PixelHandler onPaint) : super({#grid: g, #onPaint: onPaint}) {
     assert(g != null);
     assert(onPaint != null);
   }
@@ -51,7 +75,8 @@ class GridView extends Widget<ViewState> {
     Grid grid = props.grid;
     var rows = [];
     for (int y = 0; y < grid.height; y++) {
-      rows.add(new RowView(y, grid.rows[y], onMouseDown, onMouseOver, onMouseUp));
+      rows.add(RowView(y: y, row: grid.rows[y],
+        onMouseDown: onMouseDown, onMouseOver: onMouseOver, onMouseUp: onMouseUp));
     }
     return $.Table(clazz: "grid", inner: rows,
         onMouseUp: (_) => onMouseUp(),
@@ -59,8 +84,8 @@ class GridView extends Widget<ViewState> {
   }
 }
 
-class RowView extends Widget {
-  RowView(int y, Row row,
+class RowViewWidget extends Widget {
+  RowViewWidget(int y, Row row,
       PixelHandler onMouseDown, PixelHandler onMouseOver, Function onMouseUp):
     super({#y: y, #row: row,
       #onMouseDown: onMouseDown, #onMouseOver: onMouseOver, #onMouseUp: onMouseUp});

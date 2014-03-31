@@ -3,12 +3,16 @@ import 'package:viewtree/browser.dart';
 
 var $ = new Tags();
 
+final Clicker = new TagDef(
+    widget: (props) => new ClickerWidget(props.label)
+);
+
 void main() {
-  root("#container").mount(new Clicker("Click me!"));
+  root("#container").mount(Clicker(label: "Click me!"));
 }
 
-class Clicker extends Widget {
-  Clicker(label) : super({#label: label});
+class ClickerWidget extends Widget {
+  ClickerWidget(String label) : super({#label: label});
 
   get firstState => new ClickerState();
   ClickerState get state => super.state;

@@ -28,6 +28,8 @@ abstract class _Mount {
     view._mount(path, depth);
     if (view is Text) {
       _mountText(view, html);
+    } else if (view is Tag) {
+      _mountTag(view, html);
     } else if (view is Widget) {
       _mountWidget(view, html);
     } else if (view is Elt) {
@@ -44,6 +46,14 @@ abstract class _Mount {
   void _mountText(Text text, StringBuffer html) {
     // need to surround with a span to support incremental updates to a child
     html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
+  }
+
+  void _mountTag(Tag tag, StringBuffer html) {
+    View shadow = tag.render(tag._props);
+    Props shadowProps = new Props(tag._props);
+    mountView(shadow, html, tag.path, tag.depth + 1);
+    tag._shadow = shadow;
+    tag._shadowProps = shadowProps;
   }
 
   void _mountWidget(Widget widget, StringBuffer html) {

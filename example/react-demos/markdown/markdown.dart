@@ -4,12 +4,16 @@ import 'package:markdown/markdown.dart' show markdownToHtml;
 
 final $ = new Tags();
 
+final MarkdownEditor = new TagDef(
+  widget: (_) => new MarkdownWidget()
+);
+
 void main() {
-  root("#container").mount(new MarkdownEditor());
+  root("#container").mount(MarkdownEditor());
 }
 
-class MarkdownEditor extends Widget<EditorState> {
-  MarkdownEditor() : super({});
+class MarkdownWidget extends Widget<EditorState> {
+  MarkdownWidget() : super({});
 
   get firstState => new EditorState();
 

@@ -43,7 +43,7 @@ class EltRule extends JsonRule {
 
   @override
   bool appliesTo(Jsonable instance) {
-    return instance is Elt && instance.tagName == tag && !instance._mounted;
+    return instance is Elt && instance.tagName == tagName && !instance._mounted;
   }
 
   @override
@@ -66,7 +66,7 @@ class EltRule extends JsonRule {
       assert(sym != null);
       props[sym] = state[field];
     }
-    return new Elt(tag, props);
+    return new Elt(tagName, props);
   }
 }
 

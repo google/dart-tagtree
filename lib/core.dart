@@ -9,6 +9,7 @@ library core;
 import 'dart:async' show Stream, StreamController, StreamSink;
 import 'dart:convert';
 
+part 'src/core/customtag.dart';
 part 'src/core/elt.dart';
 part 'src/core/event.dart';
 part 'src/core/frame.dart';
