@@ -27,11 +27,10 @@ class Template extends TagDef {
   }
 }
 
-class TemplateView extends _View {
+class _Template extends _View {
   _View _shadow;
-  Props _shadowProps;
+  Props _props;
 
-  TemplateView(Template def, Map<Symbol, dynamic> props) : super(props[#ref]) {
-    _def = def;
-  }
+  _Template(Template def, String path, int depth, Map<Symbol, dynamic> props) :
+    super(def, path, depth, props[#ref]);
 }

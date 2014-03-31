@@ -8,7 +8,7 @@ abstract class _Mount {
 
   // What was mounted
   final List<Ref> _mountedRefs = [];
-  final List<Elt> _mountedForms = [];
+  final List<_Elt> _mountedForms = [];
   final List<Widget> _mountedWidgets = [];
   void addHandler(Symbol key, String path, EventHandler val);
 
@@ -26,9 +26,9 @@ abstract class _Mount {
   /// incremented.
   _View mountView(Tag tag, StringBuffer html, String path, int depth) {
     _View view = _mountTag(tag, html, path, depth);
-    if (view._ref != null) {
-      view._ref._set(view);
-      _mountedRefs.add(view._ref);
+    if (view.ref != null) {
+      view.ref._set(view);
+      _mountedRefs.add(view.ref);
     }
     return view;
   }
@@ -36,26 +36,22 @@ abstract class _Mount {
   _View _mountTag(Tag tag, StringBuffer html, String path, int depth) {
     TagDef def = tag.def;
     if (def is TextDef) {
-      Text text = new Text(tag.props[#value]);
-      text._mount(path, depth);
+      _Text text = new _Text(path, depth, tag.props[#value]);
       _mountText(text, html);
       return text;
     } else if (def is Template) {
-      TemplateView view = new TemplateView(def, tag.props);
-      view._mount(path, depth);
+      _Template view = new _Template(def, path, depth, tag.props);
       Tag shadow = def._render(tag.props);
       view._shadow = mountView(shadow, html, path, depth + 1);
-      view._shadowProps = new Props(tag.props);
+      view._props = new Props(tag.props);
       return view;
     } else if (def is WidgetDef) {
       Widget w = def.widgetFunc(new Props(tag.props));
-      WidgetView view = new WidgetView(def, w, tag.props[#ref]);
-      view._mount(path, depth);
+      WidgetView view = new WidgetView(def, path, depth, w, tag.props[#ref]);
       _mountWidget(w, view, html);
       return view;
     } else if (def is EltDef) {
-      Elt elt = new Elt(def, tag.props);
-      elt._mount(path, depth);
+      _Elt elt = new _Elt(def, path, depth, tag.props);
       _mountElt(elt, html);
       return elt;
     } else {
@@ -63,7 +59,7 @@ abstract class _Mount {
     }
   }
 
-  void _mountText(Text text, StringBuffer html) {
+  void _mountText(_Text text, StringBuffer html) {
     // need to surround with a span to support incremental updates to a child
     html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
   }
@@ -80,10 +76,10 @@ abstract class _Mount {
 
   void _mountShadow(StringBuffer html, Widget w, WidgetView view) {
     Tag newShadow = w.render();
-    w._shadow = mountView(newShadow, html, view.path, view.depth + 1);
+    view._shadow = mountView(newShadow, html, view.path, view.depth + 1);
   }
 
-  void _mountElt(Elt elt, StringBuffer html) {
+  void _mountElt(_Elt elt, StringBuffer html) {
     _writeStartTag(html, elt.tagName, elt.path, elt._props);
 
     if (elt.tagName == "textarea") {

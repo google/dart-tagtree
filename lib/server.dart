@@ -21,7 +21,7 @@ class WebSocketRoot {
   final core.JsonRuleSet _ruleSet;
 
   WebSocketRoot(this._socket, {core.JsonRuleSet rules}) :
-      _ruleSet = (rules == null) ? core.Elt.rules : rules;
+      _ruleSet = (rules == null) ? core.eltRules : rules;
 
   /// Replaces the view with a new version.
   ///

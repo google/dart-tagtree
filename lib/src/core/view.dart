@@ -1,17 +1,15 @@
 part of core;
 
-/// A callback function for traversing the tree.
-typedef Visitor(_View v);
 
-/// A View is a node in a view tree.
+/// A View is a node in the internal view tree.
 ///
-/// A View can can be an HTML Element ("Elt"), plain text ("Text"), or a Widget.
-/// Each Widget generates a shadow view tree to represent it. To calculate the HTML
-/// that will actually be displayed, recursively replace each Widget with its shadow,
+/// A View can can be an HTML Element ("Elt"), plain text ("Text"), a Template, or a Widget.
+/// Each Template and Widget generates a shadow view tree to represent it. To calculate the HTML
+/// that will actually be displayed, recursively replace each view with its shadow,
 /// resulting in a tree containing only Elt and Text nodes.
 ///
 /// Conceptually, each View has a set of *props*, which are a generalization of HTML
-/// attributes. Props are always passed in as arguments to a View constructor, but may
+/// attributes. Props are always passed in from the outside, but may
 /// be copied from one View to another of the same type using an update.
 /// (Exactly how this happens depends on the view.)
 ///
@@ -21,33 +19,20 @@ typedef Visitor(_View v);
 /// in place. This is both more efficient and preserves state.
 abstract class _View {
 
-  TagDef _def;
-
-  /// The owner's reference to this View. May be null.
-  final Ref _ref;
-
-  String _path;
-  int _depth;
-  bool _mounted = false;
-
-  _View(this._ref);
+  final TagDef def;
 
   /// The unique id used to find the view's HTML element.
-  ///
-  /// Non-null when mounted.
-  String get path => _path;
+  final String path;
 
   /// The depth of this node in the view tree (not in the DOM).
-  ///
-  /// Non-null when mounted.
-  int get depth => _depth;
+  final int depth;
 
-  void _mount(String path, int depth) {
-    assert(!_mounted);
-    _path = path;
-    _depth = depth;
-    _mounted = true;
-  }
+  /// The owner's reference to this View. May be null.
+  final Ref ref;
+
+  bool _mounted = true;
+
+  _View(this.def, this.path, this.depth, this.ref);
 
   void _unmount() {
     assert(_mounted);

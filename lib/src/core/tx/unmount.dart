@@ -10,12 +10,12 @@ abstract class _Unmount {
   /// and marks them as unmounted. (Calls releaseElement but doesn't actually
   /// change the DOM.)
   void unmount(_View v, {bool willReplace: false}) {
-    if (v is Text) {
+    if (v is _Text) {
       releaseElement(v.path, willReplace: willReplace);
-    } else if (v is Elt) {
+    } else if (v is _Elt) {
       unmountInner(v);
       releaseElement(v.path, willReplace: willReplace);
-    } else if (v is TemplateView) {
+    } else if (v is _Template) {
       unmount(v._shadow);
       v._shadow = null;
     } else if (v is WidgetView) {
@@ -23,22 +23,21 @@ abstract class _Unmount {
     } else {
       throw "unable to unmount ${v.runtimeType}";
     }
-    if (v._ref != null) {
-      v._ref._set(null);
+    if (v.ref != null) {
+      v.ref._set(null);
     }
     v._unmount();
   }
 
   void _unmountWidget(WidgetView view, bool willReplace) {
-    Widget w = view.widget;
-    if (w._shadow == null) {
+    if (view._shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }
-    if (w._willUnmount.hasListener) {
-      w._willUnmount.add(true);
+    if (view.widget._willUnmount.hasListener) {
+      view.widget._willUnmount.add(true);
     }
-    unmount(w._shadow, willReplace: willReplace);
-    w._shadow = null;
+    unmount(view._shadow, willReplace: willReplace);
+    view._shadow = null;
   }
 
   void unmountInner(_Inner elt) {

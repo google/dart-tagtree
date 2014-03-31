@@ -46,7 +46,7 @@ class _BrowserRoot extends core.Root {
 /// can be deserialized.)
 void mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) {
   if (rules == null) {
-    rules = core.Elt.rules;
+    rules = core.eltRules;
   }
   var ws = new WebSocket(webSocketUrl);
   ws.onMessage.listen((MessageEvent e) {

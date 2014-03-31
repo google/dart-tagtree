@@ -9,12 +9,9 @@ part of core;
 ///
 /// However, if the parent's "inner" property is just a string, it's handled as a
 /// special case and the Text class isn't used.
-class Text extends _View {
+class _Text extends _View {
   String value;
-  Text(this.value):
-    super(null) {
-    _def = TextDef.instance;
-  }
+  _Text(String path, int depth, this.value) : super(TextDef.instance, path, depth, null);
 }
 
 class TextDef extends TagDef {

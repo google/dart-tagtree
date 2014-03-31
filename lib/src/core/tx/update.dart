@@ -12,7 +12,7 @@ abstract class _Update extends _Mount with _Unmount {
   // Either updates a view in place or unmounts and remounts it.
   // Returns the new view.
   _View updateOrReplace(_View current, Tag next) {
-    if (current._def == next.def) {
+    if (current.def == next.def) {
       _updateInPlace(current, next);
       return current;
     } else {
@@ -32,28 +32,28 @@ abstract class _Update extends _Mount with _Unmount {
   /// After the update, current should have the same props as next and any DOM changes
   /// needed should have been sent to frame.
   void _updateInPlace(_View current, Tag next) {
-    if (current is TemplateView) {
+    if (current is _Template) {
       _updateTemplate(current, next);
     } else if (current is WidgetView) {
       updateWidget(current, next);
-    } else if (current is Text) {
+    } else if (current is _Text) {
       _updateText(current, next);
-    } else if (current is Elt) {
+    } else if (current is _Elt) {
       _updateElt(current, next);
     } else {
       throw "cannot update: ${current.runtimeType}";
     }
   }
 
-  void _updateTemplate(TemplateView current, Tag nextTag) {
-    TagDef def = current._def;
+  void _updateTemplate(_Template current, Tag nextTag) {
+    TagDef def = current.def;
     Props next = new Props(nextTag.props);
-    if (!def._shouldUpdate(current._shadowProps, next)) {
+    if (!def._shouldUpdate(current._props, next)) {
       return;
     }
     Tag newShadow = def._render(nextTag.props);
     current._shadow = updateOrReplace(current._shadow, newShadow);
-    current._shadowProps = next;
+    current._props = next;
   }
 
   void updateWidget(WidgetView view, [Tag next]) {
@@ -62,13 +62,13 @@ abstract class _Update extends _Mount with _Unmount {
       return;
     }
     Tag newShadow = current._updateAndRender(next);
-    current._shadow = updateOrReplace(current._shadow, newShadow);
+    view._shadow = updateOrReplace(view._shadow, newShadow);
     if (current._didUpdate.hasListener) {
       _updatedWidgets.add(current);
     }
   }
 
-  void _updateText(Text current, Tag nextTag) {
+  void _updateText(_Text current, Tag nextTag) {
     String next = nextTag.props[#value];
     if (current.value == next) {
       return; // no internal state to update
@@ -77,7 +77,7 @@ abstract class _Update extends _Mount with _Unmount {
     frame.setInnerText(current.path, current.value);
   }
 
-  void _updateElt(Elt elt, Tag next) {
+  void _updateElt(_Elt elt, Tag next) {
     String path = elt.path;
     assert(path != null);
 

@@ -36,7 +36,7 @@ class Transaction extends _Update {
       frame.onRefMounted(r);
     }
 
-    for (Elt form in _mountedForms) {
+    for (_Elt form in _mountedForms) {
       frame.onFormMounted(root, form.path);
     }
 

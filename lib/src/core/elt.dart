@@ -1,15 +1,14 @@
 part of core;
 
 /// A virtual DOM element.
-class Elt extends _View with _Inner {
+class _Elt extends _View with _Inner {
   final String tagName;
   Map<Symbol, dynamic> _props;
 
-  Elt(EltDef def, Map<Symbol, dynamic> props) :
+  _Elt(EltDef def, String path, int depth, Map<Symbol, dynamic> props) :
       tagName = def.tagName,
       _props = props,
-      super(props[#ref]) {
-    _def = def;
+      super(def, path, depth, props[#ref]) {
 
     for (Symbol key in props.keys) {
       if (!_allEltProps.contains(key)) {
@@ -23,16 +22,17 @@ class Elt extends _View with _Inner {
   }
 
   Props get props => new Props(_props);
-
-  /// A ruleSet that can encode any Elt as JSON.
-  static final JsonRuleSet rules = (){
-    var rs = new JsonRuleSet();
-    for (EltDef def in _eltTags.values) {
-      rs.add(new EltRule(def));
-    }
-    return rs;
-  }();
 }
+
+/// A ruleSet that can encode any Elt as JSON.
+final JsonRuleSet eltRules = (){
+  var rs = new JsonRuleSet();
+  for (EltDef def in _eltTags.values) {
+    rs.add(new EltRule(def));
+  }
+  return rs;
+}();
+
 
 class EltDef extends TagDef {
   final String tagName;

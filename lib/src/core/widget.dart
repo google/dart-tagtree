@@ -10,7 +10,6 @@ abstract class Widget<S extends State> {
   WidgetView _view;
   Props _props;
   State _state, _nextState;
-  _View _shadow;
   WidgetEnv _widgetEnv;
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
@@ -19,7 +18,7 @@ abstract class Widget<S extends State> {
   Widget(Map<Symbol, dynamic> props)
       : _props = new Props(props);
 
-  bool get isMounted => _view._mounted;
+  bool get isMounted => _view != null && _view._mounted;
 
   /// Constructs the initial state when the Widget is mounted.
   /// (Stateful widgets should override.)
@@ -103,8 +102,8 @@ class WidgetDef extends TagDef {
 
 class WidgetView extends _View {
   Widget widget;
-  WidgetView(WidgetDef def, this.widget, Ref ref) : super(ref) {
-    _def = def;
-  }
+  _View _shadow;
+  WidgetView(WidgetDef def, String path, int depth, this.widget, Ref ref) :
+    super(def, path, depth, ref);
 }
 
