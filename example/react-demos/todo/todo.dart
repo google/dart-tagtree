@@ -3,25 +3,27 @@ import 'package:viewtree/browser.dart';
 
 final $ = new Tags();
 
-final TodoApp = new WidgetDef(
-  widget: (_) => new TodoAppWidget()
-);
-
-final TodoList = new Template(
-  render: ({List<String> items}) {
-    createItem(itemText) => $.Li(inner: itemText);
-    return $.Ul(inner: items.map(createItem));
-  }
-);
-
 void main() {
   root("#container").mount(TodoApp());
 }
 
-class TodoAppWidget extends Widget<TodoState> {
-  TodoAppWidget() : super({});
+final TodoApp = defineWidget(
+    props: () => true,
+    state: (_) => new _TodoState('', []),
+    widget: () => new _TodoApp()
+);
 
-  get firstState => new TodoState();
+class _TodoState extends State {
+  String text;
+  List<String> items;
+
+  _TodoState(this.text, this.items);
+
+  @override
+  clone() => new _TodoState(text, items);
+}
+
+class _TodoApp extends Widget<_TodoState> {
 
   void onChange(ChangeEvent e) {
     nextState.text = e.value;
@@ -44,10 +46,9 @@ class TodoAppWidget extends Widget<TodoState> {
     ]);
 }
 
-class TodoState extends State {
-  String text = '';
-  List<String> items = [];
-  clone() => new TodoState()
-    ..items = items
-    ..text = text;
-}
+final TodoList = new Template(
+  render: ({List<String> items}) {
+    createItem(itemText) => $.Li(inner: itemText);
+    return $.Ul(inner: items.map(createItem));
+  }
+);

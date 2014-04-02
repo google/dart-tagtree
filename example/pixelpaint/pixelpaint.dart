@@ -1,14 +1,24 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+void main() {
+  root("#container").mount(PixelPaint(width: 50, height: 50));
+}
+
 final $ = new Tags();
 
-final PixelPaint = new WidgetDef(
-  widget: (props) => new PixelPaintWidget(props.width, props.height)
+final PixelPaint = defineWidget(
+    props: ({int width, int height}) => true,
+    state: (p) => new Grid(p.width, p.height),
+    widget: () => new PixelPaintWidget()
 );
 
-final GridView = new WidgetDef(
-  widget: (props) => new GridViewWidget(props.grid, props.onPaint)
+typedef PixelHandler(int x, int y);
+
+final GridView = defineWidget(
+    props: ({Grid grid, PixelHandler onPaint}) => true,
+    state: (_) => new ViewState(),
+    widget: () => new GridViewWidget()
 );
 
 final RowView = new Template(
@@ -27,14 +37,7 @@ final RowView = new Template(
   }
 );
 
-void main() {
-  root("#container").mount(PixelPaint(width: 50, height: 50));
-}
-
 class PixelPaintWidget extends Widget<Grid> {
-  PixelPaintWidget(int width, int height) : super({#width: width, #height: height});
-
-  get firstState => new Grid(props.width, props.height);
 
   void onPaint(int x, int y) {
     nextState.set(x, y, 1);
@@ -43,15 +46,7 @@ class PixelPaintWidget extends Widget<Grid> {
   Tag render() => GridView(grid: state, onPaint: onPaint);
 }
 
-typedef PixelHandler(int x, int y);
-
 class GridViewWidget extends Widget<ViewState> {
-  GridViewWidget(Grid g, PixelHandler onPaint) : super({#grid: g, #onPaint: onPaint}) {
-    assert(g != null);
-    assert(onPaint != null);
-  }
-
-  get firstState => new ViewState();
 
   PixelHandler get onPaint => props.onPaint;
 
@@ -81,35 +76,6 @@ class GridViewWidget extends Widget<ViewState> {
     return $.Table(clazz: "grid", inner: rows,
         onMouseUp: (_) => onMouseUp(),
         onMouseOut: (_) => onMouseUp());
-  }
-}
-
-class RowViewWidget extends Widget {
-  RowViewWidget(int y, Row row,
-      PixelHandler onMouseDown, PixelHandler onMouseOver, Function onMouseUp):
-    super({#y: y, #row: row,
-      #onMouseDown: onMouseDown, #onMouseOver: onMouseOver, #onMouseUp: onMouseUp});
-
-  @override
-  bool shouldUpdate(Tag next) {
-    return !props.row.equals(next.props[#row]);
-  }
-
-  @override
-  Tag render() {
-    Row row = props.row;
-    PixelHandler onMouseDown = props.onMouseDown;
-    PixelHandler onMouseOver = props.onMouseOver;
-    Function onMouseUp = props.onMouseUp;
-    var cells = [];
-    for (int x = 0; x < row.width; x++) {
-      int pixel = row[x];
-      cells.add($.Td(clazz: palette[pixel],
-          onMouseDown: (_) => onMouseDown(x, props.y),
-          onMouseOver: (_) => onMouseOver(x, props.y),
-          onMouseUp: (_) => onMouseUp()));
-    }
-    return $.Tr(inner: cells);
   }
 }
 

@@ -46,9 +46,8 @@ abstract class _Mount {
       view._props = new Props(tag.props);
       return view;
     } else if (def is WidgetDef) {
-      Widget w = def.widgetFunc(new Props(tag.props));
-      WidgetView view = new WidgetView(def, path, depth, w, tag.props[#ref]);
-      _mountWidget(w, view, html);
+      WidgetView view = new WidgetView(tag, path, depth, widgetEnv);
+      _mountWidget(view, html);
       return view;
     } else if (def is EltDef) {
       _Elt elt = new _Elt(def, path, depth, tag.props);
@@ -64,19 +63,13 @@ abstract class _Mount {
     html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
   }
 
-  void _mountWidget(Widget widget, WidgetView view, StringBuffer html) {
-    widget._view = view;
-    widget._widgetEnv = widgetEnv;
-    widget._state = widget.firstState;
-    _mountShadow(html, widget, view);
-    if (widget._didMount.hasListener) {
-      _mountedWidgets.add(widget);
-    }
-  }
-
-  void _mountShadow(StringBuffer html, Widget w, WidgetView view) {
+  void _mountWidget(WidgetView view, StringBuffer html) {
+    Widget w = view.widget;
     Tag newShadow = w.render();
     view._shadow = mountView(newShadow, html, view.path, view.depth + 1);
+    if (w._didMount.hasListener) {
+      _mountedWidgets.add(w);
+    }
   }
 
   void _mountElt(_Elt elt, StringBuffer html) {

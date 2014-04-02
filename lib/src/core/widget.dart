@@ -15,8 +15,11 @@ abstract class Widget<S extends State> {
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
-  Widget(Map<Symbol, dynamic> props)
-      : _props = new Props(props);
+  void _init(Props p, State s, WidgetEnv env) {
+    _props = p;
+    _state = s;
+    _widgetEnv = env;
+  }
 
   bool get isMounted => _view != null && _view._mounted;
 
@@ -91,19 +94,52 @@ abstract class State {
   State clone();
 }
 
-class WidgetDef extends TagDef {
-  final WidgetFunc widgetFunc;
 
-  WidgetDef({WidgetFunc widget}) :
-    this.widgetFunc = widget {
-    assert(widget != null);
+typedef State CreateStateFunc(Props p);
+typedef Widget CreateWidgetFunc();
+
+WidgetDef defineWidget({Function props, CreateStateFunc state, CreateWidgetFunc widget})
+  => new WidgetDef(props, state, widget);
+
+class WidgetDef extends TagDef {
+  final Function _checkPropsFunc;
+  final CreateStateFunc _createFirstStateFunc;
+  final CreateWidgetFunc _createWidgetFunc;
+
+  WidgetDef(this._checkPropsFunc, this._createFirstStateFunc, this._createWidgetFunc) {
+    assert(_checkPropsFunc != null);
+    assert(_createFirstStateFunc != null);
+    assert(_createWidgetFunc != null);
   }
+
+  void checkProps(Map<Symbol, dynamic> props) {
+    var err = Function.apply(_checkPropsFunc, [], props);
+    if (err != true) {
+      throw "invalid props: ${err}";
+    }
+  }
+
+  createFirstState(Props p) => _createFirstStateFunc(p);
+  createWidget() => _createWidgetFunc();
 }
 
 class WidgetView extends _View {
-  Widget widget;
+  final Widget widget;
   _View _shadow;
-  WidgetView(WidgetDef def, String path, int depth, this.widget, Ref ref) :
+
+  WidgetView.raw(WidgetDef def, String path, int depth, this.widget, Ref ref) :
     super(def, path, depth, ref);
+
+  factory WidgetView(Tag tag, String path, int depth, WidgetEnv env) {
+    WidgetDef def = tag.def;
+    def.checkProps(tag.props);
+    Props p = new Props(tag.props);
+    var s = def.createFirstState(p);
+    Widget w = def.createWidget();
+    w._init(p, s, env);
+    WidgetView v = new WidgetView.raw(def, path, depth, w, tag.props[#ref]);
+    w._view = v;
+    return v;
+  }
 }
 

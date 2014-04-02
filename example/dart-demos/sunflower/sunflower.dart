@@ -12,46 +12,51 @@ import 'dart:math';
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-const String ORANGE = "orange";
-const int SEED_RADIUS = 2;
-const int SCALE_FACTOR = 4;
-const num TAU = PI * 2;
-const int MAX_D = 300;
-const num centerX = MAX_D / 2;
-const num centerY = centerX;
-
-final num PHI = (sqrt(5) + 1) / 2;
+void main() {
+  root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
+}
 
 final $ = new Tags();
 
-final Sunflower = new WidgetDef(
-  widget: (_) => new SunflowerWidget()
+final Sunflower = defineWidget(
+    props: ({int startSeeds, num seedRadius}) => true,
+    state: (p) => new _SunflowerState(p.startSeeds),
+    widget: () => new _Sunflower()
 );
 
-void main() {
-  root("#sunflower").mount(Sunflower());
+class _SunflowerState extends State {
+  int seeds;
+  _SunflowerState(this.seeds);
+
+  @override
+  _SunflowerState clone() => new _SunflowerState(seeds);
 }
 
-class SunflowerWidget extends Widget<SunflowerState> {
+const num TAU = PI * 2;
+final num PHI = (sqrt(5) + 1) / 2;
+
+class _Sunflower extends Widget<_SunflowerState> {
   final _canvas = new ElementRef<CanvasElement>();
 
-  SunflowerWidget() : super({}) {
+  _Sunflower() {
     didMount.listen((_) => draw());
     didUpdate.listen((_) => draw());
   }
 
-  get firstState => new SunflowerState();
-
   void onChange(ChangeEvent e) {
     nextState.seeds = int.parse(e.value);
   }
+
+  int get maxD => 300;
+  int get centerX => maxD ~/ 2;
+  int get centerY => maxD ~/ 2;
 
   @override
   Tag render() {
     return $.Div(inner: [
 
         $.Div(id: "container", inner: [
-            $.Canvas(width: 300, height: 300, clazz: "center", ref: _canvas),
+            $.Canvas(width: maxD, height: maxD, clazz: "center", ref: _canvas),
             $.Form(clazz: "center", inner: [
                 $.Input(type: "range", max: 1000, value: state.seeds, onChange: onChange)
             ]),
@@ -68,34 +73,26 @@ class SunflowerWidget extends Widget<SunflowerState> {
   void draw() {
     CanvasRenderingContext2D context = _canvas.elt.context2D;
     int seeds = state.seeds;
-    context.clearRect(0, 0, MAX_D, MAX_D);
+    num scaleFactor = props.seedRadius * 2;
+    context.clearRect(0, 0, maxD, maxD);
     for (var i = 0; i < seeds; i++) {
       final num theta = i * TAU / PHI;
-      final num r = sqrt(i) * SCALE_FACTOR;
-      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta));
+      final num r = sqrt(i) * scaleFactor;
+      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), props.seedRadius);
     }
   }
 
   /// Draw a small circle representing a seed centered at (x,y).
-  void drawSeed(CanvasRenderingContext2D context, num x, num y) {
+  void drawSeed(CanvasRenderingContext2D context, num x, num y, num radius) {
     context..beginPath()
            ..lineWidth = 2
-           ..fillStyle = ORANGE
-           ..strokeStyle = ORANGE
-           ..arc(x, y, SEED_RADIUS, 0, TAU, false)
+           ..fillStyle = "orange"
+           ..strokeStyle = "orange"
+           ..arc(x, y, radius, 0, TAU, false)
            ..fill()
            ..closePath()
            ..stroke();
   }
-}
-
-class SunflowerState extends State {
-  int seeds = 500;
-
-  @override
-  State clone() =>
-      new SunflowerState()
-          ..seeds = seeds;
 }
 
 

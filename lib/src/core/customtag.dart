@@ -2,8 +2,6 @@ part of core;
 
 typedef bool ShouldUpdateFunc(Props p, Props next);
 
-typedef Widget WidgetFunc(Props p);
-
 /// Defines a custom tag.
 abstract class TagDef {
 
