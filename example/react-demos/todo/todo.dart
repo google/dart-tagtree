@@ -13,14 +13,11 @@ final TodoApp = defineWidget(
     widget: () => new _TodoApp()
 );
 
-class _TodoState extends State {
+class _TodoState {
   String text;
   List<String> items;
 
   _TodoState(this.text, this.items);
-
-  @override
-  clone() => new _TodoState(text, items);
 }
 
 class _TodoApp extends Widget<_TodoState> {
@@ -44,6 +41,8 @@ class _TodoApp extends Widget<_TodoState> {
         $.Button(inner: "Add # ${state.items.length + 1}")
       ])
     ]);
+
+  _TodoState cloneState(_TodoState prev) => new _TodoState(prev.text, prev.items);
 }
 
 final _TodoList = defineTemplate(

@@ -9,25 +9,21 @@ final $ = new Tags();
 
 final ReversableText = defineWidget(
     props: ({String label}) => true,
-    state: (_) => new _ReversableState(false),
+    state: (_) => false,
     widget: () => new _ReversableText()
 );
 
-class _ReversableState extends State {
-  bool reversed;
-  _ReversableState(this.reversed);
-  clone() => new _ReversableState(reversed);
-}
+class _ReversableText extends Widget<bool> {
 
-class _ReversableText extends Widget<_ReversableState> {
+  bool get reversed => state;
 
   onClick(e) {
-    nextState.reversed = !state.reversed;
+    nextState = !reversed;
   }
 
   Tag render() {
     String label = props.label;
-    label = state.reversed ? _reverse(label) : label;
+    label = reversed ? _reverse(label) : label;
     return $.Div(clazz: "sample_text", onClick: onClick, inner: label);
   }
 }

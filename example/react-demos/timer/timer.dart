@@ -8,22 +8,13 @@ void main() {
 
 final SecondsElapsed = defineWidget(
     props: () => true,
-    state: (_) => new TimerState(0),
+    state: (_) => 0, // seconds
     widget: () => new TimerWidget()
 );
 
 final $ = new Tags();
 
-class TimerState extends State {
-  int secondsElapsed;
-
-  TimerState(this.secondsElapsed);
-
-  @override
-  TimerState clone() => new TimerState(secondsElapsed);
-}
-
-class TimerWidget extends Widget<TimerState> {
+class TimerWidget extends Widget<int> {
   Timer timer;
 
   TimerWidget() {
@@ -32,9 +23,11 @@ class TimerWidget extends Widget<TimerState> {
     willUnmount.listen((_) => timer.cancel());
   }
 
+  int get seconds => state;
+
   tick() {
-    nextState.secondsElapsed = state.secondsElapsed + 1;
+    nextState = seconds + 1;
   }
 
-  Tag render() => $.Div(inner: "Seconds elapsed: ${state.secondsElapsed}");
+  Tag render() => $.Div(inner: "Seconds elapsed: ${seconds}");
 }

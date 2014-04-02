@@ -20,22 +20,14 @@ final $ = new Tags();
 
 final Sunflower = defineWidget(
     props: ({int startSeeds, num seedRadius}) => true,
-    state: (p) => new _SunflowerState(p.startSeeds),
+    state: (p) => p.startSeeds,
     widget: () => new _Sunflower()
 );
-
-class _SunflowerState extends State {
-  int seeds;
-  _SunflowerState(this.seeds);
-
-  @override
-  _SunflowerState clone() => new _SunflowerState(seeds);
-}
 
 const num TAU = PI * 2;
 final num PHI = (sqrt(5) + 1) / 2;
 
-class _Sunflower extends Widget<_SunflowerState> {
+class _Sunflower extends Widget<int> {
   final _canvas = new ElementRef<CanvasElement>();
 
   _Sunflower() {
@@ -43,8 +35,10 @@ class _Sunflower extends Widget<_SunflowerState> {
     didUpdate.listen((_) => draw());
   }
 
+  int get seeds => state;
+
   void onChange(ChangeEvent e) {
-    nextState.seeds = int.parse(e.value);
+    nextState = int.parse(e.value);
   }
 
   int get maxD => 300;
@@ -58,13 +52,13 @@ class _Sunflower extends Widget<_SunflowerState> {
         $.Div(id: "container", inner: [
             $.Canvas(width: maxD, height: maxD, clazz: "center", ref: _canvas),
             $.Form(clazz: "center", inner: [
-                $.Input(type: "range", max: 1000, value: state.seeds, onChange: onChange)
+                $.Input(type: "range", max: 1000, value: seeds, onChange: onChange)
             ]),
             $.Img(src: "math.png", width: "350px", height: "42px", clazz: "center")
         ]),
 
         $.Footer(inner: [
-            $.P(id: "notes", inner: "${state.seeds} seeds")
+            $.P(id: "notes", inner: "${seeds} seeds")
         ]),
     ]);
   }
@@ -72,7 +66,6 @@ class _Sunflower extends Widget<_SunflowerState> {
   /// Draw the complete figure for the current number of seeds.
   void draw() {
     CanvasRenderingContext2D context = _canvas.elt.context2D;
-    int seeds = state.seeds;
     num scaleFactor = props.seedRadius * 2;
     context.clearRect(0, 0, maxD, maxD);
     for (var i = 0; i < seeds; i++) {

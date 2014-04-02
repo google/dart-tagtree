@@ -17,7 +17,7 @@ typedef PixelHandler(int x, int y);
 
 final GridView = defineWidget(
     props: ({Grid grid, PixelHandler onPaint}) => true,
-    state: (_) => new ViewState(),
+    state: (_) => false, // mouse not down
     widget: () => new GridViewWidget()
 );
 
@@ -44,25 +44,29 @@ class PixelPaintWidget extends Widget<Grid> {
   }
 
   Tag render() => GridView(grid: state, onPaint: onPaint);
+
+  Grid cloneState(Grid prev) => new Grid.from(prev);
 }
 
-class GridViewWidget extends Widget<ViewState> {
+class GridViewWidget extends Widget<bool> {
+
+  bool get mouseDown => nextState;
 
   PixelHandler get onPaint => props.onPaint;
 
   void onMouseDown(int x, int y) {
     onPaint(x, y);
-    nextState.mouseDown = true;
+    nextState = true;
   }
 
   void onMouseOver(int x, int y) {
-    if (nextState.mouseDown) {
+    if (mouseDown) {
       onPaint(x, y);
     }
   }
 
   void onMouseUp() {
-    nextState.mouseDown = false;
+    nextState = false;
   }
 
   @override
@@ -79,15 +83,9 @@ class GridViewWidget extends Widget<ViewState> {
   }
 }
 
-class ViewState extends State {
-  bool mouseDown = false;
-  @override
-  ViewState clone() => new ViewState()..mouseDown = mouseDown;
-}
-
 final palette = <int, String>{0: "black", 1: "white"};
 
-class Grid extends State {
+class Grid {
   final List<Row> rows;
 
   Grid._raw(this.rows);
@@ -111,9 +109,6 @@ class Grid extends State {
   void set(int x, int y, int pixel) {
     rows[y][x] = pixel;
   }
-
-  @override
-  State clone() => new Grid.from(this);
 }
 
 class Row {

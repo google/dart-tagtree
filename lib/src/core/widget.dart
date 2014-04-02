@@ -1,21 +1,57 @@
 part of core;
 
+typedef CreateStateFunc(Props p);
+typedef Widget CreateWidgetFunc();
+
+WidgetDef defineWidget({Function props, CreateStateFunc state, CreateWidgetFunc widget})
+  => new WidgetDef(props, state, widget);
+
+class WidgetDef extends TagDef {
+  final Function _checkPropsFunc;
+  final CreateStateFunc _createFirstStateFunc;
+  final CreateWidgetFunc _createWidgetFunc;
+
+  WidgetDef(this._checkPropsFunc, this._createFirstStateFunc, this._createWidgetFunc) {
+    assert(_checkPropsFunc != null);
+    assert(_createFirstStateFunc != null);
+    assert(_createWidgetFunc != null);
+  }
+
+  void checkProps(Map<Symbol, dynamic> props) {
+    var err = Function.apply(_checkPropsFunc, [], props);
+    if (err != true) {
+      throw "invalid props: ${err}";
+    }
+  }
+
+  createFirstState(Props p) {
+    var s = _createFirstStateFunc(p);
+    if (s == null) {
+      throw "attempted to create a widget with a null state";
+    }
+    return s;
+  }
+
+  createWidget() => _createWidgetFunc();
+}
+
 abstract class WidgetEnv {
   void requestWidgetUpdate(WidgetView  view);
 }
 
-/// A Widget is a View that acts as a template. Its render() method typically
-/// returns elements to be rendered
-abstract class Widget<S extends State> {
+/// A Widget is the implementation of a tag that has state.
+/// S is the state's type, which can be any type, but must be
+/// cloneable using the cloneState() function.
+abstract class Widget<S> {
   WidgetView _view;
   Props _props;
-  State _state, _nextState;
+  S _state, _nextState;
   WidgetEnv _widgetEnv;
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
-  void _init(Props p, State s, WidgetEnv env) {
+  void _init(Props p, S s, WidgetEnv env) {
     _props = p;
     _state = s;
     _widgetEnv = env;
@@ -32,7 +68,8 @@ abstract class Widget<S extends State> {
   S get nextState {
     assert(isMounted);
     if (_nextState == null) {
-      _nextState = _state.clone();
+      _nextState = cloneState(_state);
+      assert(_nextState != null);
       invalidate();
     }
     return _nextState;
@@ -43,6 +80,13 @@ abstract class Widget<S extends State> {
   void set nextState(S s) {
     _nextState = s;
     invalidate();
+  }
+
+  /// Returns a new copy of the state, given the previous version.
+  /// A default implementation is provided for bool, num, and String.
+  S cloneState(S prev) {
+    assert(prev is bool || prev is num || prev is String);
+    return prev;
   }
 
   Stream get didMount => _didMount.stream;
@@ -81,42 +125,6 @@ abstract class Widget<S extends State> {
   }
 
   Props get props => _props;
-}
-
-/// The internal state of a stateful Widget.
-/// (Each stateful Widget will typically have a corresponding subclass of State.)
-abstract class State {
-  /// Returns a copy of the state, to be rendered on the next refresh.
-  State clone();
-}
-
-
-typedef State CreateStateFunc(Props p);
-typedef Widget CreateWidgetFunc();
-
-WidgetDef defineWidget({Function props, CreateStateFunc state, CreateWidgetFunc widget})
-  => new WidgetDef(props, state, widget);
-
-class WidgetDef extends TagDef {
-  final Function _checkPropsFunc;
-  final CreateStateFunc _createFirstStateFunc;
-  final CreateWidgetFunc _createWidgetFunc;
-
-  WidgetDef(this._checkPropsFunc, this._createFirstStateFunc, this._createWidgetFunc) {
-    assert(_checkPropsFunc != null);
-    assert(_createFirstStateFunc != null);
-    assert(_createWidgetFunc != null);
-  }
-
-  void checkProps(Map<Symbol, dynamic> props) {
-    var err = Function.apply(_checkPropsFunc, [], props);
-    if (err != true) {
-      throw "invalid props: ${err}";
-    }
-  }
-
-  createFirstState(Props p) => _createFirstStateFunc(p);
-  createWidget() => _createWidgetFunc();
 }
 
 class WidgetView extends _View {
