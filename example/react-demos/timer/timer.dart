@@ -27,9 +27,7 @@ class TimerWidget extends Widget<TimerState> {
   Timer timer;
 
   TimerWidget() {
-    didMount.listen((_) {
-      timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());
-    });
+    timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());
 
     willUnmount.listen((_) => timer.cancel());
   }
