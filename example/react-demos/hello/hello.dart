@@ -1,12 +1,12 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+final $ = new Tags();
+
 void main() {
   root("#container").mount(Hello(message: "world"));
 }
 
-final $ = new Tags();
-
-final Hello = new Template(
+final Hello = defineTemplate(
     render: ({String message}) => $.Div(inner: "Hello, ${message}")
 );

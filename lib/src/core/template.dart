@@ -1,10 +1,13 @@
 part of core;
 
+Template defineTemplate({ShouldUpdateFunc shouldUpdate, Function render})
+  => new Template._raw(shouldUpdate, render);
+
 class Template extends TagDef {
   final ShouldUpdateFunc shouldUpdate;
   final Function render;
 
-  Template({ShouldUpdateFunc shouldUpdate, Function render}) :
+  Template._raw(ShouldUpdateFunc shouldUpdate, Function render) :
     this.shouldUpdate = shouldUpdate, this.render = render {
     assert(render != null);
   }

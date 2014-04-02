@@ -38,7 +38,7 @@ class _TodoApp extends Widget<_TodoState> {
   Tag render() =>
     $.Div(inner: [
       $.H3(inner: "TODO"),
-      TodoList(items: state.items),
+      _TodoList(items: state.items),
       $.Form(onSubmit: handleSubmit, inner: [
         $.Input(onChange: onChange, value: state.text),
         $.Button(inner: "Add # ${state.items.length + 1}")
@@ -46,7 +46,7 @@ class _TodoApp extends Widget<_TodoState> {
     ]);
 }
 
-final TodoList = new Template(
+final _TodoList = defineTemplate(
   render: ({List<String> items}) {
     createItem(itemText) => $.Li(inner: itemText);
     return $.Ul(inner: items.map(createItem));

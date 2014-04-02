@@ -21,7 +21,7 @@ final GridView = defineWidget(
     widget: () => new GridViewWidget()
 );
 
-final RowView = new Template(
+final RowView = defineTemplate(
   shouldUpdate: (props, next) => !props.row.equals(next.row),
   render: ({int y, Row row,
     PixelHandler onMouseDown, PixelHandler onMouseOver, Function onMouseUp}) {
