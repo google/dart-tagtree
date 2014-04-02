@@ -23,10 +23,6 @@ abstract class Widget<S extends State> {
 
   bool get isMounted => _view != null && _view._mounted;
 
-  /// Constructs the initial state when the Widget is mounted.
-  /// (Stateful widgets should override.)
-  S get firstState => null;
-
   /// Returns the currently rendered state. This should be treated as read-only.
   S get state => _state;
 
@@ -59,7 +55,7 @@ abstract class Widget<S extends State> {
     _widgetEnv.requestWidgetUpdate(this._view);
   }
 
-  /// Constructs another View to be rendered in place of this Widget.
+  /// Constructs a tag tree to be rendered in place of this Widget.
   /// (This is somewhat similar to "shadow DOM".)
   Tag render();
 
