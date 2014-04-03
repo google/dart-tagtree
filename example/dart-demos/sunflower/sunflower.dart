@@ -12,11 +12,11 @@ import 'dart:math';
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+final $ = new Tags();
+
 void main() {
   root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
 }
-
-final $ = new Tags();
 
 final Sunflower = defineWidget(
     props: ({int startSeeds, num seedRadius}) => true,
@@ -36,14 +36,14 @@ class _Sunflower extends Widget<int> {
   }
 
   int get seeds => state;
+  num get seedRadius => props.seedRadius;
+  int get maxD => 300;
+  int get centerX => maxD ~/ 2;
+  int get centerY => maxD ~/ 2;
 
   void onChange(ChangeEvent e) {
     nextState = int.parse(e.value);
   }
-
-  int get maxD => 300;
-  int get centerX => maxD ~/ 2;
-  int get centerY => maxD ~/ 2;
 
   @override
   Tag render() {
@@ -66,17 +66,17 @@ class _Sunflower extends Widget<int> {
   /// Draw the complete figure for the current number of seeds.
   void draw() {
     CanvasRenderingContext2D context = _canvas.elt.context2D;
-    num scaleFactor = props.seedRadius * 2;
+    num scaleFactor = seedRadius * 2;
     context.clearRect(0, 0, maxD, maxD);
     for (var i = 0; i < seeds; i++) {
       final num theta = i * TAU / PHI;
       final num r = sqrt(i) * scaleFactor;
-      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), props.seedRadius);
+      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), seedRadius);
     }
   }
 
   /// Draw a small circle representing a seed centered at (x,y).
-  void drawSeed(CanvasRenderingContext2D context, num x, num y, num radius) {
+  static void drawSeed(CanvasRenderingContext2D context, num x, num y, num radius) {
     context..beginPath()
            ..lineWidth = 2
            ..fillStyle = "orange"
@@ -87,5 +87,3 @@ class _Sunflower extends Widget<int> {
            ..stroke();
   }
 }
-
-

@@ -1,31 +1,29 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+final $ = new Tags();
+
 void main() {
   root("#container").mount(ReversableText(label: "Click me!"));
 }
 
-final $ = new Tags();
-
 final ReversableText = defineWidget(
-    props: ({String label}) => true,
-    state: (_) => false,
-    widget: () => new _ReversableText()
+  props: ({String label}) => true,
+  state: (_) => false,
+  widget: () => new _ReversableText()
 );
 
 class _ReversableText extends Widget<bool> {
 
   bool get reversed => state;
+  String get label => props.label;
+  String get text => reversed ? _reverse(label) : label;
 
   onClick(e) {
     nextState = !reversed;
   }
 
-  Tag render() {
-    String label = props.label;
-    label = reversed ? _reverse(label) : label;
-    return $.Div(clazz: "sample_text", onClick: onClick, inner: label);
-  }
+  Tag render() => $.Div(clazz: "sample_text", onClick: onClick, inner: text);
 }
 
 String _reverse(String text) {
