@@ -162,6 +162,4 @@ class Row {
     }
     pixels[index] = pixel;
   }
-
-  Iterable map(Function f) => pixels.map(f);
 }
