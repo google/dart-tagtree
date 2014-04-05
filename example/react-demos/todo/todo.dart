@@ -8,7 +8,6 @@ void main() {
 }
 
 final TodoApp = defineWidget(
-    props: () => true,
     widget: () => new _TodoApp()
 );
 

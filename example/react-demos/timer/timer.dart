@@ -7,7 +7,6 @@ void main() {
 }
 
 final SecondsElapsed = defineWidget(
-    props: () => true,
     widget: () => new TimerWidget()
 );
 

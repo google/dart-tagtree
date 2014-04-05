@@ -2,23 +2,14 @@ part of core;
 
 typedef Widget CreateWidgetFunc();
 
-WidgetDef defineWidget({Function props, CreateWidgetFunc widget})
-  => new WidgetDef(props, widget);
+WidgetDef defineWidget({CreateWidgetFunc widget})
+  => new WidgetDef(widget);
 
 class WidgetDef extends TagDef {
-  final Function _checkPropsFunc;
   final CreateWidgetFunc _createWidgetFunc;
 
-  WidgetDef(this._checkPropsFunc, this._createWidgetFunc) {
-    assert(_checkPropsFunc != null);
+  WidgetDef(this._createWidgetFunc) {
     assert(_createWidgetFunc != null);
-  }
-
-  void checkProps(Map<Symbol, dynamic> props) {
-    var err = Function.apply(_checkPropsFunc, [], props);
-    if (err != true) {
-      throw "invalid props: ${err}";
-    }
   }
 
   createWidget() => _createWidgetFunc();
@@ -131,7 +122,6 @@ class WidgetView extends _View {
 
   factory WidgetView(Tag tag, String path, int depth, WidgetEnv env) {
     WidgetDef def = tag.def;
-    def.checkProps(tag.props);
     Widget w = def.createWidget();
     w.setProps(tag.props);
     var s = w.createFirstState();

@@ -10,8 +10,6 @@ final $ = new Tags();
 /// A tag that creates a black and white image editor with the given width and height
 /// in fat pixels.
 final PixelPaint = defineWidget(
-  // Palette is a list of CSS styles to use for the pixels.
-  props: ({int width, int height, List<String> palette}) => true,
   widget: () => new _PixelPaint()
 );
 
@@ -19,6 +17,8 @@ final PixelPaint = defineWidget(
 class _PixelPaint extends Widget<Grid> {
   int width;
   int height;
+
+  // A list of CSS styles to use for the pixels.
   List<String> palette;
 
   onPropsChange({int width, int height, List<String> palette}) {
@@ -42,7 +42,6 @@ typedef PixelHandler(int x, int y);
 
 /// Shows the grid and reports paint events when the user paints a pixel.
 final GridView = defineWidget(
-  props: ({Grid grid, Map<int, String> palette, PixelHandler onPaint}) => true,
   widget: () => new _GridView()
 );
 

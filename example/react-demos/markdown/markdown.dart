@@ -9,7 +9,6 @@ void main() {
 final $ = new Tags();
 
 final MarkdownEditor = defineWidget(
-    props: ({String defaultText}) => true,
     widget: () => new _MarkdownEditor()
 );
 

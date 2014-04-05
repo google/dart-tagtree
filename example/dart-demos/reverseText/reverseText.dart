@@ -8,7 +8,6 @@ void main() {
 }
 
 final ReversableText = defineWidget(
-  props: ({String label}) => true,
   widget: () => new _ReversableText()
 );
 

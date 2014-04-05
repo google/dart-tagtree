@@ -19,7 +19,6 @@ void main() {
 }
 
 final Sunflower = defineWidget(
-    props: ({int startSeeds, num seedRadius}) => true,
     widget: () => new _Sunflower()
 );
 
