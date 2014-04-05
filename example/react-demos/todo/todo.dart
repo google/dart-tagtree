@@ -21,6 +21,8 @@ class _TodoState {
 
 class _TodoApp extends Widget<_TodoState> {
 
+  void onPropsChange() {}
+
   @override
   _TodoState createFirstState() => new _TodoState('', []);
 

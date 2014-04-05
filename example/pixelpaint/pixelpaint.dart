@@ -17,13 +17,22 @@ final PixelPaint = defineWidget(
 
 /// Updates the model and re-renders whenever the user paints a pixel.
 class _PixelPaint extends Widget<Grid> {
+  int width;
+  int height;
+  List<String> palette;
+
+  onPropsChange({int width, int height, List<String> palette}) {
+    this.width = width;
+    this.height = height;
+    this.palette = palette;
+  }
 
   @override
-  Grid createFirstState() => new Grid(props.width, props.height);
+  Grid createFirstState() => new Grid(width, height);
 
   void onPaint(int x, int y) => nextState.set(x, y, 1);
 
-  Tag render() => GridView(grid: state, palette: props.palette.asMap(), onPaint: onPaint);
+  Tag render() => GridView(grid: state, palette: palette.asMap(), onPaint: onPaint);
 
   Grid cloneState(Grid prev) => new Grid.from(prev);
 }
@@ -41,12 +50,19 @@ final GridView = defineWidget(
 /// (The DOM's event API makes it tricky to reliably determine when the mouse is down.
 /// This implementation usually works but could be improved.)
 class _GridView extends Widget<bool> {
+  Grid grid;
+  Map<int, String> palette;
+  PixelHandler onPaint;
+
+  onPropsChange({grid, palette, onPaint}) {
+    this.grid = grid;
+    this.palette = palette;
+    this.onPaint = onPaint;
+  }
 
   @override
   bool createFirstState() => false; // assume mouse is up
 
-  Grid get grid => props.grid;
-  PixelHandler get onPaint => props.onPaint;
   bool get mouseDown => nextState;
   set mouseDown(bool next) => nextState = next;
 
@@ -67,7 +83,6 @@ class _GridView extends Widget<bool> {
 
   @override
   Tag render() {
-    Map<int, String> palette = props.palette;
     var rows = [];
     for (int y = 0; y < grid.height; y++) {
       rows.add(_RowView(y: y, row: grid.rows[y], palette: palette,

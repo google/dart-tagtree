@@ -22,6 +22,8 @@ class TimerWidget extends Widget<int> {
     willUnmount.listen((_) => timer.cancel());
   }
 
+  onPropsChange() {}
+
   @override
   int createFirstState() => 0;
 

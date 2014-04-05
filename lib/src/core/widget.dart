@@ -33,7 +33,6 @@ abstract class WidgetEnv {
 /// cloneable using the cloneState() function.
 abstract class Widget<S> {
   WidgetView _view;
-  Props _props;
   S _state, _nextState;
   WidgetEnv _widgetEnv;
   final _didMount = new StreamController.broadcast();
@@ -43,8 +42,10 @@ abstract class Widget<S> {
   /// Subclasses must override this method to return the widget's first state.
   S createFirstState();
 
-  void setProps(Props p) {
-    _props = p;
+  void setProps(Map<Symbol, dynamic> p) {
+    _suppressWarning(x) => x;
+    var w = _suppressWarning(this);
+    Function.apply(w.onPropsChange, [], p);
   }
 
   void _init(S s, WidgetEnv env) {
@@ -115,12 +116,10 @@ abstract class Widget<S> {
       _nextState = null;
     }
     if (nextVersion != null) {
-      _props = new Props(nextVersion.props);
+      setProps(nextVersion.props);
     }
     return render();
   }
-
-  Props get props => _props;
 }
 
 class WidgetView extends _View {
@@ -133,9 +132,8 @@ class WidgetView extends _View {
   factory WidgetView(Tag tag, String path, int depth, WidgetEnv env) {
     WidgetDef def = tag.def;
     def.checkProps(tag.props);
-    Props p = new Props(tag.props);
     Widget w = def.createWidget();
-    w.setProps(p);
+    w.setProps(tag.props);
     var s = w.createFirstState();
     w._init(s, env);
     WidgetView v = new WidgetView.raw(def, path, depth, w, tag.props[#ref]);

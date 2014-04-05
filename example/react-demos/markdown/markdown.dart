@@ -14,9 +14,14 @@ final MarkdownEditor = defineWidget(
 );
 
 class _MarkdownEditor extends Widget<String> {
+  String defaultText;
+
+  onPropsChange({defaultText}) {
+    this.defaultText = defaultText;
+  }
 
   @override
-  String createFirstState() => props.defaultText;
+  String createFirstState() => defaultText;
 
   String get text => state;
 

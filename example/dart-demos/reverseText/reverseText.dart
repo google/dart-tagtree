@@ -13,12 +13,16 @@ final ReversableText = defineWidget(
 );
 
 class _ReversableText extends Widget<bool> {
+  String label;
+
+  onPropsChange({String label}) {
+    this.label = label;
+  }
 
   @override
   bool createFirstState() => false;
 
   bool get reversed => state;
-  String get label => props.label;
   String get text => reversed ? _reverse(label) : label;
 
   onClick(e) {

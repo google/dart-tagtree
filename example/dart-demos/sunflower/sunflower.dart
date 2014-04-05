@@ -29,16 +29,23 @@ final num PHI = (sqrt(5) + 1) / 2;
 class _Sunflower extends Widget<int> {
   final _canvas = new ElementRef<CanvasElement>();
 
+  int startSeeds;
+  num seedRadius;
+
   _Sunflower() {
     didMount.listen((_) => draw());
     didUpdate.listen((_) => draw());
   }
 
+  onPropsChange({int startSeeds, num seedRadius}) {
+    this.startSeeds = startSeeds;
+    this.seedRadius = seedRadius;
+  }
+
   @override
-  int createFirstState() => props.startSeeds;
+  int createFirstState() => startSeeds;
 
   int get seeds => state;
-  num get seedRadius => props.seedRadius;
   int get maxD => 300;
   int get centerX => maxD ~/ 2;
   int get centerY => maxD ~/ 2;
