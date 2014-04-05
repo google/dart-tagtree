@@ -14,7 +14,7 @@ final ReversableText = defineWidget(
 class _ReversableText extends Widget<bool> {
   String label;
 
-  onPropsChange({String label}) {
+  onPropsChange({label}) {
     this.label = label;
   }
 

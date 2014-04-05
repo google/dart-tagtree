@@ -36,7 +36,7 @@ class _Sunflower extends Widget<int> {
     didUpdate.listen((_) => draw());
   }
 
-  onPropsChange({int startSeeds, num seedRadius}) {
+  onPropsChange({startSeeds, seedRadius}) {
     this.startSeeds = startSeeds;
     this.seedRadius = seedRadius;
   }

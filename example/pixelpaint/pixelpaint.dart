@@ -21,7 +21,7 @@ class _PixelPaint extends Widget<Grid> {
   // A list of CSS styles to use for the pixels.
   List<String> palette;
 
-  onPropsChange({int width, int height, List<String> palette}) {
+  onPropsChange({width, height, palette}) {
     this.width = width;
     this.height = height;
     this.palette = palette;
