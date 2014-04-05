@@ -12,12 +12,14 @@ final $ = new Tags();
 final PixelPaint = defineWidget(
   // Palette is a list of CSS styles to use for the pixels.
   props: ({int width, int height, List<String> palette}) => true,
-  state: (p) => new Grid(p.width, p.height),
   widget: () => new _PixelPaint()
 );
 
 /// Updates the model and re-renders whenever the user paints a pixel.
 class _PixelPaint extends Widget<Grid> {
+
+  @override
+  Grid createFirstState() => new Grid(props.width, props.height);
 
   void onPaint(int x, int y) => nextState.set(x, y, 1);
 
@@ -32,7 +34,6 @@ typedef PixelHandler(int x, int y);
 /// Shows the grid and reports paint events when the user paints a pixel.
 final GridView = defineWidget(
   props: ({Grid grid, Map<int, String> palette, PixelHandler onPaint}) => true,
-  state: (_) => false, // assume mouse is up
   widget: () => new _GridView()
 );
 
@@ -40,6 +41,9 @@ final GridView = defineWidget(
 /// (The DOM's event API makes it tricky to reliably determine when the mouse is down.
 /// This implementation usually works but could be improved.)
 class _GridView extends Widget<bool> {
+
+  @override
+  bool createFirstState() => false; // assume mouse is up
 
   Grid get grid => props.grid;
   PixelHandler get onPaint => props.onPaint;

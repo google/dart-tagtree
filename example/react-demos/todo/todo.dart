@@ -9,7 +9,6 @@ void main() {
 
 final TodoApp = defineWidget(
     props: () => true,
-    state: (_) => new _TodoState('', []),
     widget: () => new _TodoApp()
 );
 
@@ -21,6 +20,9 @@ class _TodoState {
 }
 
 class _TodoApp extends Widget<_TodoState> {
+
+  @override
+  _TodoState createFirstState() => new _TodoState('', []);
 
   void onChange(ChangeEvent e) {
     nextState.text = e.value;

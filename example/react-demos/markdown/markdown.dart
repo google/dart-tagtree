@@ -10,11 +10,13 @@ final $ = new Tags();
 
 final MarkdownEditor = defineWidget(
     props: ({String defaultText}) => true,
-    state: (p) => p.defaultText,
     widget: () => new _MarkdownEditor()
 );
 
 class _MarkdownEditor extends Widget<String> {
+
+  @override
+  String createFirstState() => props.defaultText;
 
   String get text => state;
 

@@ -1,19 +1,16 @@
 part of core;
 
-typedef CreateStateFunc(Props p);
 typedef Widget CreateWidgetFunc();
 
-WidgetDef defineWidget({Function props, CreateStateFunc state, CreateWidgetFunc widget})
-  => new WidgetDef(props, state, widget);
+WidgetDef defineWidget({Function props, CreateWidgetFunc widget})
+  => new WidgetDef(props, widget);
 
 class WidgetDef extends TagDef {
   final Function _checkPropsFunc;
-  final CreateStateFunc _createFirstStateFunc;
   final CreateWidgetFunc _createWidgetFunc;
 
-  WidgetDef(this._checkPropsFunc, this._createFirstStateFunc, this._createWidgetFunc) {
+  WidgetDef(this._checkPropsFunc, this._createWidgetFunc) {
     assert(_checkPropsFunc != null);
-    assert(_createFirstStateFunc != null);
     assert(_createWidgetFunc != null);
   }
 
@@ -22,14 +19,6 @@ class WidgetDef extends TagDef {
     if (err != true) {
       throw "invalid props: ${err}";
     }
-  }
-
-  createFirstState(Props p) {
-    var s = _createFirstStateFunc(p);
-    if (s == null) {
-      throw "attempted to create a widget with a null state";
-    }
-    return s;
   }
 
   createWidget() => _createWidgetFunc();
@@ -51,13 +40,20 @@ abstract class Widget<S> {
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
-  void _init(Props p, S s, WidgetEnv env) {
+  /// Subclasses must override this method to return the widget's first state.
+  S createFirstState();
+
+  void setProps(Props p) {
     _props = p;
+  }
+
+  void _init(S s, WidgetEnv env) {
     _state = s;
     _widgetEnv = env;
   }
 
   bool get isMounted => _view != null && _view._mounted;
+
 
   /// Returns the currently rendered state. This should be treated as read-only.
   S get state => _state;
@@ -138,9 +134,10 @@ class WidgetView extends _View {
     WidgetDef def = tag.def;
     def.checkProps(tag.props);
     Props p = new Props(tag.props);
-    var s = def.createFirstState(p);
     Widget w = def.createWidget();
-    w._init(p, s, env);
+    w.setProps(p);
+    var s = w.createFirstState();
+    w._init(s, env);
     WidgetView v = new WidgetView.raw(def, path, depth, w, tag.props[#ref]);
     w._view = v;
     return v;

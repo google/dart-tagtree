@@ -9,11 +9,13 @@ void main() {
 
 final ReversableText = defineWidget(
   props: ({String label}) => true,
-  state: (_) => false,
   widget: () => new _ReversableText()
 );
 
 class _ReversableText extends Widget<bool> {
+
+  @override
+  bool createFirstState() => false;
 
   bool get reversed => state;
   String get label => props.label;

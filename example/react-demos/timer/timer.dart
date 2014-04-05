@@ -8,7 +8,6 @@ void main() {
 
 final SecondsElapsed = defineWidget(
     props: () => true,
-    state: (_) => 0, // seconds
     widget: () => new TimerWidget()
 );
 
@@ -22,6 +21,9 @@ class TimerWidget extends Widget<int> {
 
     willUnmount.listen((_) => timer.cancel());
   }
+
+  @override
+  int createFirstState() => 0;
 
   int get seconds => state;
 

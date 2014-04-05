@@ -20,7 +20,6 @@ void main() {
 
 final Sunflower = defineWidget(
     props: ({int startSeeds, num seedRadius}) => true,
-    state: (p) => p.startSeeds,
     widget: () => new _Sunflower()
 );
 
@@ -34,6 +33,9 @@ class _Sunflower extends Widget<int> {
     didMount.listen((_) => draw());
     didUpdate.listen((_) => draw());
   }
+
+  @override
+  int createFirstState() => props.startSeeds;
 
   int get seeds => state;
   num get seedRadius => props.seedRadius;
