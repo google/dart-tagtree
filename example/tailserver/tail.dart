@@ -50,9 +50,9 @@ start(File tailFile) {
         WebSocketTransformer.upgrade(request).then((WebSocket socket) {
           print("websocket connected");
           var root = new WebSocketRoot(socket);
-          root.mount(new TailView(watcher.currentValue));
+          root.mount(renderTail(watcher.currentValue));
           watcher.onChange.listen((Tail t) {
-            root.mount(new TailView(t));
+            root.mount(renderTail(t));
           });
         });
       } else if (path.startsWith("/packages/")) {
@@ -77,22 +77,14 @@ exitUsage() {
 
 final $ = new Tags();
 
-/// TailView renders the tail of a file as a ViewTree.
-/// (This is an example of a server-side View.)
-class TailView extends ServerWidget {
-  final Tail tail;
-  TailView(this.tail);
-
-  @override
-  Tag render() {
-    if (tail == null) {
-      return $.Div(inner: "Loading...");
-    }
-    return $.Div(inner: [
-        $.H1(inner: "The last ${tail.lines.length} lines of ${tail.file.path}"),
-        $.Pre(inner: tail.lines.join("\n"))
-        ]);
+Tag renderTail(Tail tail) {
+  if (tail == null) {
+    return $.Div(inner: "Loading...");
   }
+  return $.Div(inner: [
+      $.H1(inner: "The last ${tail.lines.length} lines of ${tail.file.path}"),
+      $.Pre(inner: tail.lines.join("\n"))
+      ]);
 }
 
 // Model
