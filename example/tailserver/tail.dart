@@ -8,9 +8,6 @@ import "dart:io";
 import "package:viewtree/core.dart";
 import "package:viewtree/server.dart";
 
-final SAFE_FILE_PATH = new RegExp(r"^/(\w+/)*\w+(\.\w+)*$");
-final FILE_EXTENSION = new RegExp(r"\.(\w+)$");
-
 main(List<String> args) {
   if (args.length == 0) {
     start(new File(Platform.script.toFilePath()));
@@ -33,20 +30,13 @@ start(File tailFile) {
 
   var watcher = new TailWatcher(tailFile, 50);
 
-  String webDir = Platform.script.resolve("web").toFilePath();
-  String packagesDir = Platform.script.resolve('packages').toFilePath();
-
   HttpServer.bind("localhost", 8080).then((server) {
-    print("\nThe server is ready. Please connect to http://localhost:8080 using Dartium\n");
+
+    print("\nThe server is ready.");
+    print("Please run example/tailserver/web/client.html\n");
     server.listen((request) {
       String path = request.uri.path;
-      if (path == "/") {
-        sendFile(request, "${webDir}/client.html");
-      } else if (SAFE_FILE_PATH.matchAsPrefix(path) == null) {
-        sendNotFound(request);
-      } else if (path == "/client.html" || path == "/client.dart") {
-        sendFile(request, "${webDir}${path}");
-      } else if (path == "/ws") {
+      if (path == "/ws") {
         WebSocketTransformer.upgrade(request).then((WebSocket socket) {
           print("websocket connected");
           var root = new WebSocketRoot(socket);
@@ -55,9 +45,6 @@ start(File tailFile) {
             root.mount(renderTail(t));
           });
         });
-      } else if (path.startsWith("/packages/")) {
-        var filePath = "${packagesDir}${path.replaceFirst("/packages/", "/")}";
-        sendFile(request, filePath);
 //      } else if (path == "/tail") {
 //        String html = renderToString(new TailView(watcher.currentValue));
 //        sendHtml(request, html);
@@ -180,39 +167,4 @@ sendNotFound(HttpRequest request) {
       ..statusCode = HttpStatus.NOT_FOUND
       ..write('Not found')
       ..close();
-}
-
-sendFile(HttpRequest request, String filePath) {
-  var f = new File(filePath);
-  f.exists().then((exists) {
-    if (!exists) {
-      sendNotFound(request);
-      return;
-    }
-    Match m = FILE_EXTENSION.firstMatch(f.path);
-    String extension = (m == null) ? null : m.group(1);
-    var type = chooseContentType(extension);
-
-    request.response.headers.contentType = type;
-    f.openRead().pipe(request.response).then((_) {
-      request.response.close();
-    });
-  });
-}
-
-sendHtml(HttpRequest request, String html) {
-  request.response
-    ..headers.contentType = new ContentType("text", "html", charset: "UTF8")
-    ..write(html)
-    ..close();
-}
-
-ContentType chooseContentType(String extension) {
-  if (extension == "html") {
-    return new ContentType("text", "html", charset: "UTF8");
-  } else if (extension == "js" || extension == "dart") {
-    return new ContentType("text", "plain", charset: "UTF8");
-  } else {
-    return new ContentType("application", "binary");
-  }
 }

@@ -17,7 +17,7 @@ class WebSocketRoot {
 
   /// Replaces the view with a new version.
   ///
-  /// Supports Elts by default. Additional views may be supported by
+  /// Supports Html elements by default. Additional views may be supported by
   /// passing a JsonRuleSet in the contructor.
   void mount(core.Tag tagTree) {
     String encoded = _ruleSet.encodeTree(tagTree);

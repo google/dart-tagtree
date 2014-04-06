@@ -44,15 +44,37 @@ class _BrowserRoot extends core.Root {
 /// The CSS selectors point to the container element where the views will be displayed.
 /// The ruleSet will be used to deserialize the stream. (Only tags defined in the ruleset
 /// can be deserialized.)
-void mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) {
+mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) {
   if (rules == null) {
     rules = core.eltRules;
   }
+
+  var $ = new core.Tags();
+  showStatus(String message) {
+    root(selectors).mount($.Div(inner: message));
+  }
+
+  bool opened = false;
   var ws = new WebSocket(webSocketUrl);
+  ws.onError.listen((_) {
+    if (!opened) {
+      showStatus("Can't connect to ${webSocketUrl}");
+    } else {
+      showStatus("Websocket error");
+    }
+  });
   ws.onMessage.listen((MessageEvent e) {
+    opened = true;
     print("\nrendering view from socket");
     core.Tag tag = rules.decodeTree(e.data);
     root(selectors).mount(tag);
+  });
+  ws.onClose.listen((CloseEvent e) {
+    if (!opened) {
+      showStatus("Can't connect to ${webSocketUrl}");
+    } else {
+      showStatus("Disconnected from ${webSocketUrl}");
+    }
   });
 }
 
