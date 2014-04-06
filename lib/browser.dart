@@ -50,7 +50,9 @@ mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) 
   }
 
   var $ = new core.Tags();
+
   showStatus(String message) {
+    print(message);
     root(selectors).mount($.Div(inner: message));
   }
 
@@ -64,14 +66,16 @@ mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) 
     }
   });
   ws.onMessage.listen((MessageEvent e) {
+    if (!opened) {
+      print("websocked opened");
+    }
     opened = true;
-    print("\nrendering view from socket");
     core.Tag tag = rules.decodeTree(e.data);
     root(selectors).mount(tag);
   });
   ws.onClose.listen((CloseEvent e) {
     if (!opened) {
-      showStatus("Can't connect to ${webSocketUrl}");
+      showStatus("Can't connect to ${webSocketUrl} (closed)");
     } else {
       showStatus("Disconnected from ${webSocketUrl}");
     }

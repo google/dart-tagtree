@@ -1,5 +1,6 @@
-/// Tail a file and show it in the browser.
-/// When the file changes, the browser view will automatically update.
+/// A websocket server that shows the last few lines of a file.
+/// Whenever the file changes, the browser view will automatically update.
+/// To use: run this command and then run web/client.html in Dartium.
 
 import "dart:async" show Completer, Future, Stream, StreamController, StreamSink;
 import "dart:convert" show UTF8;
@@ -10,6 +11,7 @@ import "package:viewtree/server.dart";
 
 main(List<String> args) {
   if (args.length == 0) {
+    // Show this file.
     start(new File(Platform.script.toFilePath()));
   } else if (args.length == 1) {
     start(new File(args[0]));
@@ -18,11 +20,17 @@ main(List<String> args) {
   }
 }
 
+exitUsage() {
+  print("Usage: dart tail.dart [filename]");
+  exit(1);
+}
+
 start(File tailFile) {
   if (!FileSystemEntity.isWatchSupported) {
     print("Sorry, file watching isn't supported on this OS.");
     exit(1);
   }
+
   if (!tailFile.existsSync()) {
     print("file doesn't exist: ${tailFile}");
     exitUsage();
@@ -33,7 +41,7 @@ start(File tailFile) {
   HttpServer.bind("localhost", 8080).then((server) {
 
     print("\nThe server is ready.");
-    print("Please run example/tailserver/web/client.html\n");
+    print("Please run web/client.html in Dartium\n");
     server.listen((request) {
       String path = request.uri.path;
       if (path == "/ws") {
@@ -45,19 +53,11 @@ start(File tailFile) {
             root.mount(renderTail(t));
           });
         });
-//      } else if (path == "/tail") {
-//        String html = renderToString(new TailView(watcher.currentValue));
-//        sendHtml(request, html);
       } else {
         sendNotFound(request);
       }
     });
   });
-}
-
-exitUsage() {
-  print("Usage: dart tail.dart <filename>");
-  exit(1);
 }
 
 // View
@@ -84,8 +84,7 @@ class Tail {
 
 /// Watches a file for changes.
 ///
-/// When a change happens, currentValue is updated and the stream is updated.
-/// Ensures that only one load happens at a time.
+/// When a change happens, currentValue is updated and a Tail is sent to the onChange stream.
 class TailWatcher {
   final File file;
   final int lineCount;
@@ -121,7 +120,6 @@ class TailWatcher {
     _onChange.add(tail);
     loading = false;
     if (loadRequested) {
-      print("another load requested");
       _requestLoad();
     }
   }
