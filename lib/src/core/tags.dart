@@ -115,17 +115,14 @@ final Map<Symbol, String> _allAtts = {
   #max: "max"
 };
 
-final Map<Symbol, String> _eltPropToField = {
+final Map<Symbol, String> _allEltProps = {
   #ref: "ref",
   #inner: "inner",
   #innerHtml: "innerHtml",
   #defaultValue: "defaultValue"
 }
-  ..addAll(_allAtts);
-
-final Set<Symbol> _allEltProps = new Set()
-    ..addAll(allHandlerKeys)
-    ..addAll(_eltPropToField.keys);
+  ..addAll(_allAtts)
+  ..addAll(_allHandlerNames);
 
 Map<Symbol, EltDef> _eltTags = () {
   var tags = <Symbol, EltDef>{};

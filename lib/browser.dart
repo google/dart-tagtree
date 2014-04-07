@@ -31,11 +31,18 @@ class _BrowserRoot extends core.Root {
 
   _BrowserRoot(_ElementCache eltCache) :
     this.eltCache = eltCache,
-    super(_treeIdCounter++, new _BrowserEnv(eltCache));
+    super(_treeIdCounter++);
 
   @override
   void afterFirstMount() {
     _listenForEvents(this, eltCache.container);
+  }
+
+  @override
+  void onRequestAnimationFrame(core.RenderFunc render) {
+    window.animationFrame.then((t) {
+      render(new _NextFrame(eltCache));
+    });
   }
 }
 
@@ -58,6 +65,12 @@ mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) 
 
   bool opened = false;
   var ws = new WebSocket(webSocketUrl);
+
+  void onEvent(core.HandleCall call) {
+    String json = rules.encodeTree(call);
+    ws.sendString(json);
+  }
+
   ws.onError.listen((_) {
     if (!opened) {
       showStatus("Can't connect to ${webSocketUrl}");
@@ -65,14 +78,17 @@ mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) 
       showStatus("Websocket error");
     }
   });
+
   ws.onMessage.listen((MessageEvent e) {
     if (!opened) {
       print("websocked opened");
     }
     opened = true;
     core.Tag tag = rules.decodeTree(e.data);
-    root(selectors).mount(tag);
+    core.HandleFunc func = onEvent;
+    root(selectors).mount(tag, handler: func);
   });
+
   ws.onClose.listen((CloseEvent e) {
     if (!opened) {
       showStatus("Can't connect to ${webSocketUrl} (closed)");
@@ -147,19 +163,6 @@ void _listenForEvents(core.Root root, HtmlElement container) {
 
   // TODO: implement many more events.
   // TODO: remove handlers on unmount.
-}
-
-class _BrowserEnv implements core.RootEnv {
-  final _ElementCache cache;
-
-  _BrowserEnv(this.cache);
-
-  @override
-  void requestAnimationFrame(core.RenderFunction render) {
-    window.animationFrame.then((t) {
-      render(new _NextFrame(cache));
-    });
-  }
 }
 
 class _ElementCache {

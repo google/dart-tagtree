@@ -10,7 +10,7 @@ abstract class _Mount {
   final List<Ref> _mountedRefs = [];
   final List<_Elt> _mountedForms = [];
   final List<Widget> _mountedWidgets = [];
-  void addHandler(Symbol key, String path, EventHandler val);
+  void addHandler(Symbol key, String path, val);
 
   /// Writes the view tree to HTML and assigns an id to each View.
   ///
@@ -95,7 +95,7 @@ abstract class _Mount {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
-      if (allHandlerKeys.contains(key)) {
+      if (_allHandlerNames.containsKey(key)) {
         addHandler(key, path, val);
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];

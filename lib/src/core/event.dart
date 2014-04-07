@@ -1,7 +1,10 @@
 part of core;
 
 /// A synthetic, browser-independent event.
-class ViewEvent {
+class ViewEvent implements Jsonable {
+
+  @override
+  String get jsonTag => _allHandlerNames[type];
 
   /// A symbol indicating what kind of event this is; #onChange, #onSubmit, and so on.
   /// (This is the same key used as the Element prop when creating the Element.)
@@ -27,8 +30,15 @@ class ChangeEvent extends ViewEvent {
 
 typedef EventHandler(ViewEvent e);
 
-final Set<Symbol> allHandlerKeys = new Set.from(
-    [#onChange, #onClick, #onMouseDown, #onMouseOver, #onMouseUp, #onMouseOut, #onSubmit]);
+final Map<Symbol, String> _allHandlerNames = {
+  #onChange: "onChange",
+  #onClick: "onClick",
+  #onMouseDown: "onMouseDown",
+  #onMouseOver: "onMouseOver",
+  #onMouseUp: "onMouseUp",
+  #onMouseOut: "onMouseOut",
+  #onSubmit: "onSubmit"
+};
 
 /// Dispatches all events for one Root.
 class HandlerMap {
@@ -36,7 +46,7 @@ class HandlerMap {
   final _handlers = <Symbol, Map<String, EventHandler>> {};
 
   HandlerMap() {
-    for (Symbol key in allHandlerKeys) {
+    for (Symbol key in _allHandlerNames.keys) {
       _handlers[key] = {};
     }
   }
@@ -95,5 +105,101 @@ void dispatch(ViewEvent e, HandlerMap handlers) {
     }
   } finally {
     _inViewEvent = false;
+  }
+}
+
+/// A unique id that identifies a remote event handler.
+class Handle implements Jsonable {
+  final int frameId;
+  final int id;
+
+  Handle(this.frameId, this.id);
+
+  @override
+  String get jsonTag => "handle";
+}
+
+class HandleCall implements Jsonable {
+  final Handle handle;
+  final ViewEvent event;
+
+  HandleCall(this.handle, this.event);
+
+  @override
+  String get jsonTag => "call";
+}
+
+class _HandleRule extends JsonRule<Handle> {
+  _HandleRule(): super("handle");
+
+  @override
+  bool appliesTo(Jsonable instance) => (instance is Handle);
+
+  @override
+  encode(Handle h) => [h.frameId, h.id];
+
+  @override
+  Jsonable decode(array) {
+    if (array is List && array.length >= 2) {
+      return new Handle(array[0], array[1]);
+    } else {
+      throw "can't decode Handle: ${array.runtimeType}";
+    }
+  }
+}
+
+class _EventRule extends JsonRule<ViewEvent> {
+  final Symbol _type;
+
+  _EventRule(Symbol type) : super(_allHandlerNames[type]), _type = type;
+
+  @override
+  bool appliesTo(Jsonable instance) => (instance is ViewEvent);
+
+  @override
+  encode(ViewEvent e) => e.targetPath;
+
+  @override
+  ViewEvent decode(s) {
+    if (s is String) {
+      return new ViewEvent(_type, s);
+    } else {
+      throw "can't decode ViewEvent: ${s.runtimeType}";
+    }
+  }
+}
+
+class _ChangeEventRule extends JsonRule<ChangeEvent> {
+  _ChangeEventRule() : super("onChange");
+
+  @override
+  bool appliesTo(Jsonable instance) => (instance is ChangeEvent);
+
+  @override
+  encode(ChangeEvent e) => {
+    "target": e.targetPath,
+    "value": e.value,
+  };
+
+  @override
+  ViewEvent decode(map) => new ChangeEvent(map["target"], map["value"]);
+}
+
+class _HandleCallRule extends JsonRule<HandleCall> {
+  _HandleCallRule() : super("call");
+
+  @override
+  bool appliesTo(Jsonable instance) => (instance is HandleCall);
+
+  @override
+  encode(HandleCall call) => [call.handle.frameId, call.handle.id, call.event];
+
+  @override
+  HandleCall decode(array) {
+    if (array is List && array.length >= 3) {
+      return new HandleCall(new Handle(array[0], array[1]), array[2]);
+    } else {
+      throw "can't decode HandleCall: ${array.runtimeType}";
+    }
   }
 }

@@ -11,7 +11,7 @@ class _Elt extends _View with _Inner {
       super(def, path, depth, props[#ref]) {
 
     for (Symbol key in props.keys) {
-      if (!_allEltProps.contains(key)) {
+      if (!_allEltProps.containsKey(key)) {
         throw "property not supported: ${key}";
       }
     }
@@ -30,9 +30,17 @@ final JsonRuleSet eltRules = (){
   for (EltDef def in _eltTags.values) {
     rs.add(new EltRule(def));
   }
+  rs.add(new _HandleRule());
+  for (Symbol key in _allHandlerNames.keys) {
+    if (key == #onChange) {
+      rs.add(new _ChangeEventRule());
+    } else {
+      rs.add(new _EventRule(key));
+    }
+  }
+  rs.add(new _HandleCallRule());
   return rs;
 }();
-
 
 class EltDef extends TagDef {
   final String tagName;
@@ -50,8 +58,8 @@ class EltTag extends Tag implements Jsonable {
 }
 
 /// Encodes an Elt as tagged JSON.
-class EltRule extends JsonRule {
-  static final Map<Symbol, String> _symbolToFieldName = _eltPropToField;
+class EltRule extends JsonRule<EltTag> {
+  static final Map<Symbol, String> _symbolToFieldName = _allEltProps;
   static final Map<String, Symbol> _fieldNameToSymbol = _invertMap(_symbolToFieldName);
 
   EltDef _def;
@@ -64,7 +72,7 @@ class EltRule extends JsonRule {
   }
 
   @override
-  getState(EltTag instance) {
+  encode(EltTag instance) {
     Map<Symbol, dynamic> props = instance.props;
     var state = {};
     for (Symbol sym in props.keys) {
@@ -76,7 +84,7 @@ class EltRule extends JsonRule {
   }
 
   @override
-  EltTag create(Map<String, dynamic> state) {
+  EltTag decode(Map<String, dynamic> state) {
     var props = <Symbol, dynamic>{};
     for (String field in state.keys) {
       var sym = _fieldNameToSymbol[field];

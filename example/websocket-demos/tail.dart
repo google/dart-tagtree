@@ -47,11 +47,7 @@ start(File tailFile) {
       if (path == "/ws") {
         WebSocketTransformer.upgrade(request).then((WebSocket socket) {
           print("websocket connected");
-          var root = new WebSocketRoot(socket);
-          root.mount(renderTail(watcher.currentValue));
-          watcher.onChange.listen((Tail t) {
-            root.mount(renderTail(t));
-          });
+          socketRoot(socket).mount(new TailSession(watcher));
         });
       } else {
         sendNotFound(request);
@@ -64,14 +60,28 @@ start(File tailFile) {
 
 final $ = new Tags();
 
-Tag renderTail(Tail tail) {
-  if (tail == null) {
-    return $.Div(inner: "Loading...");
+class TailSession extends Session<Tail> {
+  final TailWatcher watcher;
+
+  TailSession(this.watcher) {
+    watcher.onChange.listen((Tail t) {
+      nextState = t;
+    });
   }
-  return $.Div(inner: [
-      $.H1(inner: "The last ${tail.lines.length} lines of ${tail.file.path}"),
-      $.Pre(inner: tail.lines.join("\n"))
-      ]);
+
+  @override
+  Tail createFirstState() => watcher.currentValue;
+
+  @override
+  Tag render() {
+    if (state == null) {
+      return $.Div(inner: "Loading...");
+    }
+    return $.Div(inner: [
+        $.H1(inner: "The last ${state.lines.length} lines of ${state.file.path}"),
+        $.Pre(inner: state.lines.join("\n"))
+        ]);
+  }
 }
 
 // Model

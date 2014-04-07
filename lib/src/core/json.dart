@@ -9,7 +9,7 @@ abstract class Jsonable {
 }
 
 /// A rule to be applied when encoding and decoding objects with a certain tag.
-abstract class JsonRule {
+abstract class JsonRule<T extends Jsonable> {
 
   /// A tag used on the wire to identify instances encoded using this rule.
   /// (The tag must be unique within a [JsonRuleSet].)
@@ -23,10 +23,10 @@ abstract class JsonRule {
   /// Returns the state of a Dart object as a JSON-encodable tree.
   /// The result may contain Jsonable instances and these will be
   /// encoded recursively.
-  getState(Jsonable instance);
+  encode(T instance);
 
-  /// Given some state returned by [getState] by this rule, creates an instance.
-  Jsonable create(state);
+  /// Given a tree returned by [encode], creates an instance.
+  T decode(jsonTree);
 }
 
 /// The rules for encoding and decoding a tree of objects as JSON.
@@ -58,9 +58,9 @@ class JsonRuleSet {
       String tag = v.jsonTag;
       var rule = _rules[tag];
       assert(rule.appliesTo(v));
-      var state = rule.getState(v);
+      var data = rule.encode(v);
       out.write("[${JSON.encode(tag)},");
-      _encodeTree(out, state);
+      _encodeTree(out, data);
       out.write("]");
     } else if (v is List) {
       out.write("[0");
@@ -99,7 +99,7 @@ class JsonRuleSet {
           throw "no rule for tag: ${tag}";
         }
         assert(v.length == 2);
-        return rule.create(v[1]);
+        return rule.decode(v[1]);
       }
     } else {
       return v;

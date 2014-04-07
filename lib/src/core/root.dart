@@ -1,37 +1,38 @@
 part of core;
 
-typedef void RenderFunction(NextFrame frame);
+typedef void RenderFunc(NextFrame frame);
 
-/// Callbacks to the Root's environment.
-abstract class RootEnv {
-  void requestAnimationFrame(RenderFunction callback);
-}
+typedef void HandleFunc(HandleCall call);
 
 /// A Root contains a view tree that's rendered to the DOM.
-class Root implements WidgetEnv {
+abstract class Root implements WidgetEnv {
   final int id;
-  final RootEnv env;
   final _handlers = new HandlerMap();
   _View _top;
 
   bool _frameRequested = false;
   Tag _nextTop;
+  HandleFunc _nextHandler;
   final Set<WidgetView> _widgetsToUpdate = new Set();
 
-  Root(this.id, this.env);
+  Root(this.id);
+
+  /// Subclass hook called after DOM elements are mounted.
+  void afterFirstMount();
+
+  /// Subclass hook to schedule the next frame.
+  void onRequestAnimationFrame(RenderFunc callback);
 
   String get path => "/${id}";
 
   /// Schedules the view tree to be replaced just before the next rendered frame.
   /// (If called more than once within a single frame, only the last call will
   /// have any effect.)
-  void mount(Tag nextTop) {
+  void mount(Tag nextTop, {HandleFunc handler}) {
     _nextTop = nextTop;
+    _nextHandler = handler;
     _requestAnimationFrame();
   }
-
-  /// Hook called
-  void afterFirstMount() {}
 
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
@@ -48,15 +49,16 @@ class Root implements WidgetEnv {
   void _requestAnimationFrame() {
     if (!_frameRequested) {
       _frameRequested = true;
-      env.requestAnimationFrame(_renderFrame);
+      onRequestAnimationFrame(_renderFrame);
     }
   }
 
   void _renderFrame(NextFrame frame) {
-    Transaction tx = new Transaction(this, frame, _handlers, _nextTop, _widgetsToUpdate);
+    Transaction tx = new Transaction(this, frame, _handlers, _nextTop, _nextHandler, _widgetsToUpdate);
 
     _frameRequested = false;
     _nextTop = null;
+    _nextHandler = null;
     _widgetsToUpdate.clear();
 
     bool wasEmpty = _top == null;

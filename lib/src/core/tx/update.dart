@@ -98,7 +98,7 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (allHandlerKeys.contains(key)) {
+      if (_allHandlerNames.containsKey(key)) {
         removeHandler(key, eltPath);
       } else if (_allAtts.containsKey(key)) {
         frame.removeAttribute(eltPath, _allAtts[key]);
@@ -113,7 +113,7 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (allHandlerKeys.contains(key)) {
+      if (_allHandlerNames.containsKey(key)) {
         setHandler(key, eltPath, newVal);
       } else if (_allAtts.containsKey(key)) {
         String name = _allAtts[key];

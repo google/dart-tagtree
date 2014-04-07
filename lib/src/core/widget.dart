@@ -22,16 +22,18 @@ abstract class WidgetEnv {
 /// A Widget is the implementation of a tag that has state.
 /// S is the state's type, which can be any type, but must be
 /// cloneable using the cloneState() function.
-abstract class Widget<S> {
+abstract class Widget<S> extends StateMixin<S> {
   WidgetView _view;
-  S _state, _nextState;
   WidgetEnv _widgetEnv;
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
-  /// Subclasses must override this method to return the widget's first state.
-  S createFirstState();
+  void _init(Map<Symbol, dynamic> props, WidgetEnv env) {
+    setProps(props);
+    initState();
+    _widgetEnv = env;
+  }
 
   void setProps(Map<Symbol, dynamic> p) {
     _suppressWarning(x) => x;
@@ -39,49 +41,14 @@ abstract class Widget<S> {
     Function.apply(w.onPropsChange, [], p);
   }
 
-  void _init(S s, WidgetEnv env) {
-    _state = s;
-    _widgetEnv = env;
-  }
-
   bool get isMounted => _view != null && _view._mounted;
-
-
-  /// Returns the currently rendered state. This should be treated as read-only.
-  S get state => _state;
-
-  /// Returns the state that will be rendered on the next update.
-  /// This is typically used to update the state due to an event.
-  /// Accessing nextState automatically marks the Widget as dirty.
-  S get nextState {
-    assert(isMounted);
-    if (_nextState == null) {
-      _nextState = cloneState(_state);
-      assert(_nextState != null);
-      invalidate();
-    }
-    return _nextState;
-  }
-
-  /// Sets the state to be rendered on the next update.
-  /// Setting the nextState automatically marks the Widget as dirty.
-  void set nextState(S s) {
-    _nextState = s;
-    invalidate();
-  }
-
-  /// Returns a new copy of the state, given the previous version.
-  /// A default implementation is provided for bool, num, and String.
-  S cloneState(S prev) {
-    assert(prev is bool || prev is num || prev is String);
-    return prev;
-  }
 
   Stream get didMount => _didMount.stream;
   Stream get didUpdate => _didUpdate.stream;
   Stream get willUnmount => _willUnmount.stream;
 
   /// Requests that this Widget be re-rendered during the next frame.
+  @override
   void invalidate() {
     assert(isMounted);
     _widgetEnv.requestWidgetUpdate(this._view);
@@ -102,10 +69,7 @@ abstract class Widget<S> {
     assert(isMounted);
     assert(_widgetEnv != null);
 
-    if (_nextState != null) {
-      _state = _nextState;
-      _nextState = null;
-    }
+    updateState();
     if (nextVersion != null) {
       setProps(nextVersion.props);
     }
@@ -123,9 +87,7 @@ class WidgetView extends _View {
   factory WidgetView(Tag tag, String path, int depth, WidgetEnv env) {
     WidgetDef def = tag.def;
     Widget w = def.createWidget();
-    w.setProps(tag.props);
-    var s = w.createFirstState();
-    w._init(s, env);
+    w._init(tag.props, env);
     WidgetView v = new WidgetView.raw(def, path, depth, w, tag.props[#ref]);
     w._view = v;
     return v;

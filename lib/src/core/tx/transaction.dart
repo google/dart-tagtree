@@ -8,9 +8,11 @@ class Transaction extends _Update {
 
   // What to do
   final Tag nextTop;
+  final HandleFunc nextHandler;
   final List<WidgetView> _widgetsToUpdate;
 
-  Transaction(this.root, this.frame, this.handlers, this.nextTop, Iterable<WidgetView> widgetsToUpdate)
+  Transaction(this.root, this.frame, this.handlers, this.nextTop, this.nextHandler,
+      Iterable<WidgetView> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
   WidgetEnv get widgetEnv => root;
@@ -64,13 +66,13 @@ class Transaction extends _Update {
   // What was done
 
   @override
-  void addHandler(Symbol key, String path, EventHandler val) {
-    handlers.setHandler(key, path, val);
+  void addHandler(Symbol key, String path, val) {
+    handlers.setHandler(key, path, wrapHandler(val));
   }
 
   @override
-  void setHandler(Symbol key, String path, EventHandler val) {
-    handlers.setHandler(key, path, val);
+  void setHandler(Symbol key, String path, val) {
+    handlers.setHandler(key, path, wrapHandler(val));
   }
 
   @override
@@ -82,5 +84,20 @@ class Transaction extends _Update {
   void releaseElement(String path, {bool willReplace: false}) {
     frame.detachElement(path, willReplace: willReplace);
     handlers.removeHandlersForPath(path);
+  }
+
+  EventHandler wrapHandler(val) {
+    if (val is EventHandler) {
+      return val;
+    } else if (val is Handle) {
+      if (nextHandler == null) {
+        throw "can't render a Handle without a handler function installed";
+      }
+      return (ViewEvent e) {
+        nextHandler(new HandleCall(val, e));
+      };
+    } else {
+      throw "can't convert to event handler: ${val.runtimeType}";
+    }
   }
 }
