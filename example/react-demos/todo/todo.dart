@@ -3,13 +3,9 @@ import 'package:viewtree/browser.dart';
 
 const $ = htmlTags;
 
-void main() {
-  root("#container").mount(TodoApp());
-}
+main() => root("#container").mount(TodoApp());
 
-final TodoApp = defineWidget(
-    widget: () => new _TodoApp()
-);
+final TodoApp = defineWidget(() => new _TodoApp());
 
 class _TodoState {
   String text;

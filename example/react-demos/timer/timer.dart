@@ -4,18 +4,14 @@ import 'package:viewtree/browser.dart';
 
 const $ = htmlTags;
 
-void main() {
-  root("#container").mount(SecondsElapsed());
-}
+main() => root("#container").mount(SecondsElapsed());
 
-final SecondsElapsed = defineWidget(
-    widget: () => new TimerWidget()
-);
+final SecondsElapsed = defineWidget(() => new _SecondsElapsed());
 
-class TimerWidget extends Widget<int> {
+class _SecondsElapsed extends Widget<int> {
   Timer timer;
 
-  TimerWidget() {
+  _SecondsElapsed() {
     timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());
 
     willUnmount.listen((_) => timer.cancel());

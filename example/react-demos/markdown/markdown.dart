@@ -4,13 +4,9 @@ import 'package:markdown/markdown.dart' show markdownToHtml;
 
 const $ = htmlTags;
 
-void main() {
-  root("#container").mount(MarkdownEditor(defaultText: "Type some *markdown* here!"));
-}
+main() => root("#container").mount(MarkdownEditor(defaultText: "Type some *markdown* here!"));
 
-final MarkdownEditor = defineWidget(
-    widget: () => new _MarkdownEditor()
-);
+final MarkdownEditor = defineWidget(() => new _MarkdownEditor());
 
 class _MarkdownEditor extends Widget<String> {
   String defaultText;

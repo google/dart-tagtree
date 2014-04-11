@@ -3,9 +3,7 @@ import 'package:viewtree/browser.dart';
 
 const $ = htmlTags;
 
-void main() {
-  root("#container").mount(Hello(message: "world"));
-}
+main() => root("#container").mount(Hello(message: "world"));
 
 final Hello = defineTemplate(
     render: ({String message}) => $.Div(inner: "Hello, ${message}")

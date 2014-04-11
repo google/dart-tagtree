@@ -5,6 +5,8 @@ typedef bool ShouldUpdateFunc(Props p, Props next);
 /// Defines a custom tag.
 abstract class TagDef {
 
+  const TagDef();
+
   String get tagName => throw "tagName not implemented";
 
   Tag makeTag(Map<Symbol, dynamic> props) {

@@ -3,15 +3,11 @@ import 'package:viewtree/browser.dart';
 
 const $ = htmlTags;
 
-void main() {
-  root("#container").mount(PixelPaint(width: 50, height: 50, palette: ["black", "white"]));
-}
+main() => root("#container").mount(PixelPaint(width: 50, height: 50, palette: ["black", "white"]));
 
 /// A tag that creates a black and white image editor with the given width and height
 /// in fat pixels.
-final PixelPaint = defineWidget(
-  widget: () => new _PixelPaint()
-);
+final PixelPaint = defineWidget(() => new _PixelPaint());
 
 /// Updates the model and re-renders whenever the user paints a pixel.
 class _PixelPaint extends Widget<Grid> {
@@ -41,9 +37,7 @@ class _PixelPaint extends Widget<Grid> {
 typedef PixelHandler(int x, int y);
 
 /// Shows the grid and reports paint events when the user paints a pixel.
-final GridView = defineWidget(
-  widget: () => new _GridView()
-);
+final GridView = defineWidget(() => new _GridView());
 
 /// The GridView draws the grid and also converts mouse events into pixel paint events.
 /// (The DOM's event API makes it tricky to reliably determine when the mouse is down.

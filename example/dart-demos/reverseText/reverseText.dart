@@ -3,13 +3,9 @@ import 'package:viewtree/browser.dart';
 
 const $ = htmlTags;
 
-void main() {
-  root("#container").mount(ReversableText(label: "Click me!"));
-}
+main() => root("#container").mount(ReversableText(label: "Click me!"));
 
-final ReversableText = defineWidget(
-  widget: () => new _ReversableText()
-);
+final ReversableText = defineWidget(() => new _ReversableText());
 
 class _ReversableText extends Widget<bool> {
   String label;

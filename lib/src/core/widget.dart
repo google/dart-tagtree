@@ -2,15 +2,12 @@ part of core;
 
 typedef Widget CreateWidgetFunc();
 
-WidgetDef defineWidget({CreateWidgetFunc widget})
-  => new WidgetDef(widget);
+WidgetDef defineWidget(CreateWidgetFunc f) => new WidgetDef(f);
 
 class WidgetDef extends TagDef {
   final CreateWidgetFunc _createWidgetFunc;
 
-  WidgetDef(this._createWidgetFunc) {
-    assert(_createWidgetFunc != null);
-  }
+  const WidgetDef(this._createWidgetFunc);
 
   createWidget() => _createWidgetFunc();
 }

@@ -14,16 +14,9 @@ import 'package:viewtree/browser.dart';
 
 const $ = htmlTags;
 
-void main() {
-  root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
-}
+main() => root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
 
-final Sunflower = defineWidget(
-    widget: () => new _Sunflower()
-);
-
-const num TAU = PI * 2;
-final num PHI = (sqrt(5) + 1) / 2;
+final Sunflower = defineWidget(() => new _Sunflower());
 
 class _Sunflower extends Widget<int> {
   final _canvas = new ElementRef<CanvasElement>();
@@ -70,6 +63,9 @@ class _Sunflower extends Widget<int> {
         ]),
     ]);
   }
+
+  static const num TAU = PI * 2;
+  static final num PHI = (sqrt(5) + 1) / 2;
 
   /// Draw the complete figure for the current number of seeds.
   void draw() {
