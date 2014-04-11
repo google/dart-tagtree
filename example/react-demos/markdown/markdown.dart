@@ -2,11 +2,11 @@ import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 import 'package:markdown/markdown.dart' show markdownToHtml;
 
+const $ = htmlTags;
+
 void main() {
   root("#container").mount(MarkdownEditor(defaultText: "Type some *markdown* here!"));
 }
-
-final $ = new Tags();
 
 final MarkdownEditor = defineWidget(
     widget: () => new _MarkdownEditor()

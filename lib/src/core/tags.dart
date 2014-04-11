@@ -134,9 +134,13 @@ Map<Symbol, EltDef> _eltTags = () {
   return tags;
 }();
 
+const htmlTags = const HtmlTags();
+
 /// A factory for constructing the corresponding view for each HTML Element.
 /// (Typically assigned to '$'.)
-class Tags implements TagsApi {
+class HtmlTags implements TagsApi {
+
+  const HtmlTags();
 
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {

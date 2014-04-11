@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new Tags();
+const $ = htmlTags;
 
 void main() {
   root("#container").mount(ReversableText(label: "Click me!"));

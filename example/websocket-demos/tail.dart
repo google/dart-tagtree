@@ -58,7 +58,7 @@ start(File tailFile) {
 
 // View
 
-final $ = new Tags();
+final $ = new HtmlTags();
 
 class TailSession extends Session<Tail> {
   final TailWatcher watcher;

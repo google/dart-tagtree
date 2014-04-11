@@ -1,11 +1,11 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+const $ = htmlTags;
+
 void main() {
   root("#container").mount(PixelPaint(width: 50, height: 50, palette: ["black", "white"]));
 }
-
-final $ = new Tags();
 
 /// A tag that creates a black and white image editor with the given width and height
 /// in fat pixels.

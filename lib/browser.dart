@@ -56,7 +56,7 @@ mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) 
     rules = core.eltRules;
   }
 
-  var $ = new core.Tags();
+  var $ = new core.HtmlTags();
 
   showStatus(String message) {
     print(message);

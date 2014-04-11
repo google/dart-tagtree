@@ -2,6 +2,8 @@ import 'dart:async' show Timer;
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+const $ = htmlTags;
+
 void main() {
   root("#container").mount(SecondsElapsed());
 }
@@ -9,8 +11,6 @@ void main() {
 final SecondsElapsed = defineWidget(
     widget: () => new TimerWidget()
 );
-
-final $ = new Tags();
 
 class TimerWidget extends Widget<int> {
   Timer timer;
