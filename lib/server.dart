@@ -6,22 +6,23 @@ library server;
 import 'package:viewtree/core.dart' as core;
 
 import 'dart:async' show scheduleMicrotask;
+import 'dart:convert' show Codec;
 import 'dart:io';
 
-WebSocketRoot socketRoot(WebSocket socket, {core.JsonRuleSet rules}) =>
-    new WebSocketRoot(socket, rules);
+WebSocketRoot socketRoot(WebSocket socket, {Codec<dynamic, String> codec}) =>
+    new WebSocketRoot(socket, codec);
 
 /// A Session container that renders to a WebSocket.
 class WebSocketRoot {
   final WebSocket _socket;
-  final core.JsonRuleSet _ruleSet;
+  final Codec<dynamic, String> _codec;
   Session _session;
   int nextFrameId = 0;
   _Frame _handleFrame, _nextFrame;
   bool renderScheduled = false;
 
-  WebSocketRoot(this._socket, core.JsonRuleSet rules) :
-      _ruleSet = (rules == null) ? core.eltRules : rules;
+  WebSocketRoot(this._socket, Codec<dynamic, String> codec) :
+      _codec = (codec == null) ? core.htmlCodec : codec;
 
   /// Starts running a Session on this WebSocket.
   void mount(Session s) {
@@ -29,7 +30,7 @@ class WebSocketRoot {
     _session = s;
     _session._mount(this);
     _socket.forEach((String data) {
-      core.HandleCall call = _ruleSet.decodeTree(data);
+      core.HandleCall call = _codec.decode(data);
       if (_handleFrame != null) {
         var func = _handleFrame.handlers[call.handle.id];
         if (func != null) {
@@ -56,7 +57,7 @@ class WebSocketRoot {
     renderScheduled = false;
     _session.updateState();
     _nextFrame = new _Frame(nextFrameId++);
-    String encoded = _ruleSet.encodeTree(_session.render());
+    String encoded = _codec.encode(_session.render());
     _socket.add(encoded);
 
     // TODO: possibly keep more than one frame in case of late callbacks

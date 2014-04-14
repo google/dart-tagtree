@@ -6,8 +6,9 @@ library browser;
 import 'package:viewtree/core.dart' as core;
 
 import 'dart:async' show StreamSubscription;
-import 'dart:html';
 import 'dart:collection' show HashMap;
+import 'dart:convert' show Codec;
+import 'dart:html';
 
 int _treeIdCounter = 0;
 
@@ -51,9 +52,9 @@ class _BrowserRoot extends core.Root {
 /// The CSS selectors point to the container element where the views will be displayed.
 /// The ruleSet will be used to deserialize the stream. (Only tags defined in the ruleset
 /// can be deserialized.)
-mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) {
-  if (rules == null) {
-    rules = core.eltRules;
+mountWebSocket(String webSocketUrl, String selectors, {Codec<dynamic, String> codec}) {
+  if (codec == null) {
+    codec = core.htmlCodec;
   }
 
   var $ = core.htmlTags;
@@ -67,7 +68,7 @@ mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) 
   var ws = new WebSocket(webSocketUrl);
 
   void onEvent(core.HandleCall call) {
-    String json = rules.encodeTree(call);
+    String json = codec.encode(call);
     ws.sendString(json);
   }
 
@@ -84,7 +85,7 @@ mountWebSocket(String webSocketUrl, String selectors, {core.JsonRuleSet rules}) 
       print("websocked opened");
     }
     opened = true;
-    core.Tag tag = rules.decodeTree(e.data);
+    core.Tag tag = codec.decode(e.data);
     core.HandleFunc func = onEvent;
     root(selectors).mount(tag, handler: func);
   });

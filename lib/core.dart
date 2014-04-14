@@ -9,15 +9,16 @@ library core;
 import 'dart:async' show Stream, StreamController, StreamSink;
 import 'dart:convert';
 
-part 'src/core/customtag.dart';
+part 'src/core/codec.dart';
 part 'src/core/elt.dart';
 part 'src/core/event.dart';
 part 'src/core/frame.dart';
+part 'src/core/html.dart';
 part 'src/core/inner.dart';
 part 'src/core/json.dart';
 part 'src/core/root.dart';
 part 'src/core/state.dart';
-part 'src/core/html.dart';
+part 'src/core/tag.dart';
 part 'src/core/template.dart';
 part 'src/core/text.dart';
 part 'src/core/view.dart';

@@ -29,27 +29,42 @@ abstract class JsonRule<T extends Jsonable> {
   T decode(jsonTree);
 }
 
-/// The rules for encoding and decoding a tree of objects as JSON.
-/// (Usually the same rules should be used for encoding and decoding.)
-class JsonRuleSet {
-  final _rules = <String, JsonRule>{};
+class TaggedJsonCodec extends Codec<dynamic, String> {
+  final Iterable<JsonRule> _rules;
+  final _cache = <String, JsonRule>{};
 
-  void add(JsonRule rule) {
-    assert(!_rules.containsKey(rule.tagName));
-    _rules[rule.tagName] = rule;
+  const TaggedJsonCodec(this._rules);
+
+  Map<String, JsonRule> get ruleset {
+    if (!_cache.isEmpty) {
+      return _cache;
+    }
+    assert(!_rules.isEmpty);
+    var map = <String, JsonRule>{};
+    for (var rule in _rules) {
+      assert(!map.containsKey(rule.tagName));
+      map[rule.tagName] = rule;
+    }
+    _cache.addAll(map);
+    return _cache;
   }
 
-  /// Returns true if there is a rule for the given tag.
-  bool supportsTag(String tag) {
-    return _rules.containsKey(tag);
-  }
+  Converter<dynamic, String> get encoder => new TaggedJsonEncoder(ruleset);
+  Converter<String, dynamic> get decoder => new TaggedJsonDecoder(ruleset);
+}
 
-  /// Converts a tree of Dart objects to JSON. The tree may contain values directly
-  /// encodable as JSON (String, Map, List, and so on) and instances of
-  /// Jsonable where [Jsonable.jsonTag] matches a rule in this ruleset.
-  String encodeTree(tree) {
+/// Encodes a Dart object as a tree of tagged JSON.
+///
+/// The tree may contain values directly encodable as JSON (String, Map, List, and so on)
+/// and instances of Jsonable where Jsonable.jsonTag matches a rule in the given ruleset.
+class TaggedJsonEncoder extends Converter<dynamic, String> {
+  final Map<String, JsonRule> _rules;
+
+  TaggedJsonEncoder(this._rules);
+
+  String convert(object) {
     StringBuffer out = new StringBuffer();
-    _encodeTree(out, tree);
+    _encodeTree(out, object);
     return out.toString();
   }
 
@@ -86,8 +101,21 @@ class JsonRuleSet {
       out.write(JSON.encode(v));
     }
   }
+}
 
-  decodeTree(String source) => JSON.decode(source, reviver: (k,v) {
+/// Decodes tagged JSON into Dart objects.
+///
+/// Lists in the JSON code are treated specially based on the
+/// first item, which is used as a tag. If the tag is a 0 then
+/// the remaining items form the actual list. Otherwise, the
+/// decoder looks up the tag in the ruleset and uses the appropriate
+/// rule to decode the list.
+class TaggedJsonDecoder extends Converter<String, dynamic> {
+  final Map<String, JsonRule> _rules;
+
+  TaggedJsonDecoder(this._rules);
+
+  convert(String json) => JSON.decode(json, reviver: (k,v) {
     if (v is List) {
       var tag = v[0];
       if (tag == 0) {
