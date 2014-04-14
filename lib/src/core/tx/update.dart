@@ -98,10 +98,10 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (_allHandlerNames.containsKey(key)) {
+      if (_htmlHandlerNames.containsKey(key)) {
         removeHandler(key, eltPath);
-      } else if (_allAtts.containsKey(key)) {
-        frame.removeAttribute(eltPath, _allAtts[key]);
+      } else if (_htmlAtts.containsKey(key)) {
+        frame.removeAttribute(eltPath, _htmlAtts[key]);
       }
     }
 
@@ -113,10 +113,10 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (_allHandlerNames.containsKey(key)) {
+      if (_htmlHandlerNames.containsKey(key)) {
         setHandler(key, eltPath, newVal);
-      } else if (_allAtts.containsKey(key)) {
-        String name = _allAtts[key];
+      } else if (_htmlAtts.containsKey(key)) {
+        String name = _htmlAtts[key];
         String val = _makeDomVal(key, newVal);
         frame.setAttribute(eltPath, name, val);
       }

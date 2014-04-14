@@ -11,7 +11,7 @@ class _Elt extends _View with _Inner {
       super(def, path, depth, props[#ref]) {
 
     for (Symbol key in props.keys) {
-      if (!_allEltProps.containsKey(key)) {
+      if (!_htmlPropNames.containsKey(key)) {
         throw "property not supported: ${key}";
       }
     }
@@ -27,11 +27,11 @@ class _Elt extends _View with _Inner {
 /// A ruleSet that can encode any Elt as JSON.
 final JsonRuleSet eltRules = (){
   var rs = new JsonRuleSet();
-  for (EltDef def in _eltTags.values) {
+  for (EltDef def in _htmlEltDefs.values) {
     rs.add(new EltRule(def));
   }
   rs.add(new _HandleRule());
-  for (Symbol key in _allHandlerNames.keys) {
+  for (Symbol key in _htmlHandlerNames.keys) {
     if (key == #onChange) {
       rs.add(new _ChangeEventRule());
     } else {
@@ -59,7 +59,7 @@ class EltTag extends Tag implements Jsonable {
 
 /// Encodes an Elt as tagged JSON.
 class EltRule extends JsonRule<EltTag> {
-  static final Map<Symbol, String> _symbolToFieldName = _allEltProps;
+  static final Map<Symbol, String> _symbolToFieldName = _htmlPropNames;
   static final Map<String, Symbol> _fieldNameToSymbol = _invertMap(_symbolToFieldName);
 
   EltDef _def;

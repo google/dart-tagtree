@@ -4,7 +4,7 @@ part of core;
 class ViewEvent implements Jsonable {
 
   @override
-  String get jsonTag => _allHandlerNames[type];
+  String get jsonTag => _htmlHandlerNames[type];
 
   /// A symbol indicating what kind of event this is; #onChange, #onSubmit, and so on.
   /// (This is the same key used as the Element prop when creating the Element.)
@@ -30,7 +30,7 @@ class ChangeEvent extends ViewEvent {
 
 typedef EventHandler(ViewEvent e);
 
-final Map<Symbol, String> _allHandlerNames = {
+final Map<Symbol, String> _htmlHandlerNames = {
   #onChange: "onChange",
   #onClick: "onClick",
   #onMouseDown: "onMouseDown",
@@ -46,7 +46,7 @@ class HandlerMap {
   final _handlers = <Symbol, Map<String, EventHandler>> {};
 
   HandlerMap() {
-    for (Symbol key in _allHandlerNames.keys) {
+    for (Symbol key in _htmlHandlerNames.keys) {
       _handlers[key] = {};
     }
   }
@@ -151,7 +151,7 @@ class _HandleRule extends JsonRule<Handle> {
 class _EventRule extends JsonRule<ViewEvent> {
   final Symbol _type;
 
-  _EventRule(Symbol type) : super(_allHandlerNames[type]), _type = type;
+  _EventRule(Symbol type) : super(_htmlHandlerNames[type]), _type = type;
 
   @override
   bool appliesTo(Jsonable instance) => (instance is ViewEvent);

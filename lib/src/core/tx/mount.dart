@@ -95,10 +95,10 @@ abstract class _Mount {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
-      if (_allHandlerNames.containsKey(key)) {
+      if (_htmlHandlerNames.containsKey(key)) {
         addHandler(key, path, val);
-      } else if (_allAtts.containsKey(key)) {
-        String name = _allAtts[key];
+      } else if (_htmlAtts.containsKey(key)) {
+        String name = _htmlAtts[key];
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
         out.write(" ${name}=\"${escaped}\"");
       }
