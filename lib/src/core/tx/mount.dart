@@ -39,7 +39,7 @@ abstract class _Mount {
       _Text text = new _Text(path, depth, tag.props[#value]);
       _mountText(text, html);
       return text;
-    } else if (def is Template) {
+    } else if (def is TemplateDef) {
       _Template view = new _Template(def, path, depth, tag.props);
       Tag shadow = def._render(tag.props);
       view._shadow = mountView(shadow, html, path, depth + 1);

@@ -36,5 +36,6 @@ class EltDef extends TagDef {
 
 class EltTag extends Tag implements Jsonable {
   EltTag(EltDef def, Map<Symbol, dynamic> props) : super(def, props);
+  EltDef get def => super.def;
   String get jsonTag => def.tagName;
 }

@@ -46,7 +46,7 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   void _updateTemplate(_Template current, Tag nextTag) {
-    TagDef def = current.def;
+    TemplateDef def = current.def;
     Props next = new Props(nextTag.props);
     if (!def._shouldUpdate(current._props, next)) {
       return;
