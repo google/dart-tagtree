@@ -22,7 +22,7 @@ part 'src/core/state.dart';
 part 'src/core/tag.dart';
 part 'src/core/template.dart';
 part 'src/core/text.dart';
-part 'src/core/view.dart';
+part 'src/core/viewtree.dart';
 part 'src/core/widget.dart';
 part 'src/core/tx/mount.dart';
 part 'src/core/tx/transaction.dart';

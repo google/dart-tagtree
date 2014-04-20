@@ -34,7 +34,7 @@ abstract class _Update extends _Mount with _Unmount {
   void _updateInPlace(_View current, Tag next) {
     if (current is _Template) {
       _updateTemplate(current, next);
-    } else if (current is _WidgetView) {
+    } else if (current is _Widget) {
       updateWidget(current, next);
     } else if (current is _Text) {
       _updateText(current, next);
@@ -48,15 +48,15 @@ abstract class _Update extends _Mount with _Unmount {
   void _updateTemplate(_Template current, Tag nextTag) {
     TemplateDef def = current.def;
     Props next = new Props(nextTag.props);
-    if (!def._shouldUpdate(current._props, next)) {
+    if (!def._shouldUpdate(current.props, next)) {
       return;
     }
     Tag newShadow = def._render(nextTag.props);
-    current._shadow = updateOrReplace(current._shadow, newShadow);
-    current._props = next;
+    current.shadow = updateOrReplace(current.shadow, newShadow);
+    current.props = next;
   }
 
-  void updateWidget(_WidgetView view, [Tag next]) {
+  void updateWidget(_Widget view, [Tag next]) {
     Widget w = view.widget;
 
     // Update the widget
@@ -71,7 +71,7 @@ abstract class _Update extends _Mount with _Unmount {
     Tag newShadow = w.render();
 
     // Update the DOM
-    view._shadow = updateOrReplace(view._shadow, newShadow);
+    view.shadow = updateOrReplace(view.shadow, newShadow);
 
     // Schedule the didUpdate event
     if (w._didUpdate.hasListener) {
@@ -92,10 +92,10 @@ abstract class _Update extends _Mount with _Unmount {
     String path = elt.path;
     assert(path != null);
 
-    Map<Symbol, dynamic> oldProps = elt._props;
+    Map<Symbol, dynamic> oldProps = elt.props;
     Map<Symbol, dynamic> newProps = next.props;
 
-    elt._props = newProps;
+    elt.props = newProps;
     _updateDomProperties(path, oldProps, newProps);
     _updateInner(elt, path, newProps[#inner], newProps[#innerHtml]);
   }

@@ -26,14 +26,6 @@ class TemplateDef extends TagDef {
   }
 }
 
-class _Template extends _View {
-  _View _shadow;
-  Props _props;
-
-  _Template(TemplateDef def, String path, int depth, Map<Symbol, dynamic> props) :
-    super(def, path, depth, props[#ref]);
-}
-
 /// A wrapper allowing a View's props to be accessed using dot notation.
 @proxy
 class Props {

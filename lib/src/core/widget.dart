@@ -13,7 +13,7 @@ abstract class Widget<S> extends StateMixin<S> {
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
-  _WidgetView _view; // non-null when mounted
+  _Widget _view; // non-null when mounted
 
   void _init(Map<Symbol, dynamic> props) {
     setProps(props);
@@ -48,7 +48,10 @@ abstract class Widget<S> extends StateMixin<S> {
   Stream get willUnmount => _willUnmount.stream;
 
   @override
-  void invalidate() => _view.invalidate();
+  void invalidate() {
+    assert (_view != null && _view._mounted);
+    _view.invalidate(_view);
+  }
 
   /// Constructs the tag tree to be rendered in place of this Widget.
   /// The framework calls this function during the next animation frame after invalidate()
@@ -65,27 +68,3 @@ class _WidgetDef extends TagDef {
   const _WidgetDef(this._createWidget);
 }
 
-typedef _InvalidateWidgetFunc(_WidgetView v);
-
-class _WidgetView extends _View {
-  final Widget widget;
-  final _InvalidateWidgetFunc _invalidate;
-  _View _shadow;
-
-  _WidgetView.raw(_WidgetDef def, String path, int depth, ref, this.widget, this._invalidate) :
-    super(def, path, depth, ref);
-
-  factory _WidgetView(Tag tag, String path, int depth, _InvalidateWidgetFunc invalidate) {
-    _WidgetDef def = tag.def;
-    Widget w = def._createWidget();
-    w._init(tag.props);
-    _WidgetView v = new _WidgetView.raw(def, path, depth, tag.props[#ref], w, invalidate);
-    w._view = v;
-    return v;
-  }
-
-  void invalidate() {
-    assert(_mounted);
-    _invalidate(this);
-  }
-}

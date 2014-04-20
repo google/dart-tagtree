@@ -11,7 +11,7 @@ abstract class Root {
   bool _frameRequested = false;
   Tag _nextTop;
   HandleFunc _nextHandler;
-  final Set<_WidgetView> _widgetsToUpdate = new Set();
+  final Set<_Widget> _widgetsToUpdate = new Set();
 
   Root(this.id);
 
@@ -34,7 +34,7 @@ abstract class Root {
 
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
-  void _invalidateWidget(_WidgetView view) {
+  void _invalidateWidget(_Widget view) {
     assert(view._mounted);
     _widgetsToUpdate.add(view);
     _requestAnimationFrame();

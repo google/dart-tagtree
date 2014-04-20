@@ -36,16 +36,17 @@ abstract class _Mount {
     TagDef def = tag.def;
     if (def is _TextDef) {
       _Text text = new _Text(path, depth, tag.props[#value]);
-      _mountText(text, html);
+      // need to surround with a span to support incremental updates to a child
+      html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
       return text;
     } else if (def is TemplateDef) {
       _Template view = new _Template(def, path, depth, tag.props);
       Tag shadow = def._render(tag.props);
-      view._shadow = mountView(shadow, html, path, depth + 1);
-      view._props = new Props(tag.props);
+      view.shadow = mountView(shadow, html, path, depth + 1);
+      view.props = new Props(tag.props);
       return view;
     } else if (def is _WidgetDef) {
-      _WidgetView view = new _WidgetView(tag, path, depth, invalidateWidget);
+      _Widget view = new _Widget(tag, path, depth, invalidateWidget);
       _mountWidget(view, html);
       return view;
     } else if (def is EltDef) {
@@ -53,34 +54,29 @@ abstract class _Mount {
       _mountElt(elt, html);
       return elt;
     } else {
-      throw "can't mount tag";
+      throw "can't mount tag: ${tag.runtimeType}";
     }
   }
 
-  void _mountText(_Text text, StringBuffer html) {
-    // need to surround with a span to support incremental updates to a child
-    html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
-  }
-
-  void _mountWidget(_WidgetView view, StringBuffer html) {
+  void _mountWidget(_Widget view, StringBuffer html) {
     Widget w = view.widget;
     Tag newShadow = w.render();
-    view._shadow = mountView(newShadow, html, view.path, view.depth + 1);
+    view.shadow = mountView(newShadow, html, view.path, view.depth + 1);
     if (w._didMount.hasListener) {
       _mountedWidgets.add(w);
     }
   }
 
   void _mountElt(_Elt elt, StringBuffer html) {
-    _writeStartTag(html, elt.tagName, elt.path, elt._props);
+    _writeStartTag(html, elt.tagName, elt.path, elt.props);
 
     if (elt.tagName == "textarea") {
-      String val = elt._props[#defaultValue];
+      String val = elt.props[#defaultValue];
       if (val != null) {
         html.write(HTML_ESCAPE.convert(val));
       }
     } else {
-      mountInner(elt, html, elt._props[#inner], elt._props[#innerHtml]);
+      mountInner(elt, html, elt.props[#inner], elt.props[#innerHtml]);
     }
 
     html.write("</${elt.tagName}>");

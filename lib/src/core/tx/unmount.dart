@@ -16,9 +16,9 @@ abstract class _Unmount {
       unmountInner(v);
       releaseElement(v.path, v.ref, willReplace: willReplace);
     } else if (v is _Template) {
-      unmount(v._shadow);
-      v._shadow = null;
-    } else if (v is _WidgetView) {
+      unmount(v.shadow);
+      v.shadow = null;
+    } else if (v is _Widget) {
       _unmountWidget(v, willReplace);
     } else {
       throw "unable to unmount ${v.runtimeType}";
@@ -26,15 +26,15 @@ abstract class _Unmount {
     v._unmount();
   }
 
-  void _unmountWidget(_WidgetView view, bool willReplace) {
-    if (view._shadow == null) {
+  void _unmountWidget(_Widget view, bool willReplace) {
+    if (view.shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }
     if (view.widget._willUnmount.hasListener) {
       view.widget._willUnmount.add(true);
     }
-    unmount(view._shadow, willReplace: willReplace);
-    view._shadow = null;
+    unmount(view.shadow, willReplace: willReplace);
+    view.shadow = null;
   }
 
   void unmountInner(_Inner elt) {
