@@ -3,7 +3,7 @@ part of core;
 typedef void HandleFunc(HandleCall call);
 
 /// A Root contains a view tree that's rendered to the DOM.
-abstract class Root implements WidgetEnv {
+abstract class Root {
   final int id;
   final _handlers = new _HandlerMap();
   _View _top;
@@ -11,7 +11,7 @@ abstract class Root implements WidgetEnv {
   bool _frameRequested = false;
   Tag _nextTop;
   HandleFunc _nextHandler;
-  final Set<WidgetView> _widgetsToUpdate = new Set();
+  final Set<_WidgetView> _widgetsToUpdate = new Set();
 
   Root(this.id);
 
@@ -34,8 +34,7 @@ abstract class Root implements WidgetEnv {
 
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
-  @override
-  void requestWidgetUpdate(WidgetView view) {
+  void _invalidateWidget(_WidgetView view) {
     assert(view._mounted);
     _widgetsToUpdate.add(view);
     _requestAnimationFrame();

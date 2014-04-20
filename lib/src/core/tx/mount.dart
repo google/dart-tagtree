@@ -4,7 +4,7 @@ part of core;
 abstract class _Mount {
 
   // Dependencies to mount
-  WidgetEnv get widgetEnv;
+  _InvalidateWidgetFunc get invalidateWidget;
 
   // What was mounted
   final List<Ref> _mountedRefs = [];
@@ -46,7 +46,7 @@ abstract class _Mount {
       view._props = new Props(tag.props);
       return view;
     } else if (def is WidgetDef) {
-      WidgetView view = new WidgetView(tag, path, depth, widgetEnv);
+      _WidgetView view = new _WidgetView(tag, path, depth, invalidateWidget);
       _mountWidget(view, html);
       return view;
     } else if (def is EltDef) {
@@ -63,7 +63,7 @@ abstract class _Mount {
     html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
   }
 
-  void _mountWidget(WidgetView view, StringBuffer html) {
+  void _mountWidget(_WidgetView view, StringBuffer html) {
     Widget w = view.widget;
     Tag newShadow = w.render();
     view._shadow = mountView(newShadow, html, view.path, view.depth + 1);

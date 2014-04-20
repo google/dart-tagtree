@@ -34,7 +34,7 @@ abstract class _Update extends _Mount with _Unmount {
   void _updateInPlace(_View current, Tag next) {
     if (current is _Template) {
       _updateTemplate(current, next);
-    } else if (current is WidgetView) {
+    } else if (current is _WidgetView) {
       updateWidget(current, next);
     } else if (current is _Text) {
       _updateText(current, next);
@@ -56,7 +56,7 @@ abstract class _Update extends _Mount with _Unmount {
     current._props = next;
   }
 
-  void updateWidget(WidgetView view, [Tag next]) {
+  void updateWidget(_WidgetView view, [Tag next]) {
     Widget current = view.widget;
     if (next != null && !current.shouldUpdate(next)) {
       return;

@@ -9,13 +9,13 @@ class Transaction extends _Update {
   // What to do
   final Tag nextTop;
   final HandleFunc nextHandler;
-  final List<WidgetView> _widgetsToUpdate;
+  final List<_WidgetView> _widgetsToUpdate;
 
   Transaction(this.root, this.dom, this.handlers, this.nextTop, this.nextHandler,
-      Iterable<WidgetView> widgetsToUpdate)
+      Iterable<_WidgetView> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
-  WidgetEnv get widgetEnv => root;
+  _InvalidateWidgetFunc get invalidateWidget => root._invalidateWidget;
 
   void run() {
     if (nextTop != null) {
@@ -26,7 +26,7 @@ class Transaction extends _Update {
     // Sort ancestors ahead of children.
     _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (WidgetView w in _widgetsToUpdate) {
+    for (_WidgetView w in _widgetsToUpdate) {
       updateWidget(w);
     }
 

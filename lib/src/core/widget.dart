@@ -12,24 +12,19 @@ class WidgetDef extends TagDef {
   createWidget() => _createWidgetFunc();
 }
 
-abstract class WidgetEnv {
-  void requestWidgetUpdate(WidgetView  view);
-}
-
 /// A Widget is the implementation of a tag that has state.
 /// S is the state's type, which can be any type, but must be
 /// cloneable using the cloneState() function.
 abstract class Widget<S> extends StateMixin<S> {
-  WidgetView _view;
-  WidgetEnv _widgetEnv;
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
-  void _init(Map<Symbol, dynamic> props, WidgetEnv env) {
+  _WidgetView _view; // non-null when mounted
+
+  void _init(Map<Symbol, dynamic> props) {
     setProps(props);
     initState();
-    _widgetEnv = env;
   }
 
   void setProps(Map<Symbol, dynamic> p) {
@@ -44,12 +39,8 @@ abstract class Widget<S> extends StateMixin<S> {
   Stream get didUpdate => _didUpdate.stream;
   Stream get willUnmount => _willUnmount.stream;
 
-  /// Requests that this Widget be re-rendered during the next frame.
   @override
-  void invalidate() {
-    assert(isMounted);
-    _widgetEnv.requestWidgetUpdate(this._view);
-  }
+  void invalidate() =>_view.invalidate();
 
   /// Constructs a tag tree to be rendered in place of this Widget.
   /// (This is somewhat similar to "shadow DOM".)
@@ -64,7 +55,6 @@ abstract class Widget<S> extends StateMixin<S> {
   /// because the shadow isn't updated yet.
   Tag _updateAndRender(Tag nextVersion) {
     assert(isMounted);
-    assert(_widgetEnv != null);
 
     updateState();
     if (nextVersion != null) {
@@ -74,20 +64,27 @@ abstract class Widget<S> extends StateMixin<S> {
   }
 }
 
-class WidgetView extends _View {
+typedef _InvalidateWidgetFunc(_WidgetView v);
+
+class _WidgetView extends _View {
   final Widget widget;
+  final _InvalidateWidgetFunc _invalidate;
   _View _shadow;
 
-  WidgetView.raw(WidgetDef def, String path, int depth, this.widget, Ref ref) :
+  _WidgetView.raw(WidgetDef def, String path, int depth, Ref ref, this.widget, this._invalidate) :
     super(def, path, depth, ref);
 
-  factory WidgetView(Tag tag, String path, int depth, WidgetEnv env) {
+  factory _WidgetView(Tag tag, String path, int depth, _InvalidateWidgetFunc invalidate) {
     WidgetDef def = tag.def;
     Widget w = def.createWidget();
-    w._init(tag.props, env);
-    WidgetView v = new WidgetView.raw(def, path, depth, w, tag.props[#ref]);
+    w._init(tag.props);
+    _WidgetView v = new _WidgetView.raw(def, path, depth, tag.props[#ref], w, invalidate);
     w._view = v;
     return v;
   }
-}
 
+  void invalidate() {
+    assert(_mounted);
+    _invalidate(this);
+  }
+}
