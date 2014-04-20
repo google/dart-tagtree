@@ -3,7 +3,7 @@ part of core;
 /// A Transaction renders one animation frame for one Root.
 class Transaction extends _Update {
   final Root root;
-  final NextFrame frame;
+  final DomUpdater dom;
   final _HandlerMap handlers;
 
   // What to do
@@ -11,7 +11,7 @@ class Transaction extends _Update {
   final HandleFunc nextHandler;
   final List<WidgetView> _widgetsToUpdate;
 
-  Transaction(this.root, this.frame, this.handlers, this.nextTop, this.nextHandler,
+  Transaction(this.root, this.dom, this.handlers, this.nextTop, this.nextHandler,
       Iterable<WidgetView> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
@@ -35,11 +35,11 @@ class Transaction extends _Update {
 
   void _finish() {
     for (Ref r in _mountedRefs) {
-      frame.onRefMounted(r);
+      dom.mountRef(r);
     }
 
     for (_Elt form in _mountedForms) {
-      frame.onFormMounted(form.path);
+      dom.mountForm(form.path);
     }
 
     for (var w in _mountedWidgets) {
@@ -56,7 +56,7 @@ class Transaction extends _Update {
     if (current == null) {
       StringBuffer html = new StringBuffer();
       _View view = mountView(next, html, path, 0);
-      frame.mount(html.toString());
+      dom.mount(html.toString());
       return view;
     } else {
       return updateOrReplace(current, next);
@@ -82,7 +82,7 @@ class Transaction extends _Update {
 
   @override
   void releaseElement(String path, {bool willReplace: false}) {
-    frame.detachElement(path, willReplace: willReplace);
+    dom.detachElement(path, willReplace: willReplace);
     handlers.removeHandlersForPath(path);
   }
 

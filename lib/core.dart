@@ -13,7 +13,7 @@ part 'src/core/codec.dart';
 part 'src/core/debug.dart';
 part 'src/core/elt.dart';
 part 'src/core/event.dart';
-part 'src/core/frame.dart';
+part 'src/core/dom.dart';
 part 'src/core/html.dart';
 part 'src/core/inner.dart';
 part 'src/core/json.dart';

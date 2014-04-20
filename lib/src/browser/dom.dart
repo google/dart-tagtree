@@ -1,6 +1,6 @@
 part of browser;
 
-/// A reference that also allows access to the DOM Element corresponding to a Tag.
+/// A Ref that allows access to the DOM element corresponding to a Tag.
 class ElementRef<E extends HtmlElement> extends core.Ref {
   _ElementCache cache;
 
@@ -40,11 +40,10 @@ class _ElementCache {
   }
 }
 
-/// An implementation of NextFrame that applies frame mutations immediately to the DOM.
-class _NextFrame implements core.NextFrame {
+class _DomUpdater implements core.DomUpdater {
   final _BrowserRoot root;
 
-  _NextFrame(this.root);
+  _DomUpdater(this.root);
 
   _ElementCache get cache => root.eltCache;
 
@@ -54,14 +53,14 @@ class _NextFrame implements core.NextFrame {
   }
 
   @override
-  void onRefMounted(core.Ref ref) {
+  void mountRef(core.Ref ref) {
     if (ref is ElementRef) {
       ref.cache = cache;
     }
   }
 
   @override
-  void onFormMounted(String formPath) {
+  void mountForm(String formPath) {
     // onSubmit doesn't bubble, so install it here.
     FormElement elt = cache.get(formPath);
     root.formSubscriptions[formPath] = elt.onSubmit.listen((Event e) {

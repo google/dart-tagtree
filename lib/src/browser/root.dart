@@ -50,7 +50,7 @@ class _BrowserRoot extends core.Root {
   @override
   void onRequestAnimationFrame(core.RenderFunc render) {
     window.animationFrame.then((t) {
-      render(new _NextFrame(this));
+      render(new _DomUpdater(this));
     });
   }
 

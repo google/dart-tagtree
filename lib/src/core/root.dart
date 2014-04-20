@@ -1,7 +1,5 @@
 part of core;
 
-typedef void RenderFunc(NextFrame frame);
-
 typedef void HandleFunc(HandleCall call);
 
 /// A Root contains a view tree that's rendered to the DOM.
@@ -53,8 +51,9 @@ abstract class Root implements WidgetEnv {
     }
   }
 
-  void _renderFrame(NextFrame frame) {
-    Transaction tx = new Transaction(this, frame, _handlers, _nextTop, _nextHandler, _widgetsToUpdate);
+  void _renderFrame(DomUpdater dom) {
+    Transaction tx = new Transaction(this, dom, _handlers, _nextTop, _nextHandler,
+        _widgetsToUpdate);
 
     _frameRequested = false;
     _nextTop = null;
