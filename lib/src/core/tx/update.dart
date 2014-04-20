@@ -57,14 +57,25 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   void updateWidget(_WidgetView view, [Tag next]) {
-    Widget current = view.widget;
-    if (next != null && !current.shouldUpdate(next)) {
+    Widget w = view.widget;
+
+    // Update the widget
+    if (next != null && !w.shouldUpdate(next)) {
       return;
     }
-    Tag newShadow = current._updateAndRender(next);
+    assert(w.isMounted);
+    w.updateState();
+    if (next != null) {
+      w.setProps(next.props);
+    }
+    Tag newShadow = w.render();
+
+    // Update the DOM
     view._shadow = updateOrReplace(view._shadow, newShadow);
-    if (current._didUpdate.hasListener) {
-      _updatedWidgets.add(current);
+
+    // Schedule the didUpdate event
+    if (w._didUpdate.hasListener) {
+      _updatedWidgets.add(w);
     }
   }
 
@@ -146,7 +157,7 @@ abstract class _Update extends _Mount with _Unmount {
       List<Tag> children = [];
       for (var item in newInner) {
         if (item is String) {
-          children.add(TextDef.instance.makeTag({#value: item}));
+          children.add(_TextDef.instance.makeTag({#value: item}));
         } else if (item is Tag) {
           children.add(item);
         } else {

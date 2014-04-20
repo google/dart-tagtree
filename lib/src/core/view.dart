@@ -28,7 +28,7 @@ abstract class _View {
   final int depth;
 
   /// The owner's reference to this View. May be null.
-  final Ref ref;
+  final BaseRef ref;
 
   bool _mounted = true;
 
@@ -37,43 +37,5 @@ abstract class _View {
   void _unmount() {
     assert(_mounted);
     _mounted = false;
-  }
-}
-
-/// Holds a reference to a view.
-///
-/// This is typically passed via a "ref" property. It's valid
-/// when the view is mounted and automatically cleared on unmount.
-class Ref {
-  _View _view;
-
-  _View get view => _view;
-
-  /// Subclass hook for cleaning up on unmount.
-  void onDetach() {}
-
-  void _set(_View target) {
-    _view = target;
-    if (_view == null) {
-      onDetach();
-    }
-  }
-}
-
-/// A wrapper allowing a View's props to be accessed using dot notation.
-@proxy
-class Props {
-  final Map<Symbol, dynamic> _props;
-
-  Props(this._props);
-
-  noSuchMethod(Invocation inv) {
-    if (inv.isGetter) {
-      if (_props.containsKey(inv.memberName)) {
-        return _props[inv.memberName];
-      }
-    }
-    print("keys: ${_props.keys.join(", ")}");
-    return super.noSuchMethod(inv);
   }
 }

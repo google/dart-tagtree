@@ -20,8 +20,6 @@ class _Elt extends _View with _Inner {
     assert(inner == null || _props[#innerHtml] == null);
     assert(_props[#value] == null || _props[#defaultValue] == null);
   }
-
-  Props get props => new Props(_props);
 }
 
 class EltDef extends TagDef {

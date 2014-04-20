@@ -11,10 +11,10 @@ part of core;
 /// special case and the Text class isn't used.
 class _Text extends _View {
   String value;
-  _Text(String path, int depth, this.value) : super(TextDef.instance, path, depth, null);
+  _Text(String path, int depth, this.value) : super(_TextDef.instance, path, depth, null);
 }
 
-class TextDef extends TagDef {
-  static final instance = new TextDef();
+class _TextDef extends TagDef {
+  static final instance = new _TextDef();
 }
 

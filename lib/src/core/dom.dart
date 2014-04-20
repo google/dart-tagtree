@@ -16,7 +16,7 @@ abstract class DomUpdater {
   void mount(String html);
 
   /// Attaches a Ref to the DOM.
-  void mountRef(Ref ref);
+  void mountRef(String path, BaseRef ref);
 
   /// Starts listening to form events.
   void mountForm(String path);
@@ -42,4 +42,9 @@ abstract class DomUpdater {
   void addChildElement(String path, String childHtml);
 
   void removeChild(String path, int index);
+}
+
+/// A reference to a tag's DOM.
+abstract class BaseRef {
+  void detach();
 }

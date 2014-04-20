@@ -24,7 +24,7 @@ abstract class _Unmount {
       throw "unable to unmount ${v.runtimeType}";
     }
     if (v.ref != null) {
-      v.ref._set(null);
+      v.ref.detach();
     }
     v._unmount();
   }

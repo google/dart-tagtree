@@ -19,7 +19,7 @@ main() => root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
 final Sunflower = defineWidget(() => new _Sunflower());
 
 class _Sunflower extends Widget<int> {
-  final _canvas = new ElementRef<CanvasElement>();
+  final _canvas = new Ref<CanvasElement>();
 
   int startSeeds;
   num seedRadius;

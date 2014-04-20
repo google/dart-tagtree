@@ -33,3 +33,21 @@ class _Template extends _View {
   _Template(TemplateDef def, String path, int depth, Map<Symbol, dynamic> props) :
     super(def, path, depth, props[#ref]);
 }
+
+/// A wrapper allowing a View's props to be accessed using dot notation.
+@proxy
+class Props {
+  final Map<Symbol, dynamic> _props;
+
+  Props(this._props);
+
+  noSuchMethod(Invocation inv) {
+    if (inv.isGetter) {
+      if (_props.containsKey(inv.memberName)) {
+        return _props[inv.memberName];
+      }
+    }
+    print("keys: ${_props.keys.join(", ")}");
+    return super.noSuchMethod(inv);
+  }
+}

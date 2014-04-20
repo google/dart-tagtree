@@ -7,7 +7,7 @@ abstract class _Mount {
   _InvalidateWidgetFunc get invalidateWidget;
 
   // What was mounted
-  final List<Ref> _mountedRefs = [];
+  final List<_View> _mountedRefs = [];
   final List<_Elt> _mountedForms = [];
   final List<Widget> _mountedWidgets = [];
   void addHandler(Symbol key, String path, val);
@@ -27,15 +27,14 @@ abstract class _Mount {
   _View mountView(Tag tag, StringBuffer html, String path, int depth) {
     _View view = _mountTag(tag, html, path, depth);
     if (view.ref != null) {
-      view.ref._set(view);
-      _mountedRefs.add(view.ref);
+      _mountedRefs.add(view);
     }
     return view;
   }
 
   _View _mountTag(Tag tag, StringBuffer html, String path, int depth) {
     TagDef def = tag.def;
-    if (def is TextDef) {
+    if (def is _TextDef) {
       _Text text = new _Text(path, depth, tag.props[#value]);
       _mountText(text, html);
       return text;
@@ -45,7 +44,7 @@ abstract class _Mount {
       view._shadow = mountView(shadow, html, path, depth + 1);
       view._props = new Props(tag.props);
       return view;
-    } else if (def is WidgetDef) {
+    } else if (def is _WidgetDef) {
       _WidgetView view = new _WidgetView(tag, path, depth, invalidateWidget);
       _mountWidget(view, html);
       return view;
@@ -128,7 +127,7 @@ abstract class _Mount {
       List<Tag> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(TextDef.instance.makeTag(value: item));
+          children.add(_TextDef.instance.makeTag(value: item));
         } else if (item is Tag) {
           children.add(item);
         } else {

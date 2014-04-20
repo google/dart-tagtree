@@ -34,8 +34,8 @@ class Transaction extends _Update {
   }
 
   void _finish() {
-    for (Ref r in _mountedRefs) {
-      dom.mountRef(r);
+    for (_View v in _mountedRefs) {
+      dom.mountRef(v.path, v.ref);
     }
 
     for (_Elt form in _mountedForms) {

@@ -1,14 +1,16 @@
 part of browser;
 
-/// A Ref that allows access to the DOM element corresponding to a Tag.
-class ElementRef<E extends HtmlElement> extends core.Ref {
-  _ElementCache cache;
+/// A Ref allows access to the DOM element corresponding to a Tag.
+class Ref<E extends HtmlElement> extends core.BaseRef {
+  _ElementCache _cache;
+  String _path;
 
   /// Returns the element, if mounted.
-  E get elt => cache.get(view.path);
+  E get elt => _cache.get(_path);
 
-  onDetach() {
-    cache = null;
+  /// Hook called by the framework.
+  void detach() {
+    _cache = null;
   }
 }
 
@@ -53,9 +55,10 @@ class _DomUpdater implements core.DomUpdater {
   }
 
   @override
-  void mountRef(core.Ref ref) {
-    if (ref is ElementRef) {
-      ref.cache = cache;
+  void mountRef(String refPath, core.BaseRef ref) {
+    if (ref is Ref) {
+      ref._path = refPath;
+      ref._cache = cache;
     }
   }
 
