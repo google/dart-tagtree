@@ -7,7 +7,7 @@ typedef void HandleFunc(HandleCall call);
 /// A Root contains a view tree that's rendered to the DOM.
 abstract class Root implements WidgetEnv {
   final int id;
-  final _handlers = new HandlerMap();
+  final _handlers = new _HandlerMap();
   _View _top;
 
   bool _frameRequested = false;
@@ -44,7 +44,7 @@ abstract class Root implements WidgetEnv {
   }
 
   /// Calls any event handlers for this root.
-  void dispatchEvent(ViewEvent e) => dispatch(e, _handlers);
+  void dispatchEvent(HtmlEvent e) => _dispatch(e, _handlers);
 
   void _requestAnimationFrame() {
     if (!_frameRequested) {

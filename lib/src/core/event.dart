@@ -1,7 +1,7 @@
 part of core;
 
 /// A synthetic, browser-independent event.
-class ViewEvent implements Jsonable {
+class HtmlEvent implements Jsonable {
 
   @override
   String get jsonTag => _htmlHandlerNames[type];
@@ -12,7 +12,7 @@ class ViewEvent implements Jsonable {
 
   final String targetPath;
 
-  ViewEvent(this.type, this.targetPath) {
+  HtmlEvent(this.type, this.targetPath) {
     assert(type != null);
     assert(targetPath != null);
   }
@@ -20,7 +20,7 @@ class ViewEvent implements Jsonable {
 
 /// Indicates that the user changed the value in a form control.
 /// (This event happens after every keystroke.)
-class ChangeEvent extends ViewEvent {
+class ChangeEvent extends HtmlEvent {
 
   /// The new value in the <input> or <textarea> element.
   final value;
@@ -28,24 +28,14 @@ class ChangeEvent extends ViewEvent {
   ChangeEvent(String path, this.value): super(#onChange, path);
 }
 
-typedef EventHandler(ViewEvent e);
+typedef EventHandler(HtmlEvent e);
 
-final Map<Symbol, String> _htmlHandlerNames = {
-  #onChange: "onChange",
-  #onClick: "onClick",
-  #onMouseDown: "onMouseDown",
-  #onMouseOver: "onMouseOver",
-  #onMouseUp: "onMouseUp",
-  #onMouseOut: "onMouseOut",
-  #onSubmit: "onSubmit"
-};
-
-/// Dispatches all events for one Root.
-class HandlerMap {
+/// Contains all the handlers for one Root.
+class _HandlerMap {
   // A multimap from (handler key, path) to an event handler.
   final _handlers = <Symbol, Map<String, EventHandler>> {};
 
-  HandlerMap() {
+  _HandlerMap() {
     for (Symbol key in _htmlHandlerNames.keys) {
       _handlers[key] = {};
     }
@@ -71,20 +61,12 @@ class HandlerMap {
 
 bool _inViewEvent = false;
 
-const bool debug = false;
-
-void debugLog(String msg) {
-  if (debug) {
-    print(msg);
-  }
-}
-
 /// Calls any event handlers in this tree.
 /// On return, there may be some dirty widgets to be re-rendered.
 /// Note: widgets may also change state outside any event handler;
 /// for example, due to a timer.
 /// TODO: bubbling. For now, just exact match.
-void dispatch(ViewEvent e, HandlerMap handlers) {
+void _dispatch(HtmlEvent e, _HandlerMap handlers) {
   if (_inViewEvent) {
     // React does this too; see EVENT_SUPPRESSION
     print("ignored ${e.type} received while processing another event");
@@ -119,9 +101,10 @@ class Handle implements Jsonable {
   String get jsonTag => "handle";
 }
 
+/// A call to a remote handler.
 class HandleCall implements Jsonable {
   final Handle handle;
-  final ViewEvent event;
+  final HtmlEvent event;
 
   HandleCall(this.handle, this.event);
 

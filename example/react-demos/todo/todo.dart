@@ -25,7 +25,7 @@ class _TodoApp extends Widget<_TodoState> {
     nextState.text = e.value;
   }
 
-  void handleSubmit(ViewEvent e) {
+  void handleSubmit(HtmlEvent e) {
     nextState
       ..items = (new List.from(state.items)..add(state.text))
       ..text = "";

@@ -4,7 +4,7 @@ part of core;
 class Transaction extends _Update {
   final Root root;
   final NextFrame frame;
-  final HandlerMap handlers;
+  final _HandlerMap handlers;
 
   // What to do
   final Tag nextTop;
@@ -39,7 +39,7 @@ class Transaction extends _Update {
     }
 
     for (_Elt form in _mountedForms) {
-      frame.onFormMounted(root, form.path);
+      frame.onFormMounted(form.path);
     }
 
     for (var w in _mountedWidgets) {
@@ -93,7 +93,7 @@ class Transaction extends _Update {
       if (nextHandler == null) {
         throw "can't render a Handle without a handler function installed";
       }
-      return (ViewEvent e) {
+      return (HtmlEvent e) {
         nextHandler(new HandleCall(val, e));
       };
     } else {

@@ -125,6 +125,18 @@ final Map<Symbol, String> _htmlAtts = {
 };
 
 /// A map from Dart named parameters to their corresponding strings.
+/// The strings are used for JSON serialization.
+final Map<Symbol, String> _htmlHandlerNames = {
+  #onChange: "onChange",
+  #onClick: "onClick",
+  #onMouseDown: "onMouseDown",
+  #onMouseOver: "onMouseOver",
+  #onMouseUp: "onMouseUp",
+  #onMouseOut: "onMouseOut",
+  #onSubmit: "onSubmit"
+};
+
+/// A map from Dart named parameters to their corresponding strings.
 /// An entry must exist for each named parameter in the DartTags API.
 /// The strings are used for JSON serialization.
 final Map<Symbol, String> _htmlPropNames = {

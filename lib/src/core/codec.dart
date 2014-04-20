@@ -82,21 +82,21 @@ class _HandleRule extends JsonRule<Handle> {
   }
 }
 
-class _EventRule extends JsonRule<ViewEvent> {
+class _EventRule extends JsonRule<HtmlEvent> {
   final Symbol _type;
 
   _EventRule(Symbol type) : super(_htmlHandlerNames[type]), _type = type;
 
   @override
-  bool appliesTo(Jsonable instance) => (instance is ViewEvent);
+  bool appliesTo(Jsonable instance) => (instance is HtmlEvent);
 
   @override
-  encode(ViewEvent e) => e.targetPath;
+  encode(HtmlEvent e) => e.targetPath;
 
   @override
-  ViewEvent decode(s) {
+  HtmlEvent decode(s) {
     if (s is String) {
-      return new ViewEvent(_type, s);
+      return new HtmlEvent(_type, s);
     } else {
       throw "can't decode ViewEvent: ${s.runtimeType}";
     }
@@ -116,7 +116,7 @@ class _ChangeEventRule extends JsonRule<ChangeEvent> {
   };
 
   @override
-  ViewEvent decode(map) => new ChangeEvent(map["target"], map["value"]);
+  HtmlEvent decode(map) => new ChangeEvent(map["target"], map["value"]);
 }
 
 class _HandleCallRule extends JsonRule<HandleCall> {
