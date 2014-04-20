@@ -108,7 +108,9 @@ abstract class _Mount {
     out.write(">");
   }
 
-  void mountInner(_Inner elt, StringBuffer out, inner, String innerHtml) {
+  void mountInner(_Elt elt, StringBuffer out, inner, String innerHtml) {
+
+
     if (inner == null) {
       if (innerHtml != null) {
         // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)

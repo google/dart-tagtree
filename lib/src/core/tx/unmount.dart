@@ -37,7 +37,7 @@ abstract class _Unmount {
     view.shadow = null;
   }
 
-  void unmountInner(_Inner elt) {
+  void unmountInner(_Elt elt) {
     if (elt._children != null) {
       for (_View child in elt._children) {
         unmount(child);

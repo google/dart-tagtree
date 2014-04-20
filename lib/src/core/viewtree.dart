@@ -59,24 +59,18 @@ class _Text extends _View {
 }
 
 /// A node representing a rendered HTML element.
-class _Elt extends _View with _Inner {
+class _Elt extends _View {
   final String tagName;
   Map<Symbol, dynamic> props;
+  // Non-null if the element has at least one non-text child.
+  List<_View> _children;
+  // Non-null if the view contains just text.
+  String _childText;
 
   _Elt(EltDef def, String path, int depth, Map<Symbol, dynamic> propMap) :
       tagName = def.tagName,
       props = propMap,
       super(def, path, depth, propMap[#ref]) {
-
-    for (Symbol key in props.keys) {
-      if (!_htmlPropNames.containsKey(key)) {
-        throw "property not supported: ${key}";
-      }
-    }
-    var inner = props[#inner];
-    assert(inner == null || inner is String || inner is _View || inner is Iterable);
-    assert(inner == null || props[#innerHtml] == null);
-    assert(props[#value] == null || props[#defaultValue] == null);
   }
 }
 

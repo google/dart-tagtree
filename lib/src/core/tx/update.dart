@@ -136,7 +136,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates the inner DOM and mount/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(_Inner elt, String path, newInner, newInnerHtml) {
+  void _updateInner(_Elt elt, String path, newInner, newInnerHtml) {
     if (newInner == null) {
       unmountInner(elt);
       if (newInnerHtml != null) {
@@ -172,7 +172,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(_Inner elt, String path, List<Tag> newChildren) {
+  void _updateChildren(_Elt elt, String path, List<Tag> newChildren) {
 
     if (elt._children == null) {
       StringBuffer out = new StringBuffer();
@@ -211,7 +211,7 @@ abstract class _Update extends _Mount with _Unmount {
     elt._childText = null;
   }
 
-  _View _mountNewChild(_Inner parent, Tag child, int childIndex) {
+  _View _mountNewChild(_Elt parent, Tag child, int childIndex) {
     var html = new StringBuffer();
     _View view = mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
     dom.addChildElement(parent.path, html.toString());
