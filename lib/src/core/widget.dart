@@ -72,7 +72,7 @@ class _WidgetView extends _View {
   final _InvalidateWidgetFunc _invalidate;
   _View _shadow;
 
-  _WidgetView.raw(_WidgetDef def, String path, int depth, BaseRef ref, this.widget, this._invalidate) :
+  _WidgetView.raw(_WidgetDef def, String path, int depth, ref, this.widget, this._invalidate) :
     super(def, path, depth, ref);
 
   factory _WidgetView(Tag tag, String path, int depth, _InvalidateWidgetFunc invalidate) {

@@ -4,17 +4,17 @@ part of core;
 abstract class _Unmount {
 
   // What was unmounted
-  void releaseElement(String path, {bool willReplace: false});
+  void releaseElement(String path, ref, {bool willReplace: false});
 
   /// Frees resources associated with this View and all its descendants
   /// and marks them as unmounted. (Calls releaseElement but doesn't actually
   /// change the DOM.)
   void unmount(_View v, {bool willReplace: false}) {
     if (v is _Text) {
-      releaseElement(v.path, willReplace: willReplace);
+      releaseElement(v.path, v.ref, willReplace: willReplace);
     } else if (v is _Elt) {
       unmountInner(v);
-      releaseElement(v.path, willReplace: willReplace);
+      releaseElement(v.path, v.ref, willReplace: willReplace);
     } else if (v is _Template) {
       unmount(v._shadow);
       v._shadow = null;
@@ -22,9 +22,6 @@ abstract class _Unmount {
       _unmountWidget(v, willReplace);
     } else {
       throw "unable to unmount ${v.runtimeType}";
-    }
-    if (v.ref != null) {
-      v.ref.detach();
     }
     v._unmount();
   }

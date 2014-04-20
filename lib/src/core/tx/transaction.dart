@@ -81,8 +81,8 @@ class Transaction extends _Update {
   }
 
   @override
-  void releaseElement(String path, {bool willReplace: false}) {
-    dom.detachElement(path, willReplace: willReplace);
+  void releaseElement(String path, ref, {bool willReplace: false}) {
+    dom.detachElement(path, ref, willReplace: willReplace);
     handlers.removeHandlersForPath(path);
   }
 

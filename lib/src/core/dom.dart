@@ -16,7 +16,7 @@ abstract class DomUpdater {
   void mount(String html);
 
   /// Attaches a Ref to the DOM.
-  void mountRef(String path, BaseRef ref);
+  void mountRef(String path, ref);
 
   /// Starts listening to form events.
   void mountForm(String path);
@@ -25,7 +25,7 @@ abstract class DomUpdater {
   /// This should be called after unmounting an element.
   /// If willReplace is set, a reference to the DOM node should be kept for a subsequent
   /// replaceElement call. Otherwise, the cache reference should be cleared.
-  void detachElement(String path, {bool willReplace: false});
+  void detachElement(String path, ref, {bool willReplace: false});
 
   /// Creates a new Element with the given HTML and replaces the current element.
   void replaceElement(String path, String html);
@@ -42,9 +42,4 @@ abstract class DomUpdater {
   void addChildElement(String path, String childHtml);
 
   void removeChild(String path, int index);
-}
-
-/// A reference to a tag's DOM.
-abstract class BaseRef {
-  void detach();
 }

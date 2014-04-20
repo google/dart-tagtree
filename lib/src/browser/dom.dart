@@ -1,17 +1,13 @@
 part of browser;
 
-/// A Ref allows access to the DOM element corresponding to a Tag.
-class Ref<E extends HtmlElement> extends core.BaseRef {
+/// A Ref provides access to the DOM element corresponding to a Tag.
+/// To use it, pass it in as the "ref" parameter of a tag.
+class Ref<E extends HtmlElement> {
   _ElementCache _cache;
   String _path;
 
   /// Returns the element, if mounted.
   E get elt => _cache.get(_path);
-
-  /// Hook called by the framework.
-  void detach() {
-    _cache = null;
-  }
 }
 
 class _ElementCache {
@@ -55,7 +51,7 @@ class _DomUpdater implements core.DomUpdater {
   }
 
   @override
-  void mountRef(String refPath, core.BaseRef ref) {
+  void mountRef(String refPath, ref) {
     if (ref is Ref) {
       ref._path = refPath;
       ref._cache = cache;
@@ -77,7 +73,10 @@ class _DomUpdater implements core.DomUpdater {
   }
 
   @override
-  void detachElement(String path, {bool willReplace: false}) {
+  void detachElement(String path, ref, {bool willReplace: false}) {
+    if (ref is Ref) {
+      ref._cache = null;
+    }
     StreamSubscription s = root.formSubscriptions[path];
     if (s != null) {
       s.cancel();

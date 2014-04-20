@@ -28,7 +28,7 @@ abstract class _View {
   final int depth;
 
   /// The owner's reference to this View. May be null.
-  final BaseRef ref;
+  final ref;
 
   bool _mounted = true;
 
