@@ -5,11 +5,6 @@ typedef Widget CreateWidgetFunc();
 /// Defines a new tag that has state.
 WidgetDef defineWidget(CreateWidgetFunc f) => new WidgetDef(f);
 
-class WidgetDef extends TagDef {
-  final CreateWidgetFunc createWidget;
-  const WidgetDef(this.createWidget);
-}
-
 typedef InvalidateFunc();
 
 /// A Widget is the implementation of a tag that has state.
