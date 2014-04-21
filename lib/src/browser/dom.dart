@@ -38,7 +38,7 @@ class _ElementCache {
   }
 }
 
-class _DomUpdater implements core.DomUpdater {
+class _DomUpdater implements render.DomUpdater {
   final _BrowserRoot root;
 
   _DomUpdater(this.root);

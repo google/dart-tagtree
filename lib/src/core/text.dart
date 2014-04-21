@@ -1,6 +1,6 @@
 part of core;
 
-class _TextDef extends TagDef {
-  static final instance = new _TextDef();
+class TextDef extends TagDef {
+  static final instance = new TextDef();
 }
 

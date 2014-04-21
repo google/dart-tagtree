@@ -1,4 +1,4 @@
-part of core;
+part of render;
 
 /// A callback for rendering an animation frame.
 /// (The supplied DomUpdater is only valid until the end of the function call

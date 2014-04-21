@@ -8,7 +8,7 @@ Map<String, _BrowserRoot> _pathToRoot = {};
 /// Returns the Root corresponding to the given CSS selectors, creating it if needed.
 ///
 /// The selectors must point to a single container element of type HtmlElement.
-core.Root root(String containerSelectors) {
+render.RenderRoot root(String containerSelectors) {
   HtmlElement container = querySelectorAll(containerSelectors).single;
   var prev = _findRoot(container);
   if (prev != null) {
@@ -20,7 +20,7 @@ core.Root root(String containerSelectors) {
   return root;
 }
 
-core.Root _findRoot(HtmlElement container) {
+render.RenderRoot _findRoot(HtmlElement container) {
   var first = container.firstChild;
   if (first == null) {
     return null;
@@ -34,7 +34,7 @@ core.Root _findRoot(HtmlElement container) {
   return null;
 }
 
-class _BrowserRoot extends core.Root {
+class _BrowserRoot extends render.RenderRoot {
   final _ElementCache eltCache;
   final Map<String, StreamSubscription> formSubscriptions = {};
 
@@ -48,13 +48,13 @@ class _BrowserRoot extends core.Root {
   }
 
   @override
-  void onRequestAnimationFrame(core.RenderFunc render) {
+  void onRequestAnimationFrame(render.RenderFunc render) {
     window.animationFrame.then((t) {
       render(new _DomUpdater(this));
     });
   }
 
-  void _listenForEvents(core.Root root, HtmlElement container) {
+  void _listenForEvents(render.RenderRoot root, HtmlElement container) {
 
     handle(Event e, Symbol handlerKey) {
       String path = _getTargetPath(e.target);

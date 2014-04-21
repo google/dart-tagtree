@@ -39,7 +39,7 @@ mountWebSocket(String webSocketUrl, String selectors, {Codec<dynamic, String> co
     }
     opened = true;
     core.Tag tag = codec.decode(e.data);
-    core.HandleFunc func = onEvent;
+    render.HandleFunc func = onEvent;
     root(selectors).mount(tag, handler: func);
   });
 

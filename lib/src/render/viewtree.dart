@@ -1,4 +1,4 @@
-part of core;
+part of render;
 
 /// A View is a record of how a Tag was rendered to the DOM.
 ///
@@ -55,7 +55,7 @@ abstract class _View {
 /// it can easily be updated using its data-path attribute.
 class _Text extends _View {
   String value;
-  _Text(String path, int depth, this.value) : super(_TextDef.instance, path, depth, null);
+  _Text(String path, int depth, this.value) : super(TextDef.instance, path, depth, null);
 }
 
 /// A node representing a rendered HTML element.
@@ -87,19 +87,10 @@ typedef _InvalidateWidgetFunc(_Widget v);
 
 /// A node representing a rendered widget.
 class _Widget extends _View {
-  final Widget widget;
-  final _InvalidateWidgetFunc invalidate;
+  WidgetController controller;
   _View shadow;
 
-  _Widget.raw(_WidgetDef def, String path, int depth, ref, this.widget, this.invalidate) :
-    super(def, path, depth, ref);
+  Widget get widget => controller.widget;
 
-  factory _Widget(Tag tag, String path, int depth, _InvalidateWidgetFunc invalidate) {
-    _WidgetDef def = tag.def;
-    Widget w = def._createWidget();
-    w._init(tag.props);
-    _Widget v = new _Widget.raw(def, path, depth, tag.props[#ref], w, invalidate);
-    w._view = v;
-    return v;
-  }
+  _Widget(WidgetDef def, String path, int depth, ref) : super(def, path, depth, ref);
 }

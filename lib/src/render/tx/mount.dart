@@ -1,4 +1,4 @@
-part of core;
+part of render;
 
 /// A Transaction mixin that implements mounting views.
 abstract class _Mount {
@@ -9,7 +9,7 @@ abstract class _Mount {
   // What was mounted
   final List<_View> _mountedRefs = [];
   final List<_Elt> _mountedForms = [];
-  final List<Widget> _mountedWidgets = [];
+  final List<_Widget> _mountedWidgets = [];
   void addHandler(Symbol key, String path, val);
 
   /// Writes the view tree to HTML and assigns an id to each View.
@@ -34,21 +34,23 @@ abstract class _Mount {
 
   _View _mountTag(Tag tag, StringBuffer html, String path, int depth) {
     TagDef def = tag.def;
-    if (def is _TextDef) {
+    if (def is TextDef) {
       _Text text = new _Text(path, depth, tag.props[#value]);
       // need to surround with a span to support incremental updates to a child
       html.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
       return text;
     } else if (def is TemplateDef) {
       _Template view = new _Template(def, path, depth, tag.props);
-      Tag shadow = def._render(tag.props);
+      Tag shadow = def.render(tag.props);
       view.shadow = mountView(shadow, html, path, depth + 1);
       view.props = new Props(tag.props);
       return view;
-    } else if (def is _WidgetDef) {
-      _Widget view = new _Widget(tag, path, depth, invalidateWidget);
-      _mountWidget(view, html);
-      return view;
+    } else if (def is WidgetDef) {
+      var w = def.createWidget();
+      var v = new _Widget(def, path, depth, tag.props[#ref]);
+      v.controller = w.mount(tag.props, () => invalidateWidget(v));
+      _mountWidget(v, html);
+      return v;
     } else if (def is EltDef) {
       _Elt elt = new _Elt(def, path, depth, tag.props);
       _mountElt(elt, html);
@@ -59,11 +61,10 @@ abstract class _Mount {
   }
 
   void _mountWidget(_Widget view, StringBuffer html) {
-    Widget w = view.widget;
-    Tag newShadow = w.render();
+    Tag newShadow = view.widget.render();
     view.shadow = mountView(newShadow, html, view.path, view.depth + 1);
-    if (w._didMount.hasListener) {
-      _mountedWidgets.add(w);
+    if (view.controller.didMount.hasListener) {
+      _mountedWidgets.add(view);
     }
   }
 
@@ -90,10 +91,10 @@ abstract class _Mount {
     out.write("<${tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
-      if (_htmlHandlerNames.containsKey(key)) {
+      if (htmlSchema.handlerNames.containsKey(key)) {
         addHandler(key, path, val);
-      } else if (_htmlAtts.containsKey(key)) {
-        String name = _htmlAtts[key];
+      } else if (htmlSchema.atts.containsKey(key)) {
+        String name = htmlSchema.atts[key];
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
         out.write(" ${name}=\"${escaped}\"");
       }
@@ -125,7 +126,7 @@ abstract class _Mount {
       List<Tag> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(_TextDef.instance.makeTag(value: item));
+          children.add(TextDef.instance.makeTag(value: item));
         } else if (item is Tag) {
           children.add(item);
         } else {

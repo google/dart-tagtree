@@ -1,11 +1,11 @@
-part of core;
+part of render;
 
 /// A Transaction mixin that implements updating views in place.
 abstract class _Update extends _Mount with _Unmount {
   DomUpdater get dom;
 
   // What was changed
-  final List<Widget> _updatedWidgets = [];
+  final List<_Widget> _updatedWidgets = [];
   void setHandler(Symbol key, String path, EventHandler handler);
   void removeHandler(Symbol key, String path);
 
@@ -48,10 +48,10 @@ abstract class _Update extends _Mount with _Unmount {
   void _updateTemplate(_Template current, Tag nextTag) {
     TemplateDef def = current.def;
     Props next = new Props(nextTag.props);
-    if (!def._shouldUpdate(current.props, next)) {
+    if (!def.shouldUpdate(current.props, next)) {
       return;
     }
-    Tag newShadow = def._render(nextTag.props);
+    Tag newShadow = def.render(nextTag.props);
     current.shadow = updateOrReplace(current.shadow, newShadow);
     current.props = next;
   }
@@ -66,7 +66,7 @@ abstract class _Update extends _Mount with _Unmount {
     assert(w.isMounted);
     w.updateState();
     if (next != null) {
-      w.setProps(next.props);
+      view.controller.setProps(next.props);
     }
     Tag newShadow = w.render();
 
@@ -74,8 +74,8 @@ abstract class _Update extends _Mount with _Unmount {
     view.shadow = updateOrReplace(view.shadow, newShadow);
 
     // Schedule the didUpdate event
-    if (w._didUpdate.hasListener) {
-      _updatedWidgets.add(w);
+    if (view.controller.didUpdate.hasListener) {
+      _updatedWidgets.add(view);
     }
   }
 
@@ -109,10 +109,10 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (_htmlHandlerNames.containsKey(key)) {
+      if (htmlSchema.handlerNames.containsKey(key)) {
         removeHandler(key, eltPath);
-      } else if (_htmlAtts.containsKey(key)) {
-        dom.removeAttribute(eltPath, _htmlAtts[key]);
+      } else if (htmlSchema.atts.containsKey(key)) {
+        dom.removeAttribute(eltPath, htmlSchema.atts[key]);
       }
     }
 
@@ -124,10 +124,10 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (_htmlHandlerNames.containsKey(key)) {
+      if (htmlSchema.handlerNames.containsKey(key)) {
         setHandler(key, eltPath, newVal);
-      } else if (_htmlAtts.containsKey(key)) {
-        String name = _htmlAtts[key];
+      } else if (htmlSchema.atts.containsKey(key)) {
+        String name = htmlSchema.atts[key];
         String val = _makeDomVal(key, newVal);
         dom.setAttribute(eltPath, name, val);
       }
@@ -157,7 +157,7 @@ abstract class _Update extends _Mount with _Unmount {
       List<Tag> children = [];
       for (var item in newInner) {
         if (item is String) {
-          children.add(_TextDef.instance.makeTag({#value: item}));
+          children.add(TextDef.instance.makeTag({#value: item}));
         } else if (item is Tag) {
           children.add(item);
         } else {

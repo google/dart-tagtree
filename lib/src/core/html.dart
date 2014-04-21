@@ -4,6 +4,8 @@ part of core;
 /// (Callers may want to assign this to '$' for brevity.)
 const HtmlTags htmlTags = const _HtmlTagsImpl();
 
+final HtmlSchema htmlSchema = new _HtmlSchema();
+
 /// The API for constructing the corresponding Tag for each HTML elemnt.
 /// TODO: implement more elements and attributes.
 abstract class HtmlTags {
@@ -76,9 +78,34 @@ abstract class HtmlTags {
     inner, innerHtml, ref});
 }
 
-/// A map from Dart method names (which will be minified) to their corresponding strings.
-/// The symbols must correspond to methods in HtmlTags.
-/// The strings are used for creating HTML elements and for JSON serialization.
+abstract class HtmlSchema {
+
+  /// A map from Dart method names (which will be minified) to their corresponding strings.
+  /// The symbols must correspond to methods in HtmlTags.
+  /// The strings are used for creating HTML elements and for JSON serialization.
+  Map<Symbol, String> get tagNames;
+
+  /// A map from Dart named parameters (which will be minified) to their corresponding strings.
+  /// The strings are used for creating and updating HTML elements, and for JSON serialization.
+  Map<Symbol, String> get atts;
+
+  /// A map from Dart named parameters to their corresponding strings.
+  /// The strings are used for JSON serialization.
+  Map<Symbol, String> get handlerNames;
+
+  /// A map from Dart named parameters to their corresponding strings.
+  /// An entry must exist for each named parameter in the DartTags API.
+  /// The strings are used for JSON serialization.
+  Map<Symbol, String> get propNames;
+}
+
+class _HtmlSchema implements HtmlSchema {
+  final tagNames = _htmlTagNames;
+  final atts = _htmlAtts;
+  final handlerNames = _htmlHandlerNames;
+  final propNames = _htmlPropNames;
+}
+
 final Map<Symbol, String> _htmlTagNames = {
   #Div: "div",
   #Span: "span",
@@ -108,8 +135,6 @@ final Map<Symbol, String> _htmlTagNames = {
   #Button: "button"
 };
 
-/// A map from Dart named parameters (which will be minified) to their corresponding strings.
-/// The strings are used for creating and updating HTML elements, and for JSON serialization.
 final Map<Symbol, String> _htmlAtts = {
   #id: "id",
   #clazz: "class",
@@ -124,8 +149,6 @@ final Map<Symbol, String> _htmlAtts = {
   #max: "max"
 };
 
-/// A map from Dart named parameters to their corresponding strings.
-/// The strings are used for JSON serialization.
 final Map<Symbol, String> _htmlHandlerNames = {
   #onChange: "onChange",
   #onClick: "onClick",
@@ -136,9 +159,6 @@ final Map<Symbol, String> _htmlHandlerNames = {
   #onSubmit: "onSubmit"
 };
 
-/// A map from Dart named parameters to their corresponding strings.
-/// An entry must exist for each named parameter in the DartTags API.
-/// The strings are used for JSON serialization.
 final Map<Symbol, String> _htmlPropNames = {
   #ref: "ref",
   #inner: "inner",

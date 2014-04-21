@@ -1,4 +1,4 @@
-part of core;
+part of render;
 
 /// A Transaction mixin that implements unmounting views.
 abstract class _Unmount {
@@ -30,8 +30,8 @@ abstract class _Unmount {
     if (view.shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }
-    if (view.widget._willUnmount.hasListener) {
-      view.widget._willUnmount.add(true);
+    if (view.controller.willUnmount.hasListener) {
+      view.controller.willUnmount.add(true);
     }
     unmount(view.shadow, willReplace: willReplace);
     view.shadow = null;

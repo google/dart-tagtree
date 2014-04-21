@@ -13,7 +13,7 @@ class EltDef extends TagDef {
     }
 
     var inner = props[#inner];
-    assert(inner == null || inner is String || inner is _View || inner is Iterable);
+    assert(inner == null || inner is String || inner is Tag || inner is Iterable);
     assert(inner == null || props[#innerHtml] == null);
     assert(props[#value] == null || props[#defaultValue] == null);
 

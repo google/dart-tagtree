@@ -3,7 +3,14 @@ part of core;
 typedef Widget CreateWidgetFunc();
 
 /// Defines a new tag that has state.
-TagDef defineWidget(CreateWidgetFunc f) => new _WidgetDef(f);
+WidgetDef defineWidget(CreateWidgetFunc f) => new WidgetDef(f);
+
+class WidgetDef extends TagDef {
+  final CreateWidgetFunc createWidget;
+  const WidgetDef(this.createWidget);
+}
+
+typedef InvalidateFunc();
 
 /// A Widget is the implementation of a tag that has state.
 /// S is the state's type, which can be any type, but must be
@@ -13,26 +20,21 @@ abstract class Widget<S> extends StateMixin<S> {
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
-  _Widget _view; // non-null when mounted
+  InvalidateFunc _invalidate; // non-null when mounted
 
-  void _init(Map<Symbol, dynamic> props) {
-    setProps(props);
+  /// Called by the render library.
+  WidgetController mount(Map<Symbol, dynamic> props, InvalidateFunc invalidate) {
+    var c = new WidgetController(this);
+    c.setProps(props);
     initState();
-  }
-
-  /// The framework calls this method whenever props change.
-  /// The default implementation calls onPropsChange() with the passed-in
-  /// properties as named parameters.
-  void setProps(Map<Symbol, dynamic> newProps) {
-    _suppressWarning(x) => x;
-    var w = _suppressWarning(this);
-    Function.apply(w.onPropsChange, [], newProps);
+    _invalidate = invalidate;
+    return c;
   }
 
   /// Returns true between the time when the widget's first animation frame
   /// was rendered up to (and not including) the first animation frame when
   /// it was removed.
-  bool get isMounted => _view != null && _view._mounted;
+  bool get isMounted => _invalidate != null;
 
   /// A stream that receives an event at the end of the animation frame when
   /// the widget was mounted. The widget's DOM is valid and can be accessed
@@ -48,13 +50,10 @@ abstract class Widget<S> extends StateMixin<S> {
   Stream get willUnmount => _willUnmount.stream;
 
   @override
-  void invalidate() {
-    assert (_view != null && _view._mounted);
-    _view.invalidate(_view);
-  }
+  void invalidate() => _invalidate();
 
   /// Constructs the tag tree to be rendered in place of this Widget.
-  /// The framework calls this function during the next animation frame after invalidate()
+  /// The render library calls this function during the next animation frame after invalidate()
   /// was called.
   Tag render();
 
@@ -63,8 +62,22 @@ abstract class Widget<S> extends StateMixin<S> {
   bool shouldUpdate(Tag nextVersion) => true;
 }
 
-class _WidgetDef extends TagDef {
-  final CreateWidgetFunc _createWidget;
-  const _WidgetDef(this._createWidget);
-}
+/// The API that the render library uses to control the widget.
+class WidgetController {
+  final Widget widget;
+  WidgetController(this.widget);
 
+  StreamController get didMount => widget._didMount;
+  StreamController get didUpdate => widget._didUpdate;
+  StreamController get willUnmount => widget._willUnmount;
+
+  /// Calls the widget's onPropsChange() with the passed-in props as named parameters.
+  void setProps(Map<Symbol, dynamic> newProps) =>
+    Function.apply(_suppressWarning(widget).onPropsChange, [], newProps);
+
+  void unmount() {
+    widget._invalidate = null;
+  }
+
+  static _suppressWarning(x) => x;
+}

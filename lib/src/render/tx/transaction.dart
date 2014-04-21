@@ -1,8 +1,8 @@
-part of core;
+part of render;
 
 /// A Transaction renders one animation frame for one Root.
 class Transaction extends _Update {
-  final Root root;
+  final RenderRoot root;
   final DomUpdater dom;
   final _HandlerMap handlers;
 
@@ -42,12 +42,12 @@ class Transaction extends _Update {
       dom.mountForm(form.path);
     }
 
-    for (var w in _mountedWidgets) {
-      w._didMount.add(true);
+    for (var v in _mountedWidgets) {
+      v.controller.didMount.add(true);
     }
 
-    for (var w in _updatedWidgets) {
-      w._didUpdate.add(true);
+    for (var v in _updatedWidgets) {
+      v.controller.didUpdate.add(true);
     }
   }
 

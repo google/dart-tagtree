@@ -1,11 +1,11 @@
-part of core;
+part of render;
 
 typedef void HandleFunc(HandleCall call);
 
 /// A Root contains a view tree that's rendered to the DOM.
-abstract class Root {
+abstract class RenderRoot {
   final int id;
-  final _handlers = new _HandlerMap();
+  final _handlers = new _HandlerMap(htmlSchema.handlerNames.keys);
   _View _top;
 
   bool _frameRequested = false;
@@ -13,7 +13,7 @@ abstract class Root {
   HandleFunc _nextHandler;
   final Set<_Widget> _widgetsToUpdate = new Set();
 
-  Root(this.id);
+  RenderRoot(this.id);
 
   /// Subclass hook called after DOM elements are mounted.
   void afterFirstMount();
