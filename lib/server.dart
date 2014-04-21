@@ -1,5 +1,5 @@
 /**
- * Glue code connecting the ViewTree core with the dart:io library.
+ * Allows a server written in Dart to render a tag tree over a web socket.
  */
 library server;
 

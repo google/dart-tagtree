@@ -90,7 +90,5 @@ class _Widget extends _View {
   WidgetController controller;
   _View shadow;
 
-  Widget get widget => controller.widget;
-
   _Widget(WidgetDef def, String path, int depth, ref) : super(def, path, depth, ref);
 }

@@ -1,26 +1,26 @@
 part of render;
 
 /// A Transaction renders one animation frame for one Root.
-class Transaction extends _Update {
-  final RenderRoot root;
+class _Transaction extends _Update {
+  final Root root;
+  final HtmlSchema html;
   final DomUpdater dom;
   final _HandlerMap handlers;
 
   // What to do
-  final Tag nextTop;
+  final Tag nextTagTree;
   final HandleFunc nextHandler;
   final List<_Widget> _widgetsToUpdate;
 
-  Transaction(this.root, this.dom, this.handlers, this.nextTop, this.nextHandler,
+  _Transaction(this.root, this.html, this.dom, this.handlers, this.nextTagTree, this.nextHandler,
       Iterable<_Widget> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
   _InvalidateWidgetFunc get invalidateWidget => root._invalidateWidget;
 
   void run() {
-    if (nextTop != null) {
-      // Repace the entire tree.
-      root._top = _updateRoot(root.path, root._top, nextTop);
+    if (nextTagTree != null) {
+      root._renderedTree = _replaceTree(root.path, root._renderedTree, nextTagTree);
     }
 
     // Sort ancestors ahead of children.
@@ -42,17 +42,17 @@ class Transaction extends _Update {
       dom.mountForm(form.path);
     }
 
-    for (var v in _mountedWidgets) {
-      v.controller.didMount.add(true);
+    for (EventSink s in _mountedWidgets) {
+      s.add(true);
     }
 
-    for (var v in _updatedWidgets) {
-      v.controller.didUpdate.add(true);
+    for (EventSink s in _updatedWidgets) {
+      s.add(true);
     }
   }
 
-  // Returns the new top view.
-  _View _updateRoot(String path, _View current, Tag next) {
+  /// Renders a tag tree and returns the new view tree.
+  _View _replaceTree(String path, _View current, Tag next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
       _View view = mountView(next, html, path, 0);
@@ -67,12 +67,12 @@ class Transaction extends _Update {
 
   @override
   void addHandler(Symbol key, String path, val) {
-    handlers.setHandler(key, path, wrapHandler(val));
+    handlers.setHandler(key, path, _wrapHandler(val));
   }
 
   @override
   void setHandler(Symbol key, String path, val) {
-    handlers.setHandler(key, path, wrapHandler(val));
+    handlers.setHandler(key, path, _wrapHandler(val));
   }
 
   @override
@@ -86,7 +86,7 @@ class Transaction extends _Update {
     handlers.removeHandlersForPath(path);
   }
 
-  EventHandler wrapHandler(val) {
+  EventHandler _wrapHandler(val) {
     if (val is EventHandler) {
       return val;
     } else if (val is Handle) {

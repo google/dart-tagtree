@@ -2,10 +2,13 @@ part of render;
 
 /// A Transaction mixin that implements updating views in place.
 abstract class _Update extends _Mount with _Unmount {
+
+  // Dependencies
+  HtmlSchema get html;
   DomUpdater get dom;
 
-  // What was changed
-  final List<_Widget> _updatedWidgets = [];
+  // What was updated
+  final List<EventSink> _updatedWidgets = [];
   void setHandler(Symbol key, String path, EventHandler handler);
   void removeHandler(Symbol key, String path);
 
@@ -56,8 +59,9 @@ abstract class _Update extends _Mount with _Unmount {
     current.props = next;
   }
 
-  void updateWidget(_Widget view, [Tag next]) {
-    Widget w = view.widget;
+  void updateWidget(_Widget v, [Tag next]) {
+    var c = v.controller;
+    var w = c.widget;
 
     // Update the widget
     if (next != null && !w.shouldUpdate(next)) {
@@ -66,16 +70,16 @@ abstract class _Update extends _Mount with _Unmount {
     assert(w.isMounted);
     w.updateState();
     if (next != null) {
-      view.controller.setProps(next.props);
+      c.setProps(next.props);
     }
     Tag newShadow = w.render();
 
     // Update the DOM
-    view.shadow = updateOrReplace(view.shadow, newShadow);
+    v.shadow = updateOrReplace(v.shadow, newShadow);
 
     // Schedule the didUpdate event
-    if (view.controller.didUpdate.hasListener) {
-      _updatedWidgets.add(view);
+    if (c.didUpdate.hasListener) {
+      _updatedWidgets.add(c.didUpdate);
     }
   }
 
@@ -101,7 +105,8 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   /// Updates DOM attributes and event handlers of an Elt.
-  void _updateDomProperties(String eltPath, Map<Symbol, dynamic> oldProps, Map<Symbol, dynamic> newProps) {
+  void _updateDomProperties(String eltPath, Map<Symbol, dynamic> oldProps,
+                            Map<Symbol, dynamic> newProps) {
 
     // Delete any removed props
     for (Symbol key in oldProps.keys) {
@@ -109,10 +114,10 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (htmlSchema.handlerNames.containsKey(key)) {
+      if (html.handlerNames.containsKey(key)) {
         removeHandler(key, eltPath);
-      } else if (htmlSchema.atts.containsKey(key)) {
-        dom.removeAttribute(eltPath, htmlSchema.atts[key]);
+      } else if (html.atts.containsKey(key)) {
+        dom.removeAttribute(eltPath, html.atts[key]);
       }
     }
 
@@ -124,10 +129,10 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (htmlSchema.handlerNames.containsKey(key)) {
+      if (html.handlerNames.containsKey(key)) {
         setHandler(key, eltPath, newVal);
-      } else if (htmlSchema.atts.containsKey(key)) {
-        String name = htmlSchema.atts[key];
+      } else if (html.atts.containsKey(key)) {
+        String name = html.atts[key];
         String val = _makeDomVal(key, newVal);
         dom.setAttribute(eltPath, name, val);
       }
@@ -182,10 +187,13 @@ abstract class _Update extends _Mount with _Unmount {
       return;
     }
 
+    int oldLength = elt._children.length;
+    int newLength = newChildren.length;
+    int addedChildCount = newLength - oldLength;
+
     List<_View> updatedChildren = [];
     // update or replace each child that's in both lists
-    int endBoth = elt._children.length < newChildren.length ? elt._children.length : newChildren.length;
-    int childDepth = elt.depth + 1;
+    int endBoth = addedChildCount < 0 ? newLength  : oldLength;
     for (int i = 0; i < endBoth; i++) {
       _View before = elt._children[i];
       Tag after = newChildren[i];
@@ -194,15 +202,14 @@ abstract class _Update extends _Mount with _Unmount {
       updatedChildren.add(updateOrReplace(before, after));
     }
 
-    int extraChildren = newChildren.length - elt._children.length;
-    if (extraChildren < 0) {
+    if (addedChildCount < 0) {
       // trim to new size
-      for (int i = elt._children.length - 1; i >= newChildren.length; i--) {
+      for (int i = oldLength - 1; i >= newLength; i--) {
         dom.removeChild(path, i);
       }
-    } else if (extraChildren > 0) {
+    } else if (addedChildCount > 0) {
       // append  children
-      for (int i = elt._children.length; i < newChildren.length; i++) {
+      for (int i = oldLength; i < newLength; i++) {
         _View child = _mountNewChild(elt, newChildren[i], i);
         updatedChildren.add(child);
       }

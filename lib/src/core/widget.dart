@@ -65,6 +65,7 @@ abstract class Widget<S> extends StateMixin<S> {
 /// The API that the render library uses to control the widget.
 class WidgetController {
   final Widget widget;
+
   WidgetController(this.widget);
 
   StreamController get didMount => widget._didMount;

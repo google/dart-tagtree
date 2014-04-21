@@ -2,35 +2,44 @@ part of render;
 
 typedef void HandleFunc(HandleCall call);
 
-/// A Root contains a view tree that's rendered to the DOM.
-abstract class RenderRoot {
+/// A Root is a place on an HTML page where a tag tree may be rendered.
+abstract class Root {
   final int id;
   final _handlers = new _HandlerMap(htmlSchema.handlerNames.keys);
-  _View _top;
+  _View _renderedTree;
 
   bool _frameRequested = false;
-  Tag _nextTop;
+  Tag _nextTagTree;
   HandleFunc _nextHandler;
   final Set<_Widget> _widgetsToUpdate = new Set();
 
-  RenderRoot(this.id);
+  Root(this.id);
 
-  /// Subclass hook called after DOM elements are mounted.
-  void afterFirstMount();
+  /// A subclass hook called after DOM elements are mounted and we are ready
+  /// to start listenering for events.
+  void installEventListeners();
 
-  /// Subclass hook to schedule the next frame.
-  void onRequestAnimationFrame(RenderFunc callback);
+  /// A subclass hook that's called when the DOM needs to be rendered.
+  void requestAnimationFrame(RenderFunc callback);
 
+  /// The unique id for this Root.
   String get path => "/${id}";
 
-  /// Schedules the view tree to be replaced just before the next rendered frame.
-  /// (If called more than once within a single frame, only the last call will
+  /// Sets the tag tree to be rendered on the next animation frame.
+  /// (If called more than once between two frames, only the last call will
   /// have any effect.)
-  void mount(Tag nextTop, {HandleFunc handler}) {
-    _nextTop = nextTop;
+  void mount(Tag nextTagTree, {HandleFunc handler}) {
+    _nextTagTree = nextTagTree;
     _nextHandler = handler;
     _requestAnimationFrame();
   }
+
+  /// Calls any event handlers that were present in the most recently
+  /// rendered tag tree.
+  void dispatchEvent(HtmlEvent e) => _dispatch(e, _handlers);
+
+  /// The HTML schema that this root supports.
+  HtmlSchema get html => htmlSchema;
 
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
@@ -40,29 +49,26 @@ abstract class RenderRoot {
     _requestAnimationFrame();
   }
 
-  /// Calls any event handlers for this root.
-  void dispatchEvent(HtmlEvent e) => _dispatch(e, _handlers);
-
   void _requestAnimationFrame() {
     if (!_frameRequested) {
       _frameRequested = true;
-      onRequestAnimationFrame(_renderFrame);
+      requestAnimationFrame(_render);
     }
   }
 
-  void _renderFrame(DomUpdater dom) {
-    Transaction tx = new Transaction(this, dom, _handlers, _nextTop, _nextHandler,
+  void _render(DomUpdater dom) {
+    _Transaction tx = new _Transaction(this, html, dom, _handlers, _nextTagTree, _nextHandler,
         _widgetsToUpdate);
 
     _frameRequested = false;
-    _nextTop = null;
+    _nextTagTree = null;
     _nextHandler = null;
     _widgetsToUpdate.clear();
 
-    bool wasEmpty = _top == null;
+    bool wasEmpty = _renderedTree == null;
     tx.run();
     if (wasEmpty) {
-      afterFirstMount();
+      installEventListeners();
     }
 
     // No widgets should be invalidated while rendering.
