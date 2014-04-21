@@ -55,7 +55,7 @@ class WebSocketRoot {
 
   _render() {
     renderScheduled = false;
-    _session.updateState();
+    _session.commitState();
     _nextFrame = new _Frame(nextFrameId++);
     String encoded = _codec.encode(_session.render());
     _socket.add(encoded);

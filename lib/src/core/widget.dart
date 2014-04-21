@@ -2,23 +2,23 @@ part of core;
 
 typedef Widget CreateWidgetFunc();
 
-/// Defines a new tag that has state.
-WidgetDef defineWidget(CreateWidgetFunc f) => new WidgetDef(f);
+/// Defines a custom Tag that has state.
+///
+/// For custom tags that are stateless, use [defineTemplate] instead.
+TagDef defineWidget(CreateWidgetFunc f) => new WidgetDef._raw(f);
 
-typedef InvalidateFunc();
-
-/// A Widget is the implementation of a tag that has state.
-/// S is the state's type, which can be any type, but must be
-/// cloneable using the cloneState() function.
+/// A Widget is the implementation of a custom [Tag] that has state.
+/// S is the type of the state object. It can be any type, but must be
+/// cloneable using the [cloneState] method.
 abstract class Widget<S> extends StateMixin<S> {
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
 
-  InvalidateFunc _invalidate; // non-null when mounted
+  var _invalidate; // non-null when mounted
 
   /// Called by the render library.
-  WidgetController mount(Map<Symbol, dynamic> props, InvalidateFunc invalidate) {
+  WidgetController mount(Map<Symbol, dynamic> props, invalidate()) {
     var c = new WidgetController(this);
     c.setProps(props);
     initState();

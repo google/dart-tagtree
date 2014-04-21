@@ -1,44 +1,49 @@
 part of core;
 
-/// An object that contains a state machine.
-/// (A mixin implementing dirty tracking for an object that has state.)
+/// StateMixin implements automatic dirty tracking for an object that
+/// implements a state machine.
+///
+/// The strategy used is to clone the state each time the state machine prepares
+/// to take a step. This happens automatically whenever [nextState] is accessed.
+/// To complete a step, call [commitState].
 abstract class StateMixin<S> {
   S _state, _nextState;
 
-  initState() {
+  /// Sets the state machine to the first state. This can only be done once.
+  void initState() {
     assert(_state == null && _nextState == null);
     _state = createFirstState();
     assert(_state != null);
   }
 
-  // Moves nextState to state. (Clears dirty tracking.)
-  updateState() {
+  /// Moves the state machine one step, clearing dirty tracking.
+  /// (If the state isn't dirty, nothing happens.)
+  void commitState() {
     if (_nextState != null) {
       _state = _nextState;
       _nextState = null;
     }
   }
 
-  /// Creates the first state.
+  /// Subclass hook to create the first state.
   S createFirstState();
 
-  /// Returns a new copy of the state, given the previous version.
+  /// Subclass hook to return a new copy of the state, given the previous version.
   /// A default implementation is provided for bool, num, and String.
-  /// For anything else, the subclass must override this method.
   S cloneState(S prev) {
     assert(prev is bool || prev is num || prev is String);
     return prev;
   }
 
-  /// A callback indicating that the state has probably changed.
-  invalidate();
+  /// Subclass hook that will be called whenever the state becomes dirty.
+  void invalidate();
 
   /// Returns the currently rendered state. This should be treated as read-only.
   S get state => _state;
 
-  /// Returns the state that will be rendered on the next update.
-  /// This is typically used to update the state due to an event.
-  /// Accessing nextState automatically calls invalidate().
+  /// Returns uncommitted state that will become current after a call to [commitState].
+  /// The returned state object may safely be mutated.
+  /// Accessing nextState automatically marks it as dirty and calls [invalidate].
   S get nextState {
     if (_nextState == null) {
       _nextState = cloneState(_state);
@@ -49,7 +54,7 @@ abstract class StateMixin<S> {
   }
 
   /// Sets the state to be rendered on the next update.
-  /// Automatically calls invalidate().
+  /// Automatically marks the state as dirty and calls invalidate().
   void set nextState(S s) {
     _nextState = s;
     invalidate();

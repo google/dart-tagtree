@@ -18,8 +18,9 @@ main() {
         ']'
     '}]';
     expect(encoded, equals(expected));
-    EltTag decoded = htmlCodec.decode(encoded);
-    expect(decoded.runtimeType, equals(EltTag));
+    Tag decoded = htmlCodec.decode(encoded);
+    EltDef def = decoded.def;
+    expect("div", equals(def.tagName));
     var p = decoded.props;
     expect(p[#clazz], equals("something"));
     expect(p[#inner], isList);

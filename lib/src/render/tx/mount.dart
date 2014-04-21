@@ -36,7 +36,7 @@ abstract class _Mount {
   _View _mountTag(Tag tag, StringBuffer out, String path, int depth) {
     TagDef def = tag.def;
 
-    if (def is TextDef) {
+    if (def is _TextDef) {
       _Text text = new _Text(path, depth, tag.props[#value]);
       // need to surround with a span to support incremental updates to a child
       out.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
@@ -132,7 +132,7 @@ abstract class _Mount {
       List<Tag> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(TextDef.instance.makeTag(value: item));
+          children.add(_TextDef.instance.makeTag(value: item));
         } else if (item is Tag) {
           children.add(item);
         } else {

@@ -1,10 +1,11 @@
 part of core;
 
-/// A Dart object that may be encoded as tagged JSON.
+/// A Dart object that might be encoded as tagged JSON.
 abstract class Jsonable {
 
-  /// Returns the tag of the rule to be used to encode this instance.
-  /// ([JsonRule.appliesTo] must return true for this instance.)
+  /// If this instance can be encoded as tagged JSON, returns the tag of the
+  /// JsonRule that should be used. ([JsonRule.appliesTo] must also return true
+  /// for this instance.) Otherwise returns null.
   String get jsonTag;
 }
 
@@ -71,6 +72,9 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
   void _encodeTree(StringBuffer out, v) {
     if (v is Jsonable) {
       String tag = v.jsonTag;
+      if (tag == null) {
+        throw "unable to encode instance as JSON: ${v.runtimeType}";
+      }
       var rule = _rules[tag];
       assert(rule.appliesTo(v));
       var data = rule.encode(v);

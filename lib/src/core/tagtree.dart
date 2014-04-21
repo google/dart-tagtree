@@ -1,13 +1,43 @@
 part of core;
 
-/// A tag constructor. Also represents the tag type.
+/// A Tag generalizes an HTML element to also include templates and widgets. Tags
+/// form a tag tree similar to how HTML elements form a tree.
+///
+/// Each Tag has a TagDef, which determines the tag's behavior when a tag tree is rendered.
+///
+/// Its props are similar to HTML attributes but instead of storing a string, they sometimes
+/// store arbitrary JSON or callback functions.
+///
+/// The children of a tag (if any) are in its "inner" prop.
+///
+/// To construct a Tag that renders as an HTML element, call the appropriate method on
+/// [htmlTags].
+///
+/// To create a custom tag, first use [defineTemplate] or [defineWidget] to create
+/// a TagDef, then call it with the appropriate named parameters for its props.
+class Tag implements Jsonable {
+  final TagDef def;
+  final Map<Symbol, dynamic> props;
+
+  Tag._raw(this.def, this.props);
+
+  String get jsonTag => def.getJsonTag(this);
+}
+
+/// A TagDef acts as a tag constructor and also determines the behavior of the
+/// tags it creates. TagDefs shouldn't be created directly; instead use
+/// [defineTemplate] or [defineWidget].
 abstract class TagDef {
 
   const TagDef();
 
   Tag makeTag(Map<Symbol, dynamic> props) {
-    return new Tag(this, props);
+    return new Tag._raw(this, props);
   }
+
+  /// Subclass hook to make tags encodable as tagged JSON.
+  /// By default, they aren't encodable.
+  String getJsonTag(Tag tag) => null;
 
   // Implement call() with any named arguments.
   noSuchMethod(Invocation inv) {
@@ -21,14 +51,13 @@ abstract class TagDef {
   }
 }
 
-class TextDef extends TagDef {
-  static final instance = new TextDef();
-}
-
+/// The internal constructor for tags representing HTML elements.
+///
+/// To construct a Tag, use [htmlTags] instead of calling this directly.
 class EltDef extends TagDef {
   final String tagName;
 
-  EltDef(this.tagName);
+  EltDef._raw(this.tagName);
 
   @override
   Tag makeTag(Map<Symbol, dynamic> props) {
@@ -43,10 +72,15 @@ class EltDef extends TagDef {
     assert(inner == null || props[#innerHtml] == null);
     assert(props[#value] == null || props[#defaultValue] == null);
 
-    return new EltTag(this, props);
+    return new Tag._raw(this, props);
   }
+
+  @override
+  String getJsonTag(Tag tag) => tagName;
 }
 
+/// Creates tags that are rendered by expanding a template.
+/// To construct, use [defineTemplate].
 class TemplateDef extends TagDef {
   final ShouldUpdateFunc shouldUpdate;
   final Function _renderFunc;
@@ -64,21 +98,11 @@ class TemplateDef extends TagDef {
   static _alwaysUpdate(p, next) => true;
 }
 
+/// Creates tags that are rendered as a Widget.
+/// To construct, use [defineWidget].
 class WidgetDef extends TagDef {
   final CreateWidgetFunc createWidget;
-  const WidgetDef(this.createWidget);
+  const WidgetDef._raw(this.createWidget);
 }
 
-/// A node in a tag tree.
-class Tag {
-  final TagDef def;
-  final Map<Symbol, dynamic> props;
 
-  Tag(this.def, this.props);
-}
-
-class EltTag extends Tag implements Jsonable {
-  EltTag(EltDef def, Map<Symbol, dynamic> props) : super(def, props);
-  EltDef get def => super.def;
-  String get jsonTag => def.tagName;
-}

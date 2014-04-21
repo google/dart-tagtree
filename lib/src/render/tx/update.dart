@@ -68,7 +68,7 @@ abstract class _Update extends _Mount with _Unmount {
       return;
     }
     assert(w.isMounted);
-    w.updateState();
+    w.commitState();
     if (next != null) {
       c.setProps(next.props);
     }
@@ -162,7 +162,7 @@ abstract class _Update extends _Mount with _Unmount {
       List<Tag> children = [];
       for (var item in newInner) {
         if (item is String) {
-          children.add(TextDef.instance.makeTag({#value: item}));
+          children.add(_TextDef.instance.makeTag({#value: item}));
         } else if (item is Tag) {
           children.add(item);
         } else {

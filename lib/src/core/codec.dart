@@ -19,7 +19,7 @@ final TaggedJsonCodec htmlCodec = (){
 }();
 
 /// Encodes an Elt as tagged JSON.
-class EltRule extends JsonRule<EltTag> {
+class EltRule extends JsonRule<Tag> {
   static final Map<Symbol, String> _symbolToFieldName = _htmlPropNames;
   static final Map<String, Symbol> _fieldNameToSymbol = _invertMap(_symbolToFieldName);
 
@@ -28,12 +28,10 @@ class EltRule extends JsonRule<EltTag> {
   EltRule(EltDef def) : _def = def, super(def.tagName);
 
   @override
-  bool appliesTo(Jsonable instance) {
-    return instance is EltTag && instance.def == _def;
-  }
+  bool appliesTo(Jsonable instance) => instance is Tag && instance.def == _def;
 
   @override
-  encode(EltTag instance) {
+  encode(Tag instance) {
     Map<Symbol, dynamic> props = instance.props;
     var state = {};
     for (Symbol sym in props.keys) {
@@ -45,14 +43,14 @@ class EltRule extends JsonRule<EltTag> {
   }
 
   @override
-  EltTag decode(Map<String, dynamic> state) {
+  Tag decode(Map<String, dynamic> state) {
     var props = <Symbol, dynamic>{};
     for (String field in state.keys) {
       var sym = _fieldNameToSymbol[field];
       assert(sym != null);
       props[sym] = state[field];
     }
-    return new EltTag(_def, props);
+    return new Tag._raw(_def, props);
   }
 }
 

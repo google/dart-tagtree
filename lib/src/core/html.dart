@@ -175,7 +175,7 @@ Map<Symbol, EltDef> _htmlEltDefs = () {
 
   for (Symbol key in _htmlTagNames.keys) {
     var val = _htmlTagNames[key];
-    defs[key] = new EltDef(val);
+    defs[key] = new EltDef._raw(val);
   }
 
   return defs;
