@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-const $ = htmlTags;
+final $ = htmlTags;
 
 main() => root("#container").mount(TodoApp());
 

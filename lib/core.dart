@@ -15,6 +15,7 @@ part 'src/core/event.dart';
 part 'src/core/html.dart';
 part 'src/core/json.dart';
 part 'src/core/state.dart';
+part 'src/core/tagmaker.dart';
 part 'src/core/tagtree.dart';
 part 'src/core/template.dart';
 part 'src/core/widget.dart';

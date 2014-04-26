@@ -2,7 +2,7 @@ part of core;
 
 /// The API for creating HTML element nodes in a tag tree.
 /// (Callers may want to assign this to '$' for brevity.)
-const HtmlTags htmlTags = const _HtmlTagsImpl();
+final HtmlTags htmlTags = new _HtmlTagsImpl();
 
 final HtmlSchema htmlSchema = new _HtmlSchema();
 
@@ -76,6 +76,11 @@ abstract class HtmlTags {
   Tag Button({id, clazz, onClick,
     onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml, ref});
+}
+
+class _HtmlTagsImpl extends TagMaker with HtmlTags {
+  _HtmlTagsImpl() : super(_htmlEltDefs);
+  noSuchMethod(Invocation inv) => super.noSuchMethod(inv);
 }
 
 abstract class HtmlSchema {
@@ -180,22 +185,3 @@ Map<Symbol, EltDef> _htmlEltDefs = () {
 
   return defs;
 }();
-
-/// Implements the HtmlTags API by forwarding calls to the appropriate EltDef.
-class _HtmlTagsImpl implements HtmlTags {
-
-  const _HtmlTagsImpl();
-
-  noSuchMethod(Invocation inv) {
-    if (inv.isMethod) {
-      EltDef def = _htmlEltDefs[inv.memberName];
-      if (def != null) {
-        if (!inv.positionalArguments.isEmpty) {
-          throw "positional arguments not supported for html tags";
-        }
-        return def.makeTag(inv.namedArguments);
-      }
-    }
-    return super.noSuchMethod(inv);
-  }
-}

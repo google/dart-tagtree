@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:unittest/unittest.dart';
 
-const $ = htmlTags;
+final $ = htmlTags;
 
 main() {
   test('serialize', () {
@@ -22,8 +22,8 @@ main() {
     EltDef def = decoded.def;
     expect("div", equals(def.tagName));
     var p = decoded.props;
-    expect(p[#clazz], equals("something"));
-    expect(p[#inner], isList);
+    expect(p.clazz, equals("something"));
+    expect(p.inner, isList);
     expect(htmlCodec.encode(decoded), equals(expected));
   });
 }

@@ -12,7 +12,7 @@ import 'dart:math';
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-const $ = htmlTags;
+final $ = htmlTags;
 
 main() => root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
 
