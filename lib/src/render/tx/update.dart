@@ -50,13 +50,12 @@ abstract class _Update extends _Mount with _Unmount {
 
   void _updateTemplate(_Template current, Tag nextTag) {
     TemplateDef def = current.def;
-    Props next = new Props(nextTag.props);
-    if (!def.shouldUpdate(current.props, next)) {
+    if (!def.shouldUpdate(current.props, nextTag.props)) {
       return;
     }
-    Tag newShadow = def.render(nextTag.props);
+    Tag newShadow = def.render(nextTag.propMap);
     current.shadow = updateOrReplace(current.shadow, newShadow);
-    current.props = next;
+    current.props = nextTag.props;
   }
 
   void updateWidget(_Widget v, [Tag next]) {
@@ -70,7 +69,7 @@ abstract class _Update extends _Mount with _Unmount {
     assert(w.isMounted);
     w.commitState();
     if (next != null) {
-      c.setProps(next.props);
+      c.setProps(next.propMap);
     }
     Tag newShadow = w.render();
 
@@ -97,7 +96,7 @@ abstract class _Update extends _Mount with _Unmount {
     assert(path != null);
 
     Map<Symbol, dynamic> oldProps = elt.props;
-    Map<Symbol, dynamic> newProps = next.props;
+    Map<Symbol, dynamic> newProps = next.propMap;
 
     elt.props = newProps;
     _updateDomProperties(path, oldProps, newProps);

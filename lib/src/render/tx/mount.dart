@@ -43,16 +43,16 @@ abstract class _Mount {
       return text;
 
     } else if (def is TemplateDef) {
-      _Template view = new _Template(def, path, depth, tag.props);
-      Tag shadow = def.render(tag.props);
+      _Template view = new _Template(def, path, depth, tag.propMap);
+      Tag shadow = def.render(tag.propMap);
       view.shadow = mountView(shadow, out, path, depth + 1);
-      view.props = new Props(tag.props);
+      view.props = tag.props;
       return view;
 
     } else if (def is WidgetDef) {
       var w = def.createWidget();
-      var v = new _Widget(def, path, depth, tag.props[#ref]);
-      var c = w.mount(tag.props, () => invalidateWidget(v));
+      var v = new _Widget(def, path, depth, tag[#ref]);
+      var c = w.mount(tag.propMap, () => invalidateWidget(v));
       v.controller = c;
 
       Tag newShadow = w.render();
@@ -65,7 +65,7 @@ abstract class _Mount {
       return v;
 
     } else if (def is EltDef) {
-      _Elt elt = new _Elt(def, path, depth, tag.props);
+      _Elt elt = new _Elt(def, path, depth, tag.propMap);
       _mountElt(elt, out);
       return elt;
 

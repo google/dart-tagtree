@@ -32,7 +32,7 @@ class EltRule extends JsonRule<Tag> {
 
   @override
   encode(Tag instance) {
-    Map<Symbol, dynamic> props = instance.props;
+    Map<Symbol, dynamic> props = instance.propMap;
     var state = {};
     for (Symbol sym in props.keys) {
       var field = _symbolToFieldName[sym];

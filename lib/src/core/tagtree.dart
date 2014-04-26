@@ -17,11 +17,41 @@ part of core;
 /// a TagDef, then call it with the appropriate named parameters for its props.
 class Tag implements Jsonable {
   final TagDef def;
-  final Map<Symbol, dynamic> props;
+  final Map<Symbol, dynamic> propMap;
+  Props _props;
 
-  Tag._raw(this.def, this.props);
+  Tag._raw(this.def, this.propMap);
+
+  /// Provides access to the tag's props as a map.
+  operator[](Symbol key) => propMap[key];
+
+  /// Provides access to the tag's props as fields.
+  Props get props {
+    if (_props == null) {
+      _props = new Props(propMap);
+    }
+    return _props;
+  }
 
   String get jsonTag => def.getJsonTag(this);
+}
+
+/// A wrapper allowing a tag's props to be accessed as fields.
+@proxy
+class Props {
+  final Map<Symbol, dynamic> _props;
+
+  const Props(this._props);
+
+  noSuchMethod(Invocation inv) {
+    if (inv.isGetter) {
+      if (_props.containsKey(inv.memberName)) {
+        return _props[inv.memberName];
+      }
+    }
+    print("keys: ${_props.keys.join(", ")}");
+    return super.noSuchMethod(inv);
+  }
 }
 
 /// A TagDef acts as a tag constructor and also determines the behavior of the
