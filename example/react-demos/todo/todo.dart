@@ -1,11 +1,11 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = htmlTags;
-
 main() => root("#container").mount(TodoApp());
 
-final TodoApp = defineWidget(() => new _TodoApp());
+final $ = new HtmlTagMaker();
+
+final TodoApp = $.defineWidget(() => new _TodoApp());
 
 class _TodoState {
   String text;
@@ -44,7 +44,7 @@ class _TodoApp extends Widget<_TodoState> {
   _TodoState cloneState(_TodoState prev) => new _TodoState(prev.text, prev.items);
 }
 
-final _TodoList = defineTemplate(
+final _TodoList = $.defineTemplate(
   render: ({List<String> items}) {
     createItem(itemText) => $.Li(inner: itemText);
     return $.Ul(inner: items.map(createItem));

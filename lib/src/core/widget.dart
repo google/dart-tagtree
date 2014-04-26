@@ -1,12 +1,5 @@
 part of core;
 
-typedef Widget CreateWidgetFunc();
-
-/// Defines a custom Tag that has state.
-///
-/// For custom tags that are stateless, use [defineTemplate] instead.
-TagDef defineWidget(CreateWidgetFunc f) => new WidgetDef._raw(f);
-
 /// A Widget is the implementation of a custom [Tag] that has state.
 /// S is the type of the state object. It can be any type, but must be
 /// cloneable using the [cloneState] method.

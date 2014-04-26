@@ -1,13 +1,13 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = htmlTags;
-
 main() => root("#container").mount(PixelPaint(width: 50, height: 50, palette: ["black", "white"]));
+
+final $ = new HtmlTagMaker();
 
 /// A tag that creates a black and white image editor with the given width and height
 /// in fat pixels.
-final PixelPaint = defineWidget(() => new _PixelPaint());
+final PixelPaint = $.defineWidget(() => new _PixelPaint());
 
 /// Updates the model and re-renders whenever the user paints a pixel.
 class _PixelPaint extends Widget<Grid> {
@@ -37,7 +37,7 @@ class _PixelPaint extends Widget<Grid> {
 typedef PixelHandler(int x, int y);
 
 /// Shows the grid and reports paint events when the user paints a pixel.
-final GridView = defineWidget(() => new _GridView());
+final GridView = $.defineWidget(() => new _GridView());
 
 /// The GridView draws the grid and also converts mouse events into pixel paint events.
 /// (The DOM's event API makes it tricky to reliably determine when the mouse is down.
@@ -90,7 +90,7 @@ class _GridView extends Widget<bool> {
 
 /// Shows a single row in the grid and reports mouse events on each pixel in the row.
 /// Avoids unnecessary view updates when the row hasn't actually changed.
-final _RowView = defineTemplate(
+final _RowView = $.defineTemplate(
   shouldUpdate: (props, next) => !props.row.equals(next.row),
   render: ({int y, Row row, Map<int, String> palette,
     PixelHandler onMouseDown, PixelHandler onMouseOver, Function onMouseUp}) {

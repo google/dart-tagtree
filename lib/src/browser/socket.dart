@@ -10,7 +10,7 @@ mountWebSocket(String webSocketUrl, String selectors, {Codec<dynamic, String> co
     codec = core.htmlCodec;
   }
 
-  var $ = core.htmlTags;
+  var $ = new core.HtmlTagMaker();
 
   showStatus(String message) {
     print(message);

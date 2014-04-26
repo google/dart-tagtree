@@ -1,14 +1,12 @@
 part of core;
 
-/// The API for creating HTML element nodes in a tag tree.
+/// The API for creating nodes in a tag tree.
 /// (Callers may want to assign this to '$' for brevity.)
-final HtmlTags htmlTags = new _HtmlTagsImpl();
-
-final HtmlSchema htmlSchema = new _HtmlSchema();
-
-/// The API for constructing the corresponding Tag for each HTML elemnt.
 /// TODO: implement more elements and attributes.
-abstract class HtmlTags {
+abstract class HtmlTagMaker implements TagMaker {
+
+  factory HtmlTagMaker() => new _HtmlTagMaker();
+
   Tag Div({id, clazz,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml, ref});
@@ -78,10 +76,16 @@ abstract class HtmlTags {
     inner, innerHtml, ref});
 }
 
-class _HtmlTagsImpl extends TagMaker with HtmlTags {
-  _HtmlTagsImpl() : super(_htmlEltDefs);
+class _HtmlTagMaker extends TagMaker implements HtmlTagMaker {
+  _HtmlTagMaker() {
+    _methodToDef.addAll(_htmlEltDefs);
+  }
+
+  // Suppress warnings
   noSuchMethod(Invocation inv) => super.noSuchMethod(inv);
 }
+
+final HtmlSchema htmlSchema = new _HtmlSchema();
 
 abstract class HtmlSchema {
 

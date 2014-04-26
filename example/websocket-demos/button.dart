@@ -26,7 +26,7 @@ main(List<String> args) {
   });
 }
 
-final $ = htmlTags;
+final $ = new HtmlTagMaker();
 
 class ButtonSession extends Session<int> {
 

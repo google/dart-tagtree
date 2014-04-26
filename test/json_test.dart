@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:unittest/unittest.dart';
 
-final $ = htmlTags;
+final $ = new HtmlTagMaker();
 
 main() {
   test('serialize', () {
