@@ -1,11 +1,10 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+final $ = new HtmlTags();
+final ReversableText = $.defineWidget(create: () => new _ReversableText());
+
 main() => root("#container").mount(ReversableText(label: "Click me!"));
-
-final $ = new HtmlTagMaker();
-
-final ReversableText = $.defineWidget(() => new _ReversableText());
 
 class _ReversableText extends Widget<bool> {
   String label;

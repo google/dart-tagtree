@@ -1,11 +1,19 @@
 part of core;
 
 /// The API for creating nodes in a tag tree.
-/// (Callers may want to assign this to '$' for brevity.)
+/// (Callers must subclass.)
+/// You may want to assign this to '$' for brevity.)
 /// TODO: implement more elements and attributes.
-abstract class HtmlTagMaker implements TagMaker {
+abstract class HtmlTags extends TagMaker {
 
-  factory HtmlTagMaker() => new _HtmlTagMaker();
+  factory HtmlTags() {
+    return new _HtmlTags();
+  }
+
+  /// For subclasses.
+  HtmlTags.init() {
+    _methodToDef.addAll(_htmlEltDefs);
+  }
 
   Tag Div({id, clazz,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
@@ -76,10 +84,8 @@ abstract class HtmlTagMaker implements TagMaker {
     inner, innerHtml, ref});
 }
 
-class _HtmlTagMaker extends TagMaker implements HtmlTagMaker {
-  _HtmlTagMaker() {
-    _methodToDef.addAll(_htmlEltDefs);
-  }
+class _HtmlTags extends HtmlTags {
+  _HtmlTags() : super.init();
 
   // Suppress warnings
   noSuchMethod(Invocation inv) => super.noSuchMethod(inv);

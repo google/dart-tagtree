@@ -12,15 +12,10 @@ import 'dart:math';
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+final $ = new HtmlTags();
+final Sunflower = $.defineWidget(create: () => new _Sunflower());
+
 main() => root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
-
-abstract class SunflowerTags implements HtmlTagMaker {
-  Sunflower({startSeeds: int, seedRadius: int});
-}
-
-final $ = new HtmlTagMaker();
-
-final Sunflower = $.defineWidget(() => new _Sunflower());
 
 class _Sunflower extends Widget<int> {
   final _canvas = new Ref<CanvasElement>();

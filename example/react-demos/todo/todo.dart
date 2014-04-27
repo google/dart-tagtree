@@ -1,11 +1,11 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
+final $ = new HtmlTags();
+
+final TodoApp = $.defineWidget(create: () => new _TodoApp());
+
 main() => root("#container").mount(TodoApp());
-
-final $ = new HtmlTagMaker();
-
-final TodoApp = $.defineWidget(() => new _TodoApp());
 
 class _TodoState {
   String text;

@@ -2,11 +2,11 @@ import 'dart:async' show Timer;
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new HtmlTagMaker();
+final $ = new HtmlTags();
+
+final SecondsElapsed = $.defineWidget(create: () => new _SecondsElapsed());
 
 main() => root("#container").mount(SecondsElapsed());
-
-final SecondsElapsed = $.defineWidget(() => new _SecondsElapsed());
 
 class _SecondsElapsed extends Widget<int> {
   Timer timer;

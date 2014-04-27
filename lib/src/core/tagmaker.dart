@@ -17,26 +17,35 @@ class TagMaker {
   /// used to avoid expanding the template when no properties have changed.
   ///
   /// If the custom tag should have internal state, use [defineWidget] instead.
-  TagDef defineTemplate({ShouldUpdateFunc shouldUpdate, Function render}) {
-    return new TemplateDef._raw(shouldUpdate, render);
+  TagDef defineTemplate({Symbol method, ShouldUpdateFunc shouldUpdate, Function render}) {
+    var def = new TemplateDef._raw(shouldUpdate, render);
+    if (method != null) {
+      _methodToDef[method] = def;
+    }
+    return def;
   }
 
   /// Defines a custom Tag that has state.
   ///
   /// For custom tags that are stateless, use [defineTemplate] instead.
-  TagDef defineWidget(CreateWidgetFunc f) => new WidgetDef._raw(f);
+  TagDef defineWidget({Symbol method, CreateWidgetFunc create}) {
+    var def = new WidgetDef._raw(create);
+    if (method != null) {
+      _methodToDef[method] = def;
+    }
+    return def;
+  }
 
   /// Creates a new tag for one of the TagDefs in this set.
-  Tag makeTag(Symbol tag, Map<Symbol, dynamic> props) {
-    TagDef def = _methodToDef[tag];
+  Tag makeTag(Symbol tagMethodName, Map<Symbol, dynamic> props) {
+    TagDef def = _methodToDef[tagMethodName];
     if (def == null) {
-      throw "undefined tag: ${tag}";
+      throw "undefined tag: ${tagMethodName}";
     }
     return def.makeTag(props);
   }
 
   /// Tags may also be created by calling a method with the same name.
-  /// It's best to do this using a mixin class such as [HtmlTagMaker].
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {
       TagDef def = _methodToDef[inv.memberName];
