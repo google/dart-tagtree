@@ -18,9 +18,8 @@ abstract class CustomTags {
   RowView({y, row, palette, onMouseDown, onMouseOver, onMouseUp});
 }
 
-class AppTags extends HtmlTags implements CustomTags {
-  AppTags() : super.init() {
-
+class AppTags extends TagMaker implements CustomTags {
+  AppTags() {
     defineWidget(method: #PixelPaint, create: () => new _PixelPaint());
 
     defineWidget(method: #GridView, create: () => new _GridView());

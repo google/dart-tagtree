@@ -4,7 +4,6 @@ part of render;
 abstract class _Mount {
 
   // Dependencies
-  HtmlSchema get html;
   _InvalidateWidgetFunc get invalidateWidget;
 
   // What was mounted
@@ -75,7 +74,7 @@ abstract class _Mount {
   }
 
   void _mountElt(_Elt elt, StringBuffer out) {
-    _writeStartTag(out, elt.tagName, elt.path, elt.props);
+    _writeStartTag(out, elt.def, elt.path, elt.props);
 
     if (elt.tagName == "textarea") {
       String val = elt.props[#defaultValue];
@@ -93,19 +92,21 @@ abstract class _Mount {
     }
   }
 
-  void _writeStartTag(StringBuffer out, String tagName, String path, Map<Symbol, dynamic> _props) {
-    out.write("<${tagName} data-path=\"${path}\"");
+  void _writeStartTag(StringBuffer out, EltDef def, String path, Map<Symbol, dynamic> _props) {
+    out.write("<${def.tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
-      if (html.handlerNames.containsKey(key)) {
+      if (def.isHandler(key)) {
         addHandler(key, path, val);
-      } else if (html.atts.containsKey(key)) {
-        String name = html.atts[key];
+        continue;
+      }
+      String att = def.getAttributeName(key);
+      if (att != null) {
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
-        out.write(" ${name}=\"${escaped}\"");
+        out.write(" ${att}=\"${escaped}\"");
       }
     }
-    if (tagName == "input") {
+    if (def.tagName == "input") {
       String val = _props[#defaultValue];
       if (val != null) {
         String escaped = HTML_ESCAPE.convert(val);

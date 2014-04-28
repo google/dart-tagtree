@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new HtmlTags();
+final $ = new TagMaker();
 
 final TodoApp = $.defineWidget(create: () => new _TodoApp());
 

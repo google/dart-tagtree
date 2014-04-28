@@ -2,7 +2,7 @@ import 'dart:async' show Timer;
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new HtmlTags();
+final $ = new TagMaker();
 
 final SecondsElapsed = $.defineWidget(create: () => new _SecondsElapsed());
 

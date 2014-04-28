@@ -3,7 +3,6 @@ part of render;
 /// A Transaction renders one animation frame for one Root.
 class _Transaction extends _Update {
   final Root root;
-  final HtmlSchema html;
   final DomUpdater dom;
   final _HandlerMap handlers;
 
@@ -12,7 +11,7 @@ class _Transaction extends _Update {
   final HandleFunc nextHandler;
   final List<_Widget> _widgetsToUpdate;
 
-  _Transaction(this.root, this.html, this.dom, this.handlers, this.nextTagTree, this.nextHandler,
+  _Transaction(this.root, this.dom, this.handlers, this.nextTagTree, this.nextHandler,
       Iterable<_Widget> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 

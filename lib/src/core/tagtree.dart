@@ -87,7 +87,15 @@ abstract class TagDef {
 class EltDef extends TagDef {
   final String tagName;
 
-  EltDef._raw(this.tagName);
+  /// A map from Dart named parameters (which will be minified) to their corresponding strings.
+  /// The strings are used for creating and updating HTML elements, and for JSON serialization.
+  final Map<Symbol, String> _atts;
+
+  /// A map from Dart named parameters to their corresponding strings.
+  /// The strings are used for JSON serialization.
+  final Map<Symbol, String> _handlerNames;
+
+  EltDef._raw(this.tagName, this._atts, this._handlerNames);
 
   @override
   Tag makeTag(Map<Symbol, dynamic> props) {
@@ -107,6 +115,10 @@ class EltDef extends TagDef {
 
   @override
   String getJsonTag(Tag tag) => tagName;
+
+  String getAttributeName(Symbol propKey) => _atts[propKey];
+
+  bool isHandler(Symbol propKey) => _handlerNames.containsKey(propKey);
 }
 
 /// Creates tags that are rendered by expanding a template.

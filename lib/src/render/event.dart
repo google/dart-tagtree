@@ -5,15 +5,13 @@ class _HandlerMap {
   // A multimap from (handler key, path) to an event handler.
   final _handlers = <Symbol, Map<String, EventHandler>> {};
 
-  _HandlerMap(Iterable<Symbol> htmlHandlerNames) {
-    for (Symbol key in htmlHandlerNames) {
-      _handlers[key] = {};
-    }
+  EventHandler getHandler(Symbol key, String path) {
+    _handlers.putIfAbsent(key, () => {});
+    return _handlers[key][path];
   }
 
-  EventHandler getHandler(Symbol key, String path) => _handlers[key][path];
-
   void setHandler(Symbol key, String path, EventHandler handler) {
+    _handlers.putIfAbsent(key, () => {});
     _handlers[key][path] = handler;
   }
 

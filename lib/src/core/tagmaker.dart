@@ -4,8 +4,20 @@ typedef bool ShouldUpdateFunc(Props p, Props next);
 
 typedef Widget CreateWidgetFunc();
 
+/// Creates HTML tags.
+/// (This class may be exended to support custom tags.)
+class TagMaker extends BaseTagMaker implements HtmlTags {
+  TagMaker() {
+    _methodToDef.addAll(_htmlEltDefs);
+  }
+
+  // Suppress warnings
+  noSuchMethod(Invocation inv) => super.noSuchMethod(inv);
+}
+
 /// A factory for tags (and their implementations).
-class TagMaker {
+/// BaseTagMaker has no tags predefined.
+class BaseTagMaker {
   final _methodToDef = <Symbol, TagDef>{};
 
   /// Defines a custom tag that's rendered by expanding a template.

@@ -5,7 +5,7 @@ typedef void HandleFunc(HandleCall call);
 /// A Root is a place on an HTML page where a tag tree may be rendered.
 abstract class Root {
   final int id;
-  final _handlers = new _HandlerMap(htmlSchema.handlerNames.keys);
+  final _handlers = new _HandlerMap();
   _View _renderedTree;
 
   bool _frameRequested = false;
@@ -38,9 +38,6 @@ abstract class Root {
   /// rendered tag tree.
   void dispatchEvent(HtmlEvent e) => _dispatch(e, _handlers);
 
-  /// The HTML schema that this root supports.
-  HtmlSchema get html => htmlSchema;
-
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
   void _invalidateWidget(_Widget view) {
@@ -57,7 +54,7 @@ abstract class Root {
   }
 
   void _render(DomUpdater dom) {
-    _Transaction tx = new _Transaction(this, html, dom, _handlers, _nextTagTree, _nextHandler,
+    _Transaction tx = new _Transaction(this, dom, _handlers, _nextTagTree, _nextHandler,
         _widgetsToUpdate);
 
     _frameRequested = false;

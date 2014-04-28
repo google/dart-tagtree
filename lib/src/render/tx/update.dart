@@ -4,7 +4,6 @@ part of render;
 abstract class _Update extends _Mount with _Unmount {
 
   // Dependencies
-  HtmlSchema get html;
   DomUpdater get dom;
 
   // What was updated
@@ -99,12 +98,12 @@ abstract class _Update extends _Mount with _Unmount {
     Map<Symbol, dynamic> newProps = next.propMap;
 
     elt.props = newProps;
-    _updateDomProperties(path, oldProps, newProps);
+    _updateDomProperties(elt.def, path, oldProps, newProps);
     _updateInner(elt, path, newProps[#inner], newProps[#innerHtml]);
   }
 
   /// Updates DOM attributes and event handlers of an Elt.
-  void _updateDomProperties(String eltPath, Map<Symbol, dynamic> oldProps,
+  void _updateDomProperties(EltDef def, String eltPath, Map<Symbol, dynamic> oldProps,
                             Map<Symbol, dynamic> newProps) {
 
     // Delete any removed props
@@ -113,10 +112,14 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (html.handlerNames.containsKey(key)) {
+      if (def.isHandler(key)) {
         removeHandler(key, eltPath);
-      } else if (html.atts.containsKey(key)) {
-        dom.removeAttribute(eltPath, html.atts[key]);
+        continue;
+      }
+
+      String att = def.getAttributeName(key);
+      if (att != null) {
+        dom.removeAttribute(eltPath, att);
       }
     }
 
@@ -128,12 +131,15 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (html.handlerNames.containsKey(key)) {
+      if (def.isHandler(key)) {
         setHandler(key, eltPath, newVal);
-      } else if (html.atts.containsKey(key)) {
-        String name = html.atts[key];
+        continue;
+      }
+
+      String att = def.getAttributeName(key);
+      if (att != null) {
         String val = _makeDomVal(key, newVal);
-        dom.setAttribute(eltPath, name, val);
+        dom.setAttribute(eltPath, att, val);
       }
     }
   }

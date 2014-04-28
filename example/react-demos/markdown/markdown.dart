@@ -2,7 +2,7 @@ import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 import 'package:markdown/markdown.dart' show markdownToHtml;
 
-final $ = new HtmlTags();
+final $ = new TagMaker();
 
 final MarkdownEditor = $.defineWidget(create: () => new _MarkdownEditor());
 
