@@ -10,11 +10,8 @@ part of core;
 ///
 /// The children of a tag (if any) are in its "inner" prop.
 ///
-/// To construct a Tag that renders as an HTML element, call the appropriate method on
-/// [TagMaker].
-///
-/// To create a custom tag, first use [TagMaker.defineTemplate] or [TagMaker.defineWidget] to create
-/// a TagDef, then call it with the appropriate named parameters for its props.
+/// To construct a tag, see [TagMaker].
+/// To define a custom tag, use [TagMaker.defineTemplate] or [TagMaker.defineWidget].
 class Tag implements Jsonable {
   final TagDef def;
   final Map<Symbol, dynamic> propMap;
@@ -85,6 +82,11 @@ abstract class TagDef {
 ///
 /// To construct a tag for an HTML element, use [TagMaker].
 class EltDef extends TagDef {
+
+  /// The name of the TagMaker method used to construct this tag.
+  final Symbol methodName;
+
+  /// The name of the HTML element; also used for JSON encoding.
   final String tagName;
 
   /// A map from Dart named parameters (which will be minified) to their corresponding strings.
@@ -98,7 +100,7 @@ class EltDef extends TagDef {
   final Map<Symbol, String> _propKeyToJsonName;
   final Map<String, Symbol> _jsonNameToPropKey;
 
-  EltDef._raw(this.tagName, this._atts, this._handlerNames,
+  EltDef._raw(this.methodName, this.tagName, this._atts, this._handlerNames,
       this._propKeyToJsonName, this._jsonNameToPropKey);
 
   @override

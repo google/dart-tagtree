@@ -9,6 +9,8 @@ import "dart:io";
 import "package:viewtree/core.dart";
 import "package:viewtree/server.dart";
 
+final $ = new TagMaker();
+
 main(List<String> args) {
   if (args.length == 0) {
     // Show this file.
@@ -47,7 +49,7 @@ start(File tailFile) {
       if (path == "/ws") {
         WebSocketTransformer.upgrade(request).then((WebSocket socket) {
           print("websocket connected");
-          socketRoot(socket).mount(new TailSession(watcher));
+          socketRoot(socket, $).mount(new TailSession(watcher));
         });
       } else {
         sendNotFound(request);
@@ -57,8 +59,6 @@ start(File tailFile) {
 }
 
 // View
-
-final $ = new TagMaker();
 
 class TailSession extends Session<Tail> {
   final TailWatcher watcher;

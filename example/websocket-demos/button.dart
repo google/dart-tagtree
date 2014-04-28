@@ -6,6 +6,8 @@ import "dart:io";
 import "package:viewtree/core.dart";
 import "package:viewtree/server.dart";
 
+final $ = new TagMaker();
+
 main(List<String> args) {
 
   HttpServer.bind("localhost", 8080).then((server) {
@@ -17,7 +19,7 @@ main(List<String> args) {
       if (path == "/ws") {
         WebSocketTransformer.upgrade(request).then((WebSocket socket) {
           print("websocket connected");
-          socketRoot(socket).mount(new ButtonSession());
+          socketRoot(socket, $).mount(new ButtonSession());
         });
       } else {
         sendNotFound(request);
@@ -25,8 +27,6 @@ main(List<String> args) {
     });
   });
 }
-
-final $ = new TagMaker();
 
 class ButtonSession extends Session<int> {
 

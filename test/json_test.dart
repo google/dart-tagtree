@@ -1,7 +1,9 @@
 import 'package:viewtree/core.dart';
+import 'package:viewtree/json.dart';
 import 'package:unittest/unittest.dart';
 
 final $ = new TagMaker();
+final codec = makeCodec($);
 
 main() {
   test('serialize', () {
@@ -9,7 +11,7 @@ main() {
         $.H1(inner: "Hello!"),
         $.Span(innerHtml: "<h1>this</h1>")
         ]);
-    String encoded = htmlCodec.encode(tree);
+    String encoded = codec.encode(tree);
     String expected = '["div",{'
         '"class":"something",'
         '"inner":[0,'
@@ -18,12 +20,12 @@ main() {
         ']'
     '}]';
     expect(encoded, equals(expected));
-    Tag decoded = htmlCodec.decode(encoded);
+    Tag decoded = codec.decode(encoded);
     EltDef def = decoded.def;
     expect("div", equals(def.tagName));
     var p = decoded.props;
     expect(p.clazz, equals("something"));
     expect(p.inner, isList);
-    expect(htmlCodec.encode(decoded), equals(expected));
+    expect(codec.encode(decoded), equals(expected));
   });
 }

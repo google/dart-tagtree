@@ -4,13 +4,14 @@
 library server;
 
 import 'package:viewtree/core.dart' as core;
+import 'package:viewtree/json.dart' as json;
 
 import 'dart:async' show scheduleMicrotask;
 import 'dart:convert' show Codec;
 import 'dart:io';
 
-WebSocketRoot socketRoot(WebSocket socket, {Codec<dynamic, String> codec}) =>
-    new WebSocketRoot(socket, codec);
+WebSocketRoot socketRoot(WebSocket socket, core.TagMaker maker) =>
+    new WebSocketRoot(socket, maker);
 
 /// A Session container that renders to a WebSocket.
 class WebSocketRoot {
@@ -21,8 +22,8 @@ class WebSocketRoot {
   _Frame _handleFrame, _nextFrame;
   bool renderScheduled = false;
 
-  WebSocketRoot(this._socket, Codec<dynamic, String> codec) :
-      _codec = (codec == null) ? core.htmlCodec : codec;
+  WebSocketRoot(this._socket, core.TagMaker maker) :
+      _codec = json.makeCodec(maker);
 
   /// Starts running a Session on this WebSocket.
   void mount(Session s) {

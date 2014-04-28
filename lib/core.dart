@@ -7,9 +7,7 @@
 library core;
 
 import 'dart:async' show Stream, StreamController, StreamSink;
-import 'dart:convert';
 
-part 'src/core/codec.dart';
 part 'src/core/debug.dart';
 part 'src/core/event.dart';
 part 'src/core/html.dart';

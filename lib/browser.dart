@@ -4,11 +4,11 @@
 library browser;
 
 import 'package:viewtree/core.dart' as core;
+import 'package:viewtree/json.dart' as json;
 import 'package:viewtree/render.dart' as render;
 
 import 'dart:async' show StreamSubscription;
 import 'dart:collection' show HashMap;
-import 'dart:convert' show Codec;
 import 'dart:html';
 
 part 'src/browser/dom.dart';

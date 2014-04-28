@@ -33,7 +33,7 @@ class TagMaker extends BaseTagMaker implements HtmlTags {
 
     for (Symbol key in _htmlTagNames.keys) {
       var val = _htmlTagNames[key];
-      defs[key] = new EltDef._raw(val, _htmlAttributeNames, _htmlHandlerNames,
+      defs[key] = new EltDef._raw(key, val, _htmlAttributeNames, _htmlHandlerNames,
           propNames, propNameToKey);
     }
 

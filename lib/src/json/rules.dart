@@ -1,13 +1,11 @@
-part of core;
+part of json;
 
-/// A codec that can encode any html tag, handle, handle call, or event as JSON.
-final TaggedJsonCodec htmlCodec = makeCodec(new TagMaker());
-
+/// Creates a codec that can encode any HTML tags or events supported by a TagMaker.
 TaggedJsonCodec makeCodec(TagMaker tags) {
   var rs = [];
   for (TagDef def in tags.defs) {
     if (def is EltDef) {
-      rs.add(new EltRule(def));
+      rs.add(new EltRule(tags, def));
     }
   }
   rs.add(new _HandleRule());
@@ -24,9 +22,10 @@ TaggedJsonCodec makeCodec(TagMaker tags) {
 
 /// Encodes an Elt as tagged JSON.
 class EltRule extends JsonRule<Tag> {
+  TagMaker _maker;
   EltDef _def;
 
-  EltRule(EltDef def) :
+  EltRule(this._maker, EltDef def) :
     _def = def,
     super(def.tagName);
 
@@ -53,7 +52,7 @@ class EltRule extends JsonRule<Tag> {
       assert(sym != null);
       props[sym] = state[field];
     }
-    return new Tag._raw(_def, props);
+    return _maker.makeTag(_def.methodName, props);
   }
 }
 
