@@ -3,7 +3,7 @@ part of core;
 /// A Tag generalizes an HTML element to also include templates and widgets. Tags
 /// form a tag tree similar to how HTML elements form a tree.
 ///
-/// Each Tag has a TagDef, which determines the tag's behavior when a tag tree is rendered.
+/// Each Tag has a [TagDef], which determines the tag's behavior when a tag tree is rendered.
 ///
 /// Its props are similar to HTML attributes but instead of storing a string, they sometimes
 /// store arbitrary JSON or callback functions.
@@ -11,9 +11,9 @@ part of core;
 /// The children of a tag (if any) are in its "inner" prop.
 ///
 /// To construct a Tag that renders as an HTML element, call the appropriate method on
-/// [htmlTags].
+/// [TagMaker].
 ///
-/// To create a custom tag, first use [defineTemplate] or [defineWidget] to create
+/// To create a custom tag, first use [TagMaker.defineTemplate] or [TagMaker.defineWidget] to create
 /// a TagDef, then call it with the appropriate named parameters for its props.
 class Tag implements Jsonable {
   final TagDef def;
@@ -36,7 +36,7 @@ class Tag implements Jsonable {
   String get jsonTag => def.getJsonTag(this);
 }
 
-/// A wrapper allowing a tag's props to be accessed as fields.
+/// A wrapper allowing a [Tag]'s props to be accessed as fields.
 @proxy
 class Props {
   final Map<Symbol, dynamic> _props;
@@ -56,7 +56,7 @@ class Props {
 
 /// A TagDef acts as a tag constructor and also determines the behavior of the
 /// tags it creates. TagDefs shouldn't be created directly; instead use
-/// [defineTemplate] or [defineWidget].
+/// [TagMaker.defineTemplate] or [TagMaker.defineWidget].
 abstract class TagDef {
 
   const TagDef();
@@ -83,7 +83,7 @@ abstract class TagDef {
 
 /// The internal constructor for tags representing HTML elements.
 ///
-/// To construct a Tag, use [htmlTags] instead of calling this directly.
+/// To construct a tag for an HTML element, use [TagMaker].
 class EltDef extends TagDef {
   final String tagName;
 
@@ -95,12 +95,16 @@ class EltDef extends TagDef {
   /// The strings are used for JSON serialization.
   final Map<Symbol, String> _handlerNames;
 
-  EltDef._raw(this.tagName, this._atts, this._handlerNames);
+  final Map<Symbol, String> _propKeyToJsonName;
+  final Map<String, Symbol> _jsonNameToPropKey;
+
+  EltDef._raw(this.tagName, this._atts, this._handlerNames,
+      this._propKeyToJsonName, this._jsonNameToPropKey);
 
   @override
   Tag makeTag(Map<Symbol, dynamic> props) {
     for (Symbol key in props.keys) {
-      if (!_htmlPropNames.containsKey(key)) {
+      if (!_propKeyToJsonName.containsKey(key)) {
         throw "property not supported: ${key}";
       }
     }
@@ -115,6 +119,8 @@ class EltDef extends TagDef {
 
   @override
   String getJsonTag(Tag tag) => tagName;
+  String getJsonPropName(Symbol propKey) => _propKeyToJsonName[propKey];
+  Symbol getJsonPropKey(String propName) => _jsonNameToPropKey[propName];
 
   String getAttributeName(Symbol propKey) => _atts[propKey];
 
@@ -122,7 +128,7 @@ class EltDef extends TagDef {
 }
 
 /// Creates tags that are rendered by expanding a template.
-/// To construct, use [defineTemplate].
+/// To define a template tag, use [TagMaker.defineTemplate].
 class TemplateDef extends TagDef {
   final ShouldUpdateFunc shouldUpdate;
   final Function _renderFunc;
@@ -141,7 +147,7 @@ class TemplateDef extends TagDef {
 }
 
 /// Creates tags that are rendered as a Widget.
-/// To construct, use [defineWidget].
+/// To define a widget tag, use [TagMaker.defineWidget].
 class WidgetDef extends TagDef {
   final CreateWidgetFunc createWidget;
   const WidgetDef._raw(this.createWidget);

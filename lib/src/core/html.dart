@@ -102,7 +102,7 @@ final Map<Symbol, String> _htmlTagNames = {
   #Button: "button"
 };
 
-final Map<Symbol, String> _htmlAtts = {
+final Map<Symbol, String> _htmlAttributeNames = {
   #id: "id",
   #clazz: "class",
 
@@ -126,27 +126,10 @@ final Map<Symbol, String> _htmlHandlerNames = {
   #onSubmit: "onSubmit"
 };
 
-/// A map from Dart named parameters to their corresponding strings.
-/// An entry must exist for each named parameter in the DartTags API.
-/// The strings are used for JSON serialization.
-final Map<Symbol, String> _htmlPropNames = {
-  #ref: "ref",
+final Map<Symbol, String> _htmlSpecialPropNames = {
   #inner: "inner",
   #innerHtml: "innerHtml",
+  #ref: "ref",
   #defaultValue: "defaultValue"
-}
-  ..addAll(_htmlAtts)
-  ..addAll(_htmlHandlerNames);
+};
 
-/// A map from Dart method names to the corresponding EltDef.
-/// The EltDef is used to construct the Tag and for JSON serialization.
-Map<Symbol, EltDef> _htmlEltDefs = () {
-  var defs = <Symbol, EltDef>{};
-
-  for (Symbol key in _htmlTagNames.keys) {
-    var val = _htmlTagNames[key];
-    defs[key] = new EltDef._raw(val, _htmlAtts, _htmlHandlerNames);
-  }
-
-  return defs;
-}();
