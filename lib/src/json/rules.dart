@@ -21,7 +21,7 @@ TaggedJsonCodec makeCodec(TagMaker tags) {
 }
 
 /// Encodes an Elt as tagged JSON.
-class EltRule extends JsonRule<Tag> {
+class EltRule extends JsonRule<JsonableTag> {
   TagMaker _maker;
   EltDef _def;
 
@@ -30,7 +30,7 @@ class EltRule extends JsonRule<Tag> {
     super(def.tagName);
 
   @override
-  bool appliesTo(Jsonable instance) => instance is Tag && instance.def == _def;
+  bool appliesTo(Jsonable instance) => instance is JsonableTag && instance.def == _def;
 
   @override
   encode(Tag instance) {

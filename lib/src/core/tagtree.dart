@@ -12,7 +12,7 @@ part of core;
 ///
 /// To construct a tag, see [TagMaker].
 /// To define a custom tag, use [TagMaker.defineTemplate] or [TagMaker.defineWidget].
-class Tag implements Jsonable {
+class Tag {
   final TagDef def;
   final Map<Symbol, dynamic> propMap;
   Props _props;
@@ -29,6 +29,10 @@ class Tag implements Jsonable {
     }
     return _props;
   }
+}
+
+class JsonableTag extends Tag implements Jsonable {
+  JsonableTag._raw(TagDef def, Map<Symbol, dynamic> propMap) : super._raw(def,  propMap);
 
   String get jsonTag => def.getJsonTag(this);
 }
@@ -58,9 +62,7 @@ abstract class TagDef {
 
   const TagDef();
 
-  Tag makeTag(Map<Symbol, dynamic> props) {
-    return new Tag._raw(this, props);
-  }
+  Tag makeTag(Map<Symbol, dynamic> props) => new Tag._raw(this, props);
 
   /// Subclass hook to make tags encodable as tagged JSON.
   /// By default, they aren't encodable.
@@ -104,7 +106,7 @@ class EltDef extends TagDef {
       this._propKeyToJsonName, this._jsonNameToPropKey);
 
   @override
-  Tag makeTag(Map<Symbol, dynamic> props) {
+  JsonableTag makeTag(Map<Symbol, dynamic> props) {
     for (Symbol key in props.keys) {
       if (!_propKeyToJsonName.containsKey(key)) {
         throw "property not supported: ${key}";
@@ -116,7 +118,7 @@ class EltDef extends TagDef {
     assert(inner == null || props[#innerHtml] == null);
     assert(props[#value] == null || props[#defaultValue] == null);
 
-    return new Tag._raw(this, props);
+    return new JsonableTag._raw(this, props);
   }
 
   @override

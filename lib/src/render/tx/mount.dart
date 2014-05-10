@@ -133,7 +133,7 @@ abstract class _Mount {
       List<Tag> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(_TextDef.instance.makeTag(value: item));
+          children.add(_TextDef.instance.makeTag({#value: item}));
         } else if (item is Tag) {
           children.add(item);
         } else {
