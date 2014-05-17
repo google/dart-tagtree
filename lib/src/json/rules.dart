@@ -4,8 +4,8 @@ part of json;
 TaggedJsonCodec makeCodec(TagMaker tags) {
   var rs = [];
   for (TagDef def in tags.defs) {
-    if (def is EltDef) {
-      rs.add(new EltRule(tags, def));
+    if (def is JsonableTagDef) {
+      rs.add(new JsonableTagRule(def));
     }
   }
   rs.add(new _HandleRule());
@@ -21,11 +21,10 @@ TaggedJsonCodec makeCodec(TagMaker tags) {
 }
 
 /// Encodes an Elt as tagged JSON.
-class EltRule extends JsonRule<JsonableTag> {
-  TagMaker _maker;
-  EltDef _def;
+class JsonableTagRule extends JsonRule<JsonableTag> {
+  JsonableTagDef _def;
 
-  EltRule(this._maker, EltDef def) :
+  JsonableTagRule(JsonableTagDef def) :
     _def = def,
     super(def.tagName);
 
@@ -33,16 +32,7 @@ class EltRule extends JsonRule<JsonableTag> {
   bool appliesTo(Jsonable instance) => instance is JsonableTag && instance.def == _def;
 
   @override
-  encode(Tag instance) {
-    Map<Symbol, dynamic> props = instance.propMap;
-    var state = {};
-    for (Symbol sym in props.keys) {
-      var field = _def.getJsonPropName(sym);
-      assert(field != null);
-      state[field] = props[sym];
-    }
-    return state;
-  }
+  encode(JsonableTag instance) => instance.getJsonProps();
 
   @override
   Tag decode(Map<String, dynamic> state) {
@@ -52,7 +42,7 @@ class EltRule extends JsonRule<JsonableTag> {
       assert(sym != null);
       props[sym] = state[field];
     }
-    return _maker.makeTag(_def.methodName, props);
+    return _def.makeTag(props);
   }
 }
 

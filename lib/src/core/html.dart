@@ -1,6 +1,6 @@
 part of core;
 
-/// Declares the methods for creating HTML tags.
+/// A TagMaker mixin that provides HTML tags.
 /// TODO: implement more elements and attributes.
 abstract class HtmlTags {
 
@@ -71,6 +71,32 @@ abstract class HtmlTags {
   Tag Button({id, clazz, onClick,
     onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml, ref});
+
+  /// The definitions of all HTML tags.
+  /// (Subclasses must install them using [BaseTagMaker#defineTags].)
+  List<TagDef> get htmlDefs => _htmlDefs;
+
+  static List<TagDef> _htmlDefs = () {
+
+    Map<String, Symbol> propNameToKey = _invertMap(_htmlPropNames);
+
+    var out = <TagDef>[];
+
+    for (Symbol key in _htmlTagNames.keys) {
+      var val = _htmlTagNames[key];
+      out.add(new EltDef._raw(key, val, _htmlAttributeNames, _htmlHandlerNames,
+          _htmlPropNames, propNameToKey));
+    }
+
+    return out;
+  }();
+
+  static Map _invertMap(Map m) {
+    var result = {};
+    m.forEach((k,v) => result[v] = k);
+    assert(m.length == result.length);
+    return result;
+  }
 }
 
 final Map<Symbol, String> _htmlTagNames = {
@@ -133,3 +159,7 @@ final Map<Symbol, String> _htmlSpecialPropNames = {
   #defaultValue: "defaultValue"
 };
 
+final Map<Symbol, String> _htmlPropNames = {}
+  ..addAll(_htmlSpecialPropNames)
+  ..addAll(_htmlAttributeNames)
+  ..addAll(_htmlHandlerNames);

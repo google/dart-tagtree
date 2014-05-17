@@ -32,9 +32,20 @@ class Tag {
 }
 
 class JsonableTag extends Tag implements Jsonable {
-  JsonableTag._raw(TagDef def, Map<Symbol, dynamic> propMap) : super._raw(def,  propMap);
+  JsonableTag._raw(JsonableTagDef def, Map<Symbol, dynamic> propMap) : super._raw(def,  propMap);
 
   String get jsonTag => def.getJsonTag(this);
+  JsonableTagDef get def => super.def;
+
+  Map<String, dynamic> getJsonProps() {
+    var state = {};
+    for (Symbol sym in propMap.keys) {
+      var field = def.getJsonPropName(sym);
+      assert(field != null);
+      state[field] = propMap[sym];
+    }
+    return state;
+  }
 }
 
 /// A wrapper allowing a [Tag]'s props to be accessed as fields.
@@ -59,8 +70,10 @@ class Props {
 /// tags it creates. TagDefs shouldn't be created directly; instead use
 /// [TagMaker.defineTemplate] or [TagMaker.defineWidget].
 abstract class TagDef {
+  /// The constructing method name on the TagMaker, or null if none.
+  final Symbol methodName;
 
-  const TagDef();
+  const TagDef(this.methodName);
 
   Tag makeTag(Map<Symbol, dynamic> props) => new Tag._raw(this, props);
 
@@ -80,13 +93,17 @@ abstract class TagDef {
   }
 }
 
+abstract class JsonableTagDef extends TagDef {
+  JsonableTagDef(Symbol methodName) : super(methodName);
+  String get tagName;
+  String getJsonPropName(Symbol propKey);
+  Symbol getJsonPropKey(String propName);
+}
+
 /// The internal constructor for tags representing HTML elements.
 ///
 /// To construct a tag for an HTML element, use [TagMaker].
-class EltDef extends TagDef {
-
-  /// The name of the TagMaker method used to construct this tag.
-  final Symbol methodName;
+class EltDef extends JsonableTagDef {
 
   /// The name of the HTML element; also used for JSON encoding.
   final String tagName;
@@ -102,8 +119,8 @@ class EltDef extends TagDef {
   final Map<Symbol, String> _propKeyToJsonName;
   final Map<String, Symbol> _jsonNameToPropKey;
 
-  EltDef._raw(this.methodName, this.tagName, this._atts, this._handlerNames,
-      this._propKeyToJsonName, this._jsonNameToPropKey);
+  EltDef._raw(Symbol methodName, this.tagName, this._atts, this._handlerNames,
+      this._propKeyToJsonName, this._jsonNameToPropKey) : super(methodName);
 
   @override
   JsonableTag makeTag(Map<Symbol, dynamic> props) {
@@ -132,14 +149,15 @@ class EltDef extends TagDef {
 }
 
 /// Creates tags that are rendered by expanding a template.
-/// To define a template tag, use [TagMaker.defineTemplate].
 class TemplateDef extends TagDef {
   final ShouldUpdateFunc shouldUpdate;
   final Function _renderFunc;
 
-  TemplateDef._raw(ShouldUpdateFunc shouldUpdate, Function render) :
+  /// As an alternative, see [TagMaker.defineTemplate].
+  TemplateDef(Symbol methodName, ShouldUpdateFunc shouldUpdate, Function render) :
     this.shouldUpdate = shouldUpdate == null ? _alwaysUpdate : shouldUpdate,
-    this._renderFunc = render {
+    this._renderFunc = render,
+    super(methodName) {
     assert(render != null);
   }
 
@@ -151,10 +169,11 @@ class TemplateDef extends TagDef {
 }
 
 /// Creates tags that are rendered as a Widget.
-/// To define a widget tag, use [TagMaker.defineWidget].
 class WidgetDef extends TagDef {
   final CreateWidgetFunc createWidget;
-  const WidgetDef._raw(this.createWidget);
+
+  /// As an alternative, see [TagMaker.defineTemplate].
+  const WidgetDef(Symbol methodName, this.createWidget) : super(methodName);
 }
 
 

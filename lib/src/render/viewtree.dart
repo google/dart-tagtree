@@ -60,6 +60,7 @@ class _Text extends _View {
 
 class _TextDef extends TagDef {
   static final TagDef instance = new _TextDef();
+  _TextDef() : super(null);
 }
 
 /// A node representing a rendered HTML element.
