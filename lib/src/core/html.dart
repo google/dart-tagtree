@@ -78,17 +78,28 @@ abstract class HtmlTags {
 
   static List<TagDef> _htmlDefs = () {
 
-    Map<String, Symbol> propNameToKey = _invertMap(_htmlPropNames);
+    /// Create all the PropDefs used for HTML.
+    var props = <PropDef>[];
+    for (Symbol key in _htmlPropNames.keys) {
+      var type = null;
+      if (_htmlHandlerNames.containsKey(key)) {
+        type = PropType.HANDLER;
+      } else if (_htmlAttributeNames.containsKey(key)) {
+        type = PropType.ATTRIBUTE;
+      }
+      props.add(new PropDef(key, _htmlPropNames[key], type));
+    }
 
-    var out = <TagDef>[];
+    var tags = <TagDef>[];
 
     for (Symbol key in _htmlTagNames.keys) {
       var val = _htmlTagNames[key];
-      out.add(new EltDef._raw(key, new JsonNames(val, _htmlPropNames, propNameToKey),
-          _htmlAttributeNames, _htmlHandlerNames));
+      /// TODO: specify different props for each HTML element.
+      /// (For now we only check them via the method declarations.)
+      tags.add(new EltDef(key, val, props));
     }
 
-    return out;
+    return tags;
   }();
 
   static Map _invertMap(Map m) {
