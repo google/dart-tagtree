@@ -3,8 +3,7 @@ import 'package:viewtree/browser.dart';
 import 'package:markdown/markdown.dart' show markdownToHtml;
 
 final $ = new TagMaker();
-
-final MarkdownEditor = $.defineWidget(create: () => new _MarkdownEditor());
+final MarkdownEditor = new WidgetDef(make: () => new _MarkdownEditor());
 
 main() => root("#container").mount(MarkdownEditor(defaultText: "Type some *markdown* here!"));
 

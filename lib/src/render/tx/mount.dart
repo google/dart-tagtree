@@ -49,7 +49,7 @@ abstract class _Mount {
       return view;
 
     } else if (def is WidgetDef) {
-      var w = def.createWidget();
+      var w = def.make();
       var v = new _Widget(def, path, depth, tag[#ref]);
       var c = w.mount(tag.propMap, () => invalidateWidget(v));
       v.controller = c;

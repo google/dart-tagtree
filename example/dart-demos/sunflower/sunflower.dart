@@ -13,7 +13,7 @@ import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
 final $ = new TagMaker();
-final Sunflower = $.defineWidget(create: () => new _Sunflower());
+final Sunflower = new WidgetDef(make: () => new _Sunflower());
 
 main() => root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
 

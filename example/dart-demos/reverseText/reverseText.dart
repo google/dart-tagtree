@@ -2,7 +2,7 @@ import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
 final $ = new TagMaker();
-final ReversableText = $.defineWidget(create: () => new _ReversableText());
+final ReversableText = new WidgetDef(make: () => new _ReversableText());
 
 main() => root("#container").mount(ReversableText(label: "Click me!"));
 

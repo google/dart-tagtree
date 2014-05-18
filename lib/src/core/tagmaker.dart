@@ -51,24 +51,24 @@ class BaseTagMaker {
   /// For increased performance, the optional shouldUpdate function may be
   /// used to avoid expanding the template when no properties have changed.
   ///
-  /// If the custom tag should have internal state, use defineWidget instead.
-  TagDef defineTemplate({Symbol method, ShouldUpdateFunc shouldUpdate, Function render}) {
-    var def = new TemplateDef(method, shouldUpdate, render);
-    if (method != null) {
-      defineTag(def);
-    }
-    return def;
+  /// If the custom tag should have internal state, use [defineWidget] instead.
+  void defineTemplate({Symbol method, ShouldUpdateFunc shouldUpdate, Function render,
+    String jsonName, Iterable<PropDef> props: const []}) {
+    defineTag(new TemplateDef(method: method, shouldUpdate: shouldUpdate, render: render,
+        jsonName: jsonName, props: props));
   }
 
   /// Defines a custom Tag that has state.
   ///
-  /// For custom tags that are stateless, use defineTemplate instead.
-  TagDef defineWidget({Symbol method, CreateWidgetFunc create}) {
-    var def = new WidgetDef(method, create);
-    if (method != null) {
-      defineTag(def);
-    }
-    return def;
+  /// For custom tags that are stateless, use [defineTemplate] instead.
+  void defineWidget({Symbol method, CreateWidgetFunc make, String jsonName,
+    Iterable<PropDef> props: const []}) {
+    defineTag(new WidgetDef(method: method, make: make, jsonName: jsonName, props: props));
+  }
+
+  /// Defines a tag with no implementation. It can be serialized but not rendered.
+  void defineRemoteTag({Symbol method, String jsonName, Iterable<PropDef> props: const []}) {
+    defineTag(new RemoteTagDef(method: method, jsonName: jsonName, props: props));
   }
 
   /// Creates a new tag for any of the TagDefs in this set.

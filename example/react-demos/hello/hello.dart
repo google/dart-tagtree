@@ -3,6 +3,8 @@ import 'package:viewtree/browser.dart';
 
 final $ = new TagMaker();
 
-final Hello = $.defineTemplate(render: ({String message}) => $.Div(inner: "Hello, ${message}"));
+final Hello = new TemplateDef(
+    render: ({String message}) => $.Div(inner: "Hello, ${message}")
+);
 
 main() => root("#container").mount(Hello(message: "world"));

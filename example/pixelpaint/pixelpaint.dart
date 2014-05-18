@@ -20,9 +20,9 @@ abstract class CustomTags {
 
 class AppTags extends TagMaker implements CustomTags {
   AppTags() {
-    defineWidget(method: #PixelPaint, create: () => new _PixelPaint());
+    defineWidget(method: #PixelPaint, make: () => new _PixelPaint());
 
-    defineWidget(method: #GridView, create: () => new _GridView());
+    defineWidget(method: #GridView, make: () => new _GridView());
 
     defineTemplate(method: #RowView,
       shouldUpdate: (props, next) => !props.row.equals(next.row),

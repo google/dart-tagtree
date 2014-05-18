@@ -3,8 +3,7 @@ import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
 final $ = new TagMaker();
-
-final SecondsElapsed = $.defineWidget(create: () => new _SecondsElapsed());
+final SecondsElapsed = new WidgetDef(make: () => new _SecondsElapsed());
 
 main() => root("#container").mount(SecondsElapsed());
 

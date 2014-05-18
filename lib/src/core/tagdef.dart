@@ -69,7 +69,7 @@ class PropDef {
   /// If not null, the property is a special type.
   final PropType type;
 
-  const PropDef(this.key, this.jsonName, this.type);
+  const PropDef(this.key, this.jsonName, [this.type]);
 }
 
 /// Some properties that are handled specially.
@@ -172,11 +172,21 @@ class TemplateDef extends TagDef {
   final ShouldUpdateFunc shouldUpdate;
   final Function _renderFunc;
 
-  /// As an alternative, see [TagMaker.defineTemplate].
-  TemplateDef(Symbol methodName, ShouldUpdateFunc shouldUpdate, Function render) :
+  /// Defines a custom tag that's rendered by expanding a template.
+  ///
+  /// The render function should take a named parameter for each of the Tag's props.
+  ///
+  /// For increased performance, the optional shouldUpdate function may be used to
+  /// avoid expanding the template when no properties have changed.
+  ///
+  /// If the custom tag should have internal state, use a WidgetDef instead.
+  ///
+  /// As an alternative, see [BaseTagMaker.defineTemplate].
+  TemplateDef({Symbol method, ShouldUpdateFunc shouldUpdate, Function render,
+      String jsonName, Iterable<PropDef> props: const []}) :
     this.shouldUpdate = shouldUpdate == null ? _alwaysUpdate : shouldUpdate,
     this._renderFunc = render,
-    super(methodName) {
+    super(method, jsonName, props) {
     assert(render != null);
   }
 
@@ -187,10 +197,20 @@ class TemplateDef extends TagDef {
   static _alwaysUpdate(p, next) => true;
 }
 
-/// Creates tags that are rendered as a Widget.
+/// Creates tags that are rendered as widgets.
 class WidgetDef extends TagDef {
-  final CreateWidgetFunc createWidget;
+  final CreateWidgetFunc make;
 
-  /// As an alternative, see [TagMaker.defineTemplate].
-  const WidgetDef(Symbol methodName, this.createWidget) : super(methodName);
+  /// As an alternative, see [BaseTagMaker.defineWidget].
+  const WidgetDef({this.make, Symbol method, String jsonName,
+    Iterable<PropDef> props: const []}) :
+      super(method, jsonName, props);
+}
+
+/// Creates tags with no implementation. (They cannot be rendered, only serialized.)
+class RemoteTagDef extends TagDef {
+  RemoteTagDef({Symbol method, String jsonName, Iterable<PropDef> props: const []}) :
+    super(method, jsonName, props) {
+    assert(jsonName != null);
+  }
 }

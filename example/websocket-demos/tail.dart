@@ -9,7 +9,13 @@ import "dart:io";
 import "package:viewtree/core.dart";
 import "package:viewtree/server.dart";
 
-final $ = new TagMaker();
+final TextFile = new RemoteTagDef(
+    method: #TextFile,
+    jsonName: "textFile",
+    props: [new PropDef(#lines, "lines")]
+);
+
+final $ = new TagMaker()..defineTag(TextFile);
 
 main(List<String> args) {
   if (args.length == 0) {
@@ -79,7 +85,7 @@ class TailSession extends Session<Tail> {
     }
     return $.Div(inner: [
         $.H1(inner: "The last ${state.lines.length} lines of ${state.file.path}"),
-        $.Pre(inner: state.lines.join("\n"))
+        TextFile(lines: state.lines)
         ]);
   }
 }

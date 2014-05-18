@@ -67,6 +67,9 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
         throw "unable to encode instance as JSON: ${v.runtimeType}";
       }
       var rule = _rules[tag];
+      if (rule == null) {
+        throw "no rule for tag: ${tag}";
+      }
       assert(rule.appliesTo(v));
       var data = rule.encode(v);
       out.write("[${JSON.encode(tag)},");
