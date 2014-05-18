@@ -84,8 +84,8 @@ abstract class HtmlTags {
 
     for (Symbol key in _htmlTagNames.keys) {
       var val = _htmlTagNames[key];
-      out.add(new EltDef._raw(key, val, _htmlAttributeNames, _htmlHandlerNames,
-          _htmlPropNames, propNameToKey));
+      out.add(new EltDef._raw(key, new JsonNames(val, _htmlPropNames, propNameToKey),
+          _htmlAttributeNames, _htmlHandlerNames));
     }
 
     return out;

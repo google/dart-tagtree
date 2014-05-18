@@ -1,17 +1,19 @@
 part of core;
 
-/// A Tag generalizes an HTML element to also include templates and widgets. Tags
-/// form a tag tree similar to how HTML elements form a tree.
+/// Tags are nodes in a tree data structure that's similar to a tree of HTML elements.
+/// They are more general than HTML elements because they support custom tags without
+/// requiring any browser support.
 ///
-/// Each Tag has a [TagDef], which determines the tag's behavior when a tag tree is rendered.
+/// Each Tag has a [TagDef] that determines whether it has state, how it will be rendered
+/// to HTML, and whether it can be serialized as JSON.
 ///
-/// Its props are similar to HTML attributes but instead of storing a string, they sometimes
-/// store arbitrary JSON or callback functions.
+/// A tag's props are similar to HTML attributes, but instead of storing a string,
+/// they sometimes store arbitrary JSON, child tags, or callback functions.
 ///
-/// The children of a tag (if any) are in its "inner" prop.
+/// The children of a tag (if any) are usually stored in its "inner" prop.
 ///
-/// To construct a tag, see [TagMaker].
-/// To define a custom tag, use [TagMaker.defineTemplate] or [TagMaker.defineWidget].
+/// To construct a tag, use a [TagMaker] or a subclass of [TagDef].
+/// To define a custom tag, use [BaseTagMaker.defineTemplate] or [BaseTagMaker.defineWidget].
 class Tag {
   final TagDef def;
   final Map<Symbol, dynamic> propMap;
@@ -28,23 +30,6 @@ class Tag {
       _props = new Props(propMap);
     }
     return _props;
-  }
-}
-
-class JsonableTag extends Tag implements Jsonable {
-  JsonableTag._raw(JsonableTagDef def, Map<Symbol, dynamic> propMap) : super._raw(def,  propMap);
-
-  String get jsonTag => def.getJsonTag(this);
-  JsonableTagDef get def => super.def;
-
-  Map<String, dynamic> getJsonProps() {
-    var state = {};
-    for (Symbol sym in propMap.keys) {
-      var field = def.getJsonPropName(sym);
-      assert(field != null);
-      state[field] = propMap[sym];
-    }
-    return state;
   }
 }
 
@@ -66,20 +51,35 @@ class Props {
   }
 }
 
+/// A Tag that can be serialized to JSON.
+class JsonableTag extends Tag implements Jsonable {
+  JsonableTag._raw(TagDef def, Map<Symbol, dynamic> propMap) : super._raw(def,  propMap) {
+    assert(def.jsonNames.checkPropKeys(propMap));
+  }
+
+  String get jsonTag => def.jsonNames.tagName;
+
+  /// Returns all the props using string keys instead of symbol keys.
+  Map<String, dynamic> propsToJson() => def.jsonNames.propsToJson(propMap);
+}
+
 /// A TagDef acts as a tag constructor and also determines the behavior of the
-/// tags it creates. TagDefs shouldn't be created directly; instead use
-/// [TagMaker.defineTemplate] or [TagMaker.defineWidget].
+/// tags it creates.
 abstract class TagDef {
   /// The constructing method name on the TagMaker, or null if none.
   final Symbol methodName;
+  /// The names to use for JSON serialization, or null if not serializable.
+  final JsonNames jsonNames;
 
-  const TagDef(this.methodName);
+  const TagDef(this.methodName, this.jsonNames);
 
-  Tag makeTag(Map<Symbol, dynamic> props) => new Tag._raw(this, props);
-
-  /// Subclass hook to make tags encodable as tagged JSON.
-  /// By default, they aren't encodable.
-  String getJsonTag(Tag tag) => null;
+  Tag makeTag(Map<Symbol, dynamic> props) {
+    if (jsonNames != null) {
+      return new JsonableTag._raw(this, props);
+    } else {
+      return new Tag._raw(this, props);
+    }
+  }
 
   // Implement call() with any named arguments.
   noSuchMethod(Invocation inv) {
@@ -93,57 +93,77 @@ abstract class TagDef {
   }
 }
 
-abstract class JsonableTagDef extends TagDef {
-  JsonableTagDef(Symbol methodName) : super(methodName);
-  String get tagName;
-  String getJsonPropName(Symbol propKey);
-  Symbol getJsonPropKey(String propName);
+// Maps between symbols and strings for JSON serialization.
+class JsonNames {
+  final String tagName;
+  final Map<Symbol, String> _propNames;
+  final Map<String, Symbol> _propKeys;
+  JsonNames(this.tagName, this._propNames, this._propKeys);
+
+  /// Verifies that a propMap contains serializable property keys.
+  bool checkPropKeys(Map<Symbol, dynamic> propMap) {
+    for (Symbol key in propMap.keys) {
+      if (!_propNames.containsKey(key)) {
+        throw "property not supported: ${key}";
+      }
+    }
+    return true;
+  }
+
+  /// Converts a map from symbol keys to string keys.
+  Map<String, dynamic> propsToJson(Map<Symbol, dynamic> propMap) {
+    var jsonMap = {};
+    for (Symbol sym in propMap.keys) {
+      String field = _propNames[sym];
+      assert(field != null);
+      jsonMap[field] = propMap[sym];
+    }
+    return jsonMap;
+  }
+
+  /// Converts a map from string keys to symbol keys.
+  Map<Symbol, dynamic> propsFromJson(Map<String, dynamic> jsonMap) {
+    var propMap = <Symbol, dynamic>{};
+    for (String field in jsonMap.keys) {
+      var sym = _propKeys[field];
+      assert(sym != null);
+      propMap[sym] = jsonMap[field];
+    }
+    return propMap;
+  }
 }
 
 /// The internal constructor for tags representing HTML elements.
 ///
 /// To construct a tag for an HTML element, use [TagMaker].
-class EltDef extends JsonableTagDef {
-
-  /// The name of the HTML element; also used for JSON encoding.
-  final String tagName;
+class EltDef extends TagDef {
 
   /// A map from Dart named parameters (which will be minified) to their corresponding strings.
   /// The strings are used for creating and updating HTML elements, and for JSON serialization.
-  final Map<Symbol, String> _atts;
+  final Map<Symbol, String> _attNames;
 
   /// A map from Dart named parameters to their corresponding strings.
   /// The strings are used for JSON serialization.
   final Map<Symbol, String> _handlerNames;
 
-  final Map<Symbol, String> _propKeyToJsonName;
-  final Map<String, Symbol> _jsonNameToPropKey;
+  EltDef._raw(Symbol methodName, JsonNames jsonNames, this._attNames, this._handlerNames) :
+    super(methodName, jsonNames);
 
-  EltDef._raw(Symbol methodName, this.tagName, this._atts, this._handlerNames,
-      this._propKeyToJsonName, this._jsonNameToPropKey) : super(methodName);
+  /// The name of the HTML element.
+  String get tagName => jsonNames.tagName;
 
   @override
   JsonableTag makeTag(Map<Symbol, dynamic> props) {
-    for (Symbol key in props.keys) {
-      if (!_propKeyToJsonName.containsKey(key)) {
-        throw "property not supported: ${key}";
-      }
-    }
 
     var inner = props[#inner];
     assert(inner == null || inner is String || inner is Tag || inner is Iterable);
     assert(inner == null || props[#innerHtml] == null);
     assert(props[#value] == null || props[#defaultValue] == null);
 
-    return new JsonableTag._raw(this, props);
+    return super.makeTag(props);
   }
 
-  @override
-  String getJsonTag(Tag tag) => tagName;
-  String getJsonPropName(Symbol propKey) => _propKeyToJsonName[propKey];
-  Symbol getJsonPropKey(String propName) => _jsonNameToPropKey[propName];
-
-  String getAttributeName(Symbol propKey) => _atts[propKey];
+  String getAttributeName(Symbol propKey) => _attNames[propKey];
 
   bool isHandler(Symbol propKey) => _handlerNames.containsKey(propKey);
 }
@@ -157,7 +177,7 @@ class TemplateDef extends TagDef {
   TemplateDef(Symbol methodName, ShouldUpdateFunc shouldUpdate, Function render) :
     this.shouldUpdate = shouldUpdate == null ? _alwaysUpdate : shouldUpdate,
     this._renderFunc = render,
-    super(methodName) {
+    super(methodName, null) {
     assert(render != null);
   }
 
@@ -173,7 +193,7 @@ class WidgetDef extends TagDef {
   final CreateWidgetFunc createWidget;
 
   /// As an alternative, see [TagMaker.defineTemplate].
-  const WidgetDef(Symbol methodName, this.createWidget) : super(methodName);
+  const WidgetDef(Symbol methodName, this.createWidget) : super(methodName, null);
 }
 
 

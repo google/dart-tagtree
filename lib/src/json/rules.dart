@@ -4,7 +4,7 @@ part of json;
 TaggedJsonCodec makeCodec(TagMaker tags) {
   var rs = [];
   for (TagDef def in tags.defs) {
-    if (def is JsonableTagDef) {
+    if (def.jsonNames != null) {
       rs.add(new JsonableTagRule(def));
     }
   }
@@ -22,26 +22,21 @@ TaggedJsonCodec makeCodec(TagMaker tags) {
 
 /// Encodes an Elt as tagged JSON.
 class JsonableTagRule extends JsonRule<JsonableTag> {
-  JsonableTagDef _def;
+  TagDef _def;
 
-  JsonableTagRule(JsonableTagDef def) :
+  JsonableTagRule(TagDef def) :
     _def = def,
-    super(def.tagName);
+    super(def.jsonNames.tagName);
 
   @override
   bool appliesTo(Jsonable instance) => instance is JsonableTag && instance.def == _def;
 
   @override
-  encode(JsonableTag instance) => instance.getJsonProps();
+  encode(JsonableTag instance) => instance.propsToJson();
 
   @override
   Tag decode(Map<String, dynamic> state) {
-    var props = <Symbol, dynamic>{};
-    for (String field in state.keys) {
-      var sym = _def.getJsonPropKey(field);
-      assert(sym != null);
-      props[sym] = state[field];
-    }
+    var props = _def.jsonNames.propsFromJson(state);
     return _def.makeTag(props);
   }
 }
