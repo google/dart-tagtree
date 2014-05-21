@@ -17,7 +17,7 @@ abstract class TagDef {
 
   const TagDef(this.methodName, [this.jsonName, this._propDefs = const []]);
 
-  PropDef operator[](Symbol key) => jsonMapper._byKey[key];
+  PropDef operator[](Symbol key) => jsonMapper._bySymbol[key];
 
   /// Returns the mapper to use for JSON serialization, or null if not serializable.
   JsonMapper get jsonMapper {
@@ -57,55 +57,28 @@ abstract class TagDef {
   }
 }
 
-/// Defines what may be stored in a property.
-class PropDef {
-  /// The key into the propMap (and also the named parameter for a TagMaker).
-  final Symbol key;
-
-  /// The name to be used for serializing to JSON.
-  /// (May be null if not serializable.)
-  final String jsonName;
-
-  /// If not null, the property is a special type.
-  final PropType type;
-
-  const PropDef(this.key, this.jsonName, [this.type]);
-}
-
-/// Some properties that are handled specially.
-class PropType {
-  final _value;
-  const PropType._raw(this._value);
-  toString() => 'PropType.$_value';
-
-  /// An HTML attribute. It will be rendered as its json tag name.
-  static const ATTRIBUTE = const PropType._raw('ATTRIBUTE');
-
-  /// An HTML event handler.
-  static const HANDLER = const PropType._raw('HANDLER');
-}
 
 /// Maps between symbols and strings for JSON serialization.
 class JsonMapper {
   final String tagName;
-  final Map<Symbol, PropDef> _byKey = {};
-  final Map<String, PropDef> _byJsonName = {};
+  final Map<Symbol, PropDef> _bySymbol = {};
+  final Map<String, PropDef> _byName = {};
 
   JsonMapper(TagDef def) : this.tagName = def.jsonName {
     for (var p in def._propDefs) {
-      assert(p.key != null);
-      assert(!_byKey.containsKey(p.key));
-      _byKey[p.key] = p;
-      assert(p.jsonName != null);
-      assert(!_byJsonName.containsKey(p.jsonName));
-      _byJsonName[p.jsonName] = p;
+      assert(p.sym != null);
+      assert(!_bySymbol.containsKey(p.sym));
+      _bySymbol[p.sym] = p;
+      assert(p.name != null);
+      assert(!_byName.containsKey(p.name));
+      _byName[p.name] = p;
     }
   }
 
   /// Verifies that a propMap contains serializable property keys.
   bool checkPropKeys(Map<Symbol, dynamic> propMap) {
     for (Symbol key in propMap.keys) {
-      if (!_byKey.containsKey(key)) {
+      if (!_bySymbol.containsKey(key)) {
         throw "property not supported: ${key}";
       }
     }
@@ -116,7 +89,7 @@ class JsonMapper {
   Map<String, dynamic> propsToJson(Map<Symbol, dynamic> propMap) {
     var jsonMap = {};
     for (var key in propMap.keys) {
-      var name = _byKey[key].jsonName;
+      var name = _bySymbol[key].name;
       assert(name != null);
       jsonMap[name] = propMap[key];
     }
@@ -127,7 +100,7 @@ class JsonMapper {
   Map<Symbol, dynamic> propsFromJson(Map<String, dynamic> jsonMap) {
     var propMap = <Symbol, dynamic>{};
     for (var name in jsonMap.keys) {
-      var key = _byJsonName[name].key;
+      var key = _byName[name].sym;
       assert(key != null);
       propMap[key] = jsonMap[name];
     }
@@ -158,7 +131,7 @@ class EltDef extends TagDef {
   String getAttributeName(Symbol propKey) {
     var prop = this[propKey];
     if (prop.type == PropType.ATTRIBUTE) {
-      return prop.jsonName;
+      return prop.name;
     } else {
       return null;
     }

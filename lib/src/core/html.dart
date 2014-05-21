@@ -4,73 +4,73 @@ part of core;
 /// TODO: implement more elements and attributes.
 abstract class HtmlTags {
 
-  Tag Div({id, clazz,
+  Tag Div({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
-  Tag Span({id, clazz,
+    inner, innerHtml});
+  Tag Span({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
+    inner, innerHtml});
 
-  Tag Header({id, clazz,
+  Tag Header({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
-  Tag Footer({id, clazz,
+    inner, innerHtml});
+  Tag Footer({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
+    inner, innerHtml});
 
-  Tag H1({id, clazz,
+  Tag H1({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
-  Tag H2({id, clazz,
+    inner, innerHtml});
+  Tag H2({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
-  Tag H3({id, clazz,
+    inner, innerHtml});
+  Tag H3({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
+    inner, innerHtml});
 
-  Tag P({id, clazz,
+  Tag P({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
-  Tag Pre({id, clazz,
+    inner, innerHtml});
+  Tag Pre({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
+    inner, innerHtml});
 
-  Tag Ul({id, clazz,
+  Tag Ul({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
-  Tag Li({id, clazz,
+    inner, innerHtml});
+  Tag Li({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
+    inner, innerHtml});
 
-  Tag Table({id, clazz,
+  Tag Table({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
-  Tag Tr({id, clazz,
+    inner, innerHtml});
+  Tag Tr({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
-  Tag Td({id, clazz,
+    inner, innerHtml});
+  Tag Td({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
+    inner, innerHtml});
 
-  Tag Img({id, clazz,
+  Tag Img({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref, width, height, src});
-  Tag Canvas({id, clazz,
+    width, height, src});
+  Tag Canvas({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref, width, height});
+    width, height});
 
-  Tag Form({id, clazz,
+  Tag Form({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
-    inner, innerHtml, ref});
-  Tag Input({id, clazz,
+    inner, innerHtml});
+  Tag Input({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
-    value, defaultValue, ref, type, min, max});
-  Tag TextArea({id, clazz,
+    value, defaultValue, type, min, max});
+  Tag TextArea({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
-    value, defaultValue, ref});
-  Tag Button({id, clazz, onClick,
-    onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml, ref});
+    value, defaultValue});
+  Tag Button({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
 
   /// The definitions of all HTML tags.
   /// (Subclasses must install them using [BaseTagMaker#defineTags].)
@@ -78,80 +78,85 @@ abstract class HtmlTags {
 
   static List<TagDef> _htmlDefs = () {
 
-    /// Create all the PropDefs used for HTML.
-    var props = <PropDef>[];
-    for (Symbol key in _htmlPropNames.keys) {
-      var type = null;
-      if (_htmlHandlerNames.containsKey(key)) {
-        type = PropType.HANDLER;
-      } else if (_htmlAttributeNames.containsKey(key)) {
-        type = PropType.ATTRIBUTE;
-      }
-      props.add(new PropDef(key, _htmlPropNames[key], type));
-    }
-
     var tags = <TagDef>[];
 
-    for (Symbol key in _htmlTagNames.keys) {
-      var val = _htmlTagNames[key];
-      /// TODO: specify different props for each HTML element.
-      /// (For now we only check them via the method declarations.)
-      tags.add(new EltDef(key, val, props));
+    for (TagInterface tag in htmlProtocol.tags) {
+      tags.add(new EltDef(tag.sym, tag.name, tag.props));
     }
 
     return tags;
   }();
-
-  static Map _invertMap(Map m) {
-    var result = {};
-    m.forEach((k,v) => result[v] = k);
-    assert(m.length == result.length);
-    return result;
-  }
 }
 
-final Map<Symbol, String> _htmlTagNames = {
-  #Div: "div",
-  #Span: "span",
-  #Header: "header",
-  #Footer: "footer",
+final TagProtocol htmlProtocol = () {
 
-  #H1: "h1",
-  #H2: "h2",
-  #H3: "h3",
+  var att = (Symbol sym, String name) => new PropDef(sym, name, PropType.ATTRIBUTE);
+  var handler = (Symbol sym, String name) => new PropDef(sym, name, PropType.HANDLER);
+  var special = (Symbol sym, String name) => new PropDef(sym, name);
 
-  #P: "p",
-  #Pre: "pre",
+  var globalProps = [
+    att(#id, "id"),
+    att(#clazz, "class"),
+    handler(#onClick, "onClick"),
+    handler(#onMouseDown, "onMouseDown"),
+    handler(#onMouseOver, "onMouseOver"),
+    handler(#onMouseUp, "onMouseUp"),
+    handler(#onMouseOut, "onMouseOut"),
+    special(#ref, "ref"),
+  ];
 
-  #Ul: "ul",
-  #Li: "li",
+  var inner = special(#inner, "inner");
+  var innerHtml = special(#innerHtml, "innerHtml");
 
-  #Table: "table",
-  #Tr: "tr",
-  #Td: "td",
+  var src = att(#src, "src");
+  var width = att(#width, "width");
+  var height = att(#height, "height");
 
-  #Img: "img",
-  #Canvas: "canvas",
+  var type = att(#type, "type");
+  var value = att(#value, "value");
+  var defaultValue = special(#defaultValue, "defaultValue");
+  var min = att(#min, "min");
+  var max = att(#max, "max");
+  var onChange = handler(#onChange, "onChange");
+  var onSubmit = handler(#onSubmit, "onSubmit");
 
-  #Form: "form",
-  #Input: "input",
-  #TextArea: "textarea",
-  #Button: "button"
-};
+  var leafTag = (Symbol sym, String name, [List<PropDef> moreProps = const []]) =>
+      new TagInterface(sym, name,
+          []..addAll(globalProps)..addAll(moreProps));
 
-final Map<Symbol, String> _htmlAttributeNames = {
-  #id: "id",
-  #clazz: "class",
+  var tag = (Symbol sym, String name, [List<PropDef> moreProps = const []]) =>
+      new TagInterface(sym, name,
+          []..addAll(globalProps)..add(inner)..add(innerHtml)..addAll(moreProps));
 
-  #src: "src",
-  #width: "width",
-  #height: "height",
+  return new TagProtocol([
+    tag(#Div, "div"),
+    tag(#Span, "span"),
+    tag(#Header, "header"),
+    tag(#Footer, "footer"),
 
-  #type: "type",
-  #value: "value",
-  #min: "min",
-  #max: "max"
-};
+    tag(#H1, "h1"),
+    tag(#H2, "h2"),
+    tag(#H3, "h3"),
+
+    tag(#P, "p"),
+    tag(#Pre, "pre"),
+
+    tag(#Ul, "ul"),
+    tag(#Li, "li"),
+
+    tag(#Table, "table"),
+    tag(#Tr, "tr"),
+    tag(#Td, "td"),
+
+    leafTag(#Img, "img", [width, height, src]),
+    leafTag(#Canvas, "canvas", [width, height]),
+
+    tag(#Form, "form", [onSubmit]),
+    leafTag(#Input, "input", [onChange, value, defaultValue, type, min, max]),
+    leafTag(#TextArea, "textarea", [onChange, value, defaultValue]),
+    tag(#Button, "button")
+  ]);
+}();
 
 final Map<Symbol, String> _htmlHandlerNames = {
   #onChange: "onChange",
@@ -163,14 +168,3 @@ final Map<Symbol, String> _htmlHandlerNames = {
   #onSubmit: "onSubmit"
 };
 
-final Map<Symbol, String> _htmlSpecialPropNames = {
-  #inner: "inner",
-  #innerHtml: "innerHtml",
-  #ref: "ref",
-  #defaultValue: "defaultValue"
-};
-
-final Map<Symbol, String> _htmlPropNames = {}
-  ..addAll(_htmlSpecialPropNames)
-  ..addAll(_htmlAttributeNames)
-  ..addAll(_htmlHandlerNames);
