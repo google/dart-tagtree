@@ -80,7 +80,7 @@ abstract class HtmlTags {
 
     var tags = <TagDef>[];
 
-    for (TagInterface tag in htmlProtocol.tags) {
+    for (TagType tag in htmlProtocol.tags) {
       tags.add(new EltDef(tag.sym, tag.name, tag.props));
     }
 
@@ -88,73 +88,75 @@ abstract class HtmlTags {
   }();
 }
 
-final TagProtocol htmlProtocol = () {
+final Protocol htmlProtocol = () {
 
-  var att = (Symbol sym, String name) => new PropDef(sym, name, PropType.ATTRIBUTE);
-  var handler = (Symbol sym, String name) => new PropDef(sym, name, PropType.HANDLER);
-  var special = (Symbol sym, String name) => new PropDef(sym, name);
-
-  var globalProps = [
-    att(#id, "id"),
-    att(#clazz, "class"),
-    handler(#onClick, "onClick"),
-    handler(#onMouseDown, "onMouseDown"),
-    handler(#onMouseOver, "onMouseOver"),
-    handler(#onMouseUp, "onMouseUp"),
-    handler(#onMouseOut, "onMouseOut"),
-    special(#ref, "ref"),
+  const leafGlobalProps = const [
+    const AttributeType(#id, "id"),
+    const AttributeType(#clazz, "class"),
+    const HandlerPropType(#onClick, "onClick"),
+    const HandlerPropType(#onMouseDown, "onMouseDown"),
+    const HandlerPropType(#onMouseOver, "onMouseOver"),
+    const HandlerPropType(#onMouseUp, "onMouseUp"),
+    const HandlerPropType(#onMouseOut, "onMouseOut"),
+    const PropType(#ref, "ref"),
   ];
 
-  var inner = special(#inner, "inner");
-  var innerHtml = special(#innerHtml, "innerHtml");
+  const globalProps = const [
+    const AttributeType(#id, "id"),
+    const AttributeType(#clazz, "class"),
+    const HandlerPropType(#onClick, "onClick"),
+    const HandlerPropType(#onMouseDown, "onMouseDown"),
+    const HandlerPropType(#onMouseOver, "onMouseOver"),
+    const HandlerPropType(#onMouseUp, "onMouseUp"),
+    const HandlerPropType(#onMouseOut, "onMouseOut"),
+    const PropType(#ref, "ref"),
+    const PropType(#inner, "inner"),
+    const PropType(#innerHtml, "innerHtml")
+  ];
 
-  var src = att(#src, "src");
-  var width = att(#width, "width");
-  var height = att(#height, "height");
+  const inner = const PropType(#inner, "inner");
+  const innerHtml = const PropType(#innerHtml, "innerHtml");
 
-  var type = att(#type, "type");
-  var value = att(#value, "value");
-  var defaultValue = special(#defaultValue, "defaultValue");
-  var min = att(#min, "min");
-  var max = att(#max, "max");
-  var onChange = handler(#onChange, "onChange");
-  var onSubmit = handler(#onSubmit, "onSubmit");
+  const src = const AttributeType(#src, "src");
+  const width = const AttributeType(#width, "width");
+  const height = const AttributeType(#height, "height");
 
-  var leafTag = (Symbol sym, String name, [List<PropDef> moreProps = const []]) =>
-      new TagInterface(sym, name,
-          []..addAll(globalProps)..addAll(moreProps));
+  const type = const AttributeType(#type, "type");
+  const value = const AttributeType(#value, "value");
+  const defaultValue = const PropType(#defaultValue, "defaultValue");
+  const min = const AttributeType(#min, "min");
+  const max = const AttributeType(#max, "max");
+  const onChange = const HandlerPropType(#onChange, "onChange");
+  const onSubmit = const HandlerPropType(#onSubmit, "onSubmit");
 
-  var tag = (Symbol sym, String name, [List<PropDef> moreProps = const []]) =>
-      new TagInterface(sym, name,
-          []..addAll(globalProps)..add(inner)..add(innerHtml)..addAll(moreProps));
+  return const Protocol(const [
+    const TagType(#Div, "div", globalProps),
+    const TagType(#Span, "span", globalProps),
+    const TagType(#Header, "header", globalProps),
+    const TagType(#Footer, "footer", globalProps),
 
-  return new TagProtocol([
-    tag(#Div, "div"),
-    tag(#Span, "span"),
-    tag(#Header, "header"),
-    tag(#Footer, "footer"),
+    const TagType(#H1, "h1", globalProps),
+    const TagType(#H2, "h2", globalProps),
+    const TagType(#H3, "h3", globalProps),
 
-    tag(#H1, "h1"),
-    tag(#H2, "h2"),
-    tag(#H3, "h3"),
+    const TagType(#P, "p", globalProps),
+    const TagType(#Pre, "pre", globalProps),
 
-    tag(#P, "p"),
-    tag(#Pre, "pre"),
+    const TagType(#Ul, "ul", globalProps),
+    const TagType(#Li, "li", globalProps),
 
-    tag(#Ul, "ul"),
-    tag(#Li, "li"),
+    const TagType(#Table, "table", globalProps),
+    const TagType(#Tr, "tr", globalProps),
+    const TagType(#Td, "td", globalProps),
 
-    tag(#Table, "table"),
-    tag(#Tr, "tr"),
-    tag(#Td, "td"),
+    const TagType(#Img, "img", leafGlobalProps, const [width, height, src]),
+    const TagType(#Canvas, "canvas", leafGlobalProps, const [width, height]),
 
-    leafTag(#Img, "img", [width, height, src]),
-    leafTag(#Canvas, "canvas", [width, height]),
-
-    tag(#Form, "form", [onSubmit]),
-    leafTag(#Input, "input", [onChange, value, defaultValue, type, min, max]),
-    leafTag(#TextArea, "textarea", [onChange, value, defaultValue]),
-    tag(#Button, "button")
+    const TagType(#Form, "form", globalProps, const [onSubmit]),
+    const TagType(#Input, "input", leafGlobalProps,
+        const [onChange, value, defaultValue, type, min, max]),
+    const TagType(#TextArea, "textarea", leafGlobalProps, const [onChange, value, defaultValue]),
+    const TagType(#Button, "button", globalProps)
   ]);
 }();
 

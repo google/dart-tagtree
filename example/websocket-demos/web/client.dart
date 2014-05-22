@@ -5,7 +5,7 @@ final $ = new TagMaker()
   ..defineTemplate(
       method: #textFile,
       jsonName: "textFile",
-      props: [new PropDef(#lines, "lines")],
+      props: [new PropType(#lines, "lines")],
       render: ({List<String> lines}) => $.Pre(inner: lines.join("\n"))
   );
 

@@ -1,13 +1,13 @@
 part of core;
 
 /// A collection of tags defining a protocol.
-class TagProtocol {
-  final List<TagInterface> tags;
+class Protocol {
+  final List<TagType> tags;
 
-  const TagProtocol(this.tags);
+  const Protocol(this.tags);
 }
 
-class TagInterface {
+class TagType {
   /// The name of this tag as a Dart symbol.
   /// (The method name used to create this tag.)
   final Symbol sym;
@@ -17,13 +17,31 @@ class TagInterface {
   final String name;
 
   /// The allowed properties of this tag.
-  final List<PropDef> props;
+  /// (As separate fields since concatenating lists isn't a const expression.)
+  final List<PropType> _props1;
+  final List<PropType> _props2;
 
-  const TagInterface(this.sym, this.name, this.props);
+  const TagType(this.sym, this.name, this._props1, [this._props2]);
+
+  List<PropType> get props {
+    var out = _props[this];
+    if (out == null) {
+      if (_props2 == null) {
+        out = _props1;
+      } else {
+        out = new List.from(_props1)..addAll(_props2);
+      }
+      _props[this] = out;
+    }
+    return out;
+  }
+
+  // Lazily initialized list.
+  static final _props = new Expando<List<PropType>>();
 }
 
 /// Defines what may be stored in a prop.
-class PropDef {
+class PropType {
   /// The name of this property as a Dart symbol.
   /// The symbol is used as the prop's key and as the name of
   /// its parameter in a function call.
@@ -33,21 +51,13 @@ class PropDef {
   /// (May be null if not serializable.)
   final String name;
 
-  /// If not null, the property is a special type.
-  final PropType type;
-
-  const PropDef(this.sym, this.name, [this.type]);
+  const PropType(this.sym, this.name);
 }
 
-/// Some properties that are handled specially.
-class PropType {
-  final _value;
-  const PropType._raw(this._value);
-  toString() => 'PropType.$_value';
+class AttributeType extends PropType {
+  const AttributeType(Symbol sym, String name) : super(sym, name);
+}
 
-  /// An HTML attribute. It will be rendered as its json tag name.
-  static const ATTRIBUTE = const PropType._raw('ATTRIBUTE');
-
-  /// An HTML event handler.
-  static const HANDLER = const PropType._raw('HANDLER');
+class HandlerPropType extends PropType {
+  const HandlerPropType(Symbol sym, String name) : super(sym, name);
 }

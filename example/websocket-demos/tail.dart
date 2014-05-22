@@ -12,7 +12,7 @@ import "package:viewtree/server.dart";
 final TextFile = new RemoteTagDef(
     method: #TextFile,
     jsonName: "textFile",
-    props: [new PropDef(#lines, "lines")]
+    props: [new PropType(#lines, "lines")]
 );
 
 final $ = new TagMaker()..defineTag(TextFile);

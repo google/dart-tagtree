@@ -53,7 +53,7 @@ class BaseTagMaker {
   ///
   /// If the custom tag should have internal state, use [defineWidget] instead.
   void defineTemplate({Symbol method, ShouldUpdateFunc shouldUpdate, Function render,
-    String jsonName, Iterable<PropDef> props: const []}) {
+    String jsonName, Iterable<PropType> props: const []}) {
     defineTag(new TemplateDef(method: method, shouldUpdate: shouldUpdate, render: render,
         jsonName: jsonName, props: props));
   }
@@ -62,12 +62,12 @@ class BaseTagMaker {
   ///
   /// For custom tags that are stateless, use [defineTemplate] instead.
   void defineWidget({Symbol method, CreateWidgetFunc make, String jsonName,
-    Iterable<PropDef> props: const []}) {
+    Iterable<PropType> props: const []}) {
     defineTag(new WidgetDef(method: method, make: make, jsonName: jsonName, props: props));
   }
 
   /// Defines a tag with no implementation. It can be serialized but not rendered.
-  void defineRemoteTag({Symbol method, String jsonName, Iterable<PropDef> props: const []}) {
+  void defineRemoteTag({Symbol method, String jsonName, Iterable<PropType> props: const []}) {
     defineTag(new RemoteTagDef(method: method, jsonName: jsonName, props: props));
   }
 
