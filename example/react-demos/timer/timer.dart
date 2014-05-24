@@ -2,7 +2,7 @@ import 'dart:async' show Timer;
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new TagMaker();
+final $ = new TagSet();
 final SecondsElapsed = new WidgetDef(make: () => new _SecondsElapsed());
 
 main() => root("#container").mount(SecondsElapsed());
@@ -27,5 +27,5 @@ class _SecondsElapsed extends Widget<int> {
     nextState = seconds + 1;
   }
 
-  Tag render() => $.Div(inner: "Seconds elapsed: ${seconds}");
+  TagNode render() => $.Div(inner: "Seconds elapsed: ${seconds}");
 }

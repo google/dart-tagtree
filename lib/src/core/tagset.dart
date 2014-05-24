@@ -4,28 +4,27 @@ typedef bool ShouldUpdateFunc(Props p, Props next);
 
 typedef Widget CreateWidgetFunc();
 
-/// Creates HTML tags.
-/// (This class may be exended to support custom tags.)
-class TagMaker extends BaseTagMaker with HtmlTags {
-  TagMaker() {
+/// A set of tags that may be used to construct a tag tree.
+/// Automatically includes HTML tags.
+class TagSet extends BaseTagSet with HtmlTags {
+  TagSet() {
     defineTags(htmlDefs);
   }
 
   /// Returns the parameter name and corresponding JSON tag of each HTML handler
-  /// supported by this TagMaker.
+  /// supported by this TagSet.
   Map<Symbol, String> get handlerNames => _htmlHandlerNames;
 
   // Suppress warnings
   noSuchMethod(Invocation inv) => super.noSuchMethod(inv);
 }
 
-/// A factory for a set of tags.
-/// BaseTagMaker has no tags predefined.
-class BaseTagMaker {
+/// A set of tags that starts out empty.
+class BaseTagSet {
   final Map<Symbol, TagDef> _methodToDef = <Symbol, TagDef>{};
 
-  /// Adds a Tag to this TagMaker, so that it's callable via noSuchMethod.
-  /// (To support autocomplete, TagMakers might also implement an
+  /// Adds a Tag to this TagSet, so that it's callable via noSuchMethod.
+  /// (To support autocomplete, TagSets might also implement an
   /// interface declaring the same method.)
   void defineTag(TagDef def) {
     assert(def.methodName != null);
@@ -40,7 +39,7 @@ class BaseTagMaker {
     }
   }
 
-  /// Returns the definition of every tag supported by this TagMaker.
+  /// Returns the definition of every tag supported by this TagSet.
   Iterable<TagDef> get defs => _methodToDef.values;
 
   /// Defines a custom tag that's rendered by expanding a template.
@@ -72,7 +71,7 @@ class BaseTagMaker {
   }
 
   /// Creates a new tag for any of the TagDefs in this set.
-  Tag makeTag(Symbol tagMethodName, Map<Symbol, dynamic> props) {
+  TagNode makeTag(Symbol tagMethodName, Map<Symbol, dynamic> props) {
     TagDef def = _methodToDef[tagMethodName];
     if (def == null) {
       throw "undefined tag: ${tagMethodName}";

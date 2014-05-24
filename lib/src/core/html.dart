@@ -4,71 +4,71 @@ part of core;
 /// TODO: implement more elements and attributes.
 abstract class HtmlTags {
 
-  Tag Div({id, clazz, ref,
+  TagNode Div({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  Tag Span({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-
-  Tag Header({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  Tag Footer({id, clazz, ref,
+  TagNode Span({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  Tag H1({id, clazz, ref,
+  TagNode Header({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  Tag H2({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  Tag H3({id, clazz, ref,
+  TagNode Footer({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  Tag P({id, clazz, ref,
+  TagNode H1({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  Tag Pre({id, clazz, ref,
+  TagNode H2({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-
-  Tag Ul({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  Tag Li({id, clazz, ref,
+  TagNode H3({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  Tag Table({id, clazz, ref,
+  TagNode P({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  Tag Tr({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  Tag Td({id, clazz, ref,
+  TagNode Pre({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  Tag Img({id, clazz, ref,
+  TagNode Ul({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  TagNode Li({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+
+  TagNode Table({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  TagNode Tr({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  TagNode Td({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+
+  TagNode Img({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height, src});
-  Tag Canvas({id, clazz, ref,
+  TagNode Canvas({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height});
 
-  Tag Form({id, clazz, ref,
+  TagNode Form({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
     inner, innerHtml});
-  Tag Input({id, clazz, ref,
+  TagNode Input({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue, type, min, max});
-  Tag TextArea({id, clazz, ref,
+  TagNode TextArea({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue});
-  Tag Button({id, clazz, ref,
+  TagNode Button({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
@@ -80,7 +80,7 @@ abstract class HtmlTags {
 
     var tags = <TagDef>[];
 
-    for (TagType tag in htmlProtocol.tags) {
+    for (TagType tag in htmlProtocol.types) {
       tags.add(new EltDef(tag.sym, tag.name, tag.props));
     }
 

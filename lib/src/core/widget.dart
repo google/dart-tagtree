@@ -1,6 +1,6 @@
 part of core;
 
-/// A Widget is the implementation of a custom [Tag] that has state.
+/// A Widget is the implementation of a custom [TagNode] that has state.
 /// S is the type of the state object. It can be any type, but must be
 /// cloneable using the [cloneState] method.
 abstract class Widget<S> extends StateMixin<S> {
@@ -43,11 +43,11 @@ abstract class Widget<S> extends StateMixin<S> {
   /// Constructs the tag tree to be rendered in place of this Widget.
   /// The render library calls this function during the next animation frame after invalidate()
   /// was called.
-  Tag render();
+  TagNode render();
 
   /// Determines whether the Widget will be rendered during an update.
   /// (If false, it will be skipped.)
-  bool shouldUpdate(Tag nextVersion) => true;
+  bool shouldUpdate(TagNode nextVersion) => true;
 }
 
 /// The API that the render library uses to control the widget.

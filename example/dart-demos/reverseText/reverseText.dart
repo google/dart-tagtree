@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new TagMaker();
+final $ = new TagSet();
 final ReversableText = new WidgetDef(make: () => new _ReversableText());
 
 main() => root("#container").mount(ReversableText(label: "Click me!"));
@@ -23,7 +23,7 @@ class _ReversableText extends Widget<bool> {
     nextState = !reversed;
   }
 
-  Tag render() => $.Div(clazz: "sample_text", onClick: onClick, inner: text);
+  TagNode render() => $.Div(clazz: "sample_text", onClick: onClick, inner: text);
 }
 
 String _reverse(String text) {

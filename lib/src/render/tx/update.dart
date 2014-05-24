@@ -13,7 +13,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   // Either updates a view in place or unmounts and remounts it.
   // Returns the new view.
-  _View updateOrReplace(_View current, Tag next) {
+  _View updateOrReplace(_View current, TagNode next) {
     if (current.def == next.def) {
       _updateInPlace(current, next);
       return current;
@@ -33,7 +33,7 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, current should have the same props as next and any DOM changes
   /// needed should have been sent to frame.
-  void _updateInPlace(_View current, Tag next) {
+  void _updateInPlace(_View current, TagNode next) {
     if (current is _Template) {
       _updateTemplate(current, next);
     } else if (current is _Widget) {
@@ -47,17 +47,17 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  void _updateTemplate(_Template current, Tag nextTag) {
+  void _updateTemplate(_Template current, TagNode nextTag) {
     TemplateDef def = current.def;
     if (!def.shouldUpdate(current.props, nextTag.props)) {
       return;
     }
-    Tag newShadow = def.render(nextTag.propMap);
+    TagNode newShadow = def.render(nextTag.propMap);
     current.shadow = updateOrReplace(current.shadow, newShadow);
     current.props = nextTag.props;
   }
 
-  void updateWidget(_Widget v, [Tag next]) {
+  void updateWidget(_Widget v, [TagNode next]) {
     var c = v.controller;
     var w = c.widget;
 
@@ -70,7 +70,7 @@ abstract class _Update extends _Mount with _Unmount {
     if (next != null) {
       c.setProps(next.propMap);
     }
-    Tag newShadow = w.render();
+    TagNode newShadow = w.render();
 
     // Update the DOM
     v.shadow = updateOrReplace(v.shadow, newShadow);
@@ -81,7 +81,7 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  void _updateText(_Text current, Tag nextTag) {
+  void _updateText(_Text current, TagNode nextTag) {
     String next = nextTag.props[#value];
     if (current.value == next) {
       return; // no internal state to update
@@ -90,7 +90,7 @@ abstract class _Update extends _Mount with _Unmount {
     dom.setInnerText(current.path, current.value);
   }
 
-  void _updateElt(_Elt elt, Tag next) {
+  void _updateElt(_Elt elt, TagNode next) {
     String path = elt.path;
     assert(path != null);
 
@@ -161,14 +161,14 @@ abstract class _Update extends _Mount with _Unmount {
       unmountInner(elt);
       dom.setInnerText(path, newInner);
       elt._childText = newInner;
-    } else if (newInner is Tag) {
+    } else if (newInner is TagNode) {
       _updateChildren(elt, path, [newInner]);
     } else if (newInner is Iterable) {
-      List<Tag> children = [];
+      List<TagNode> children = [];
       for (var item in newInner) {
         if (item is String) {
           children.add(_TextDef.instance.makeTag({#value: item}));
-        } else if (item is Tag) {
+        } else if (item is TagNode) {
           children.add(item);
         } else {
           throw "bad item in inner: ${item}";
@@ -182,7 +182,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(_Elt elt, String path, List<Tag> newChildren) {
+  void _updateChildren(_Elt elt, String path, List<TagNode> newChildren) {
 
     if (elt._children == null) {
       StringBuffer out = new StringBuffer();
@@ -201,7 +201,7 @@ abstract class _Update extends _Mount with _Unmount {
     int endBoth = addedChildCount < 0 ? newLength  : oldLength;
     for (int i = 0; i < endBoth; i++) {
       _View before = elt._children[i];
-      Tag after = newChildren[i];
+      TagNode after = newChildren[i];
       assert(before != null);
       assert(after != null);
       updatedChildren.add(updateOrReplace(before, after));
@@ -223,7 +223,7 @@ abstract class _Update extends _Mount with _Unmount {
     elt._childText = null;
   }
 
-  _View _mountNewChild(_Elt parent, Tag child, int childIndex) {
+  _View _mountNewChild(_Elt parent, TagNode child, int childIndex) {
     var html = new StringBuffer();
     _View view = mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
     dom.addChildElement(parent.path, html.toString());

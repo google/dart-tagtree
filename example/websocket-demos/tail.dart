@@ -15,7 +15,7 @@ final TextFile = new RemoteTagDef(
     props: [new PropType(#lines, "lines")]
 );
 
-final $ = new TagMaker()..defineTag(TextFile);
+final $ = new TagSet()..defineTag(TextFile);
 
 main(List<String> args) {
   if (args.length == 0) {
@@ -79,7 +79,7 @@ class TailSession extends Session<Tail> {
   Tail createFirstState() => watcher.currentValue;
 
   @override
-  Tag render() {
+  TagNode render() {
     if (state == null) {
       return $.Div(inner: "Loading...");
     }

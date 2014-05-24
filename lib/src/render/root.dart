@@ -9,7 +9,7 @@ abstract class Root {
   _View _renderedTree;
 
   bool _frameRequested = false;
-  Tag _nextTagTree;
+  TagNode _nextTagTree;
   HandleFunc _nextHandler;
   final Set<_Widget> _widgetsToUpdate = new Set();
 
@@ -28,7 +28,7 @@ abstract class Root {
   /// Sets the tag tree to be rendered on the next animation frame.
   /// (If called more than once between two frames, only the last call will
   /// have any effect.)
-  void mount(Tag nextTagTree, {HandleFunc handler}) {
+  void mount(TagNode nextTagTree, {HandleFunc handler}) {
     _nextTagTree = nextTagTree;
     _nextHandler = handler;
     _requestAnimationFrame();

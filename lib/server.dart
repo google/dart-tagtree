@@ -10,7 +10,7 @@ import 'dart:async' show scheduleMicrotask;
 import 'dart:convert' show Codec;
 import 'dart:io';
 
-WebSocketRoot socketRoot(WebSocket socket, core.TagMaker maker) =>
+WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker) =>
     new WebSocketRoot(socket, maker);
 
 /// A Session container that renders to a WebSocket.
@@ -22,7 +22,7 @@ class WebSocketRoot {
   _Frame _handleFrame, _nextFrame;
   bool renderScheduled = false;
 
-  WebSocketRoot(this._socket, core.TagMaker maker) :
+  WebSocketRoot(this._socket, core.TagSet maker) :
       _codec = json.makeCodec(maker);
 
   /// Starts running a Session on this WebSocket.
@@ -81,7 +81,7 @@ abstract class Session<S> extends core.StateMixin<S> {
     _root._requestFrame();
   }
 
-  core.Tag render();
+  core.TagNode render();
 
   /// Wraps an event callback so that it can be sent over the WebSocket.
   /// This method may only be called during render.

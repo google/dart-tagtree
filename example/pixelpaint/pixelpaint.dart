@@ -18,7 +18,7 @@ abstract class CustomTags {
   RowView({y, row, palette, onMouseDown, onMouseOver, onMouseUp});
 }
 
-class AppTags extends TagMaker implements CustomTags {
+class AppTags extends TagSet implements CustomTags {
   AppTags() {
     defineWidget(method: #PixelPaint, make: () => new _PixelPaint());
 
@@ -63,7 +63,7 @@ class _PixelPaint extends Widget<Grid> {
 
   void onPaint(int x, int y) => nextState.set(x, y, 1);
 
-  Tag render() => $.GridView(grid: state, palette: palette.asMap(), onPaint: onPaint);
+  TagNode render() => $.GridView(grid: state, palette: palette.asMap(), onPaint: onPaint);
 
   Grid cloneState(Grid prev) => new Grid.from(prev);
 }
@@ -107,7 +107,7 @@ class _GridView extends Widget<bool> {
   }
 
   @override
-  Tag render() {
+  TagNode render() {
     var rows = [];
     for (int y = 0; y < grid.height; y++) {
       rows.add($.RowView(y: y, row: grid.rows[y], palette: palette,

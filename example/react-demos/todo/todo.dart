@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new TagMaker();
+final $ = new TagSet();
 final TodoApp = new WidgetDef(make: () => new _TodoApp());
 
 main() => root("#container").mount(TodoApp());
@@ -30,7 +30,7 @@ class _TodoApp extends Widget<_TodoState> {
       ..text = "";
   }
 
-  Tag render() =>
+  TagNode render() =>
     $.Div(inner: [
       $.H3(inner: "TODO"),
       _TodoList(items: state.items),

@@ -1,7 +1,7 @@
 import "package:viewtree/browser.dart";
 import "package:viewtree/core.dart";
 
-final $ = new TagMaker()
+final $ = new TagSet()
   ..defineTemplate(
       method: #textFile,
       jsonName: "textFile",

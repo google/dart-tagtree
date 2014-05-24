@@ -24,7 +24,7 @@ abstract class _Mount {
   /// view tree, not the depth in the DOM tree (like the path). For example,
   /// the root of a Widget's shadow tree has the same path, but its depth is
   /// incremented.
-  _View mountView(Tag tag, StringBuffer html, String path, int depth) {
+  _View mountView(TagNode tag, StringBuffer html, String path, int depth) {
     _View view = _mountTag(tag, html, path, depth);
     if (view.ref != null) {
       _mountedRefs.add(view);
@@ -32,7 +32,7 @@ abstract class _Mount {
     return view;
   }
 
-  _View _mountTag(Tag tag, StringBuffer out, String path, int depth) {
+  _View _mountTag(TagNode tag, StringBuffer out, String path, int depth) {
     TagDef def = tag.def;
 
     if (def is _TextDef) {
@@ -43,7 +43,7 @@ abstract class _Mount {
 
     } else if (def is TemplateDef) {
       _Template view = new _Template(def, path, depth, tag.propMap);
-      Tag shadow = def.render(tag.propMap);
+      TagNode shadow = def.render(tag.propMap);
       view.shadow = mountView(shadow, out, path, depth + 1);
       view.props = tag.props;
       return view;
@@ -54,7 +54,7 @@ abstract class _Mount {
       var c = w.mount(tag.propMap, () => invalidateWidget(v));
       v.controller = c;
 
-      Tag newShadow = w.render();
+      TagNode newShadow = w.render();
       v.shadow = mountView(newShadow, out, v.path, v.depth + 1);
 
       if (c.didMount.hasListener) {
@@ -127,14 +127,14 @@ abstract class _Mount {
     } else if (inner is String) {
       out.write(HTML_ESCAPE.convert(inner));
       elt._childText = inner;
-    } else if (inner is Tag) {
+    } else if (inner is TagNode) {
       elt._children = _mountChildren(out, elt.path, elt.depth, [inner]);
     } else if (inner is Iterable) {
-      List<Tag> children = [];
+      List<TagNode> children = [];
       for (var item in inner) {
         if (item is String) {
           children.add(_TextDef.instance.makeTag({#value: item}));
-        } else if (item is Tag) {
+        } else if (item is TagNode) {
           children.add(item);
         } else {
           throw "bad item in inner: ${item}";
@@ -145,7 +145,7 @@ abstract class _Mount {
   }
 
   List<_View> _mountChildren(StringBuffer out, String parentPath, int parentDepth,
-      List<Tag> children) {
+      List<TagNode> children) {
     if (children.isEmpty) {
       return null;
     }

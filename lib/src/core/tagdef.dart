@@ -33,12 +33,12 @@ abstract class TagDef {
     return mapper;
   }
 
-  Tag makeTag(Map<Symbol, dynamic> props) {
+  TagNode makeTag(Map<Symbol, dynamic> props) {
     assert(checkProps(props));
     if (jsonName != null) {
       return new JsonableTag._raw(this, props);
     } else {
-      return new Tag._raw(this, props);
+      return new TagNode._raw(this, props);
     }
   }
 
@@ -123,7 +123,7 @@ class EltDef extends TagDef {
   bool checkProps(Map<Symbol, dynamic> props) {
     var inner = props[#inner];
     assert(inner == null || props[#innerHtml] == null);
-    assert(inner == null || inner is String || inner is Tag || inner is Iterable);
+    assert(inner == null || inner is String || inner is TagNode || inner is Iterable);
     assert(props[#value] == null || props[#defaultValue] == null);
     return true;
   }
@@ -163,7 +163,7 @@ class TemplateDef extends TagDef {
     assert(render != null);
   }
 
-  Tag render(Map<Symbol, dynamic> props) {
+  TagNode render(Map<Symbol, dynamic> props) {
     return Function.apply(_renderFunc, [], props);
   }
 

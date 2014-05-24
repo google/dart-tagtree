@@ -1,10 +1,10 @@
 part of core;
 
-/// A collection of tags defining a protocol.
+/// A collection of tag types defining a protocol.
 class Protocol {
-  final List<TagType> tags;
+  final List<TagType> types;
 
-  const Protocol(this.tags);
+  const Protocol(this.types);
 }
 
 class TagType {

@@ -2,7 +2,7 @@ import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 import 'package:markdown/markdown.dart' show markdownToHtml;
 
-final $ = new TagMaker();
+final $ = new TagSet();
 final MarkdownEditor = new WidgetDef(make: () => new _MarkdownEditor());
 
 main() => root("#container").mount(MarkdownEditor(defaultText: "Type some *markdown* here!"));
@@ -23,7 +23,7 @@ class _MarkdownEditor extends Widget<String> {
     nextState = e.value;
   }
 
-  Tag render() =>
+  TagNode render() =>
     $.Div(clazz: "MarkdownEditor", inner: [
       $.H3(inner: "Input"),
       $.TextArea(onChange: handleChange, defaultValue: text),

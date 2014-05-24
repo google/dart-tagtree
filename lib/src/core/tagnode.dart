@@ -1,25 +1,25 @@
 part of core;
 
-/// Tags are nodes in a tree data structure that's similar to a tree of HTML elements.
+/// TagNodes form a tree data structure similar to a tree of HTML elements.
 /// They are more general than HTML elements because they support custom tags without
 /// requiring any browser support.
 ///
-/// Each Tag has a [TagDef] that determines whether it has state, how it will be rendered
+/// Each node has a [TagDef] that determines whether it has state, how it will be rendered
 /// to HTML, and whether it can be serialized as JSON.
 ///
-/// A tag's props are similar to HTML attributes, but instead of storing a string,
+/// A node's props are similar to HTML attributes, but instead of storing a string,
 /// they sometimes store arbitrary JSON, child tags, or callback functions.
 ///
-/// The children of a tag (if any) are usually stored in its "inner" prop.
+/// The children of a node (if any) are usually stored in its "inner" prop.
 ///
-/// To construct a tag, use a [TagMaker] or a subclass of [TagDef].
-/// To define a custom tag, use [BaseTagMaker.defineTemplate] or [BaseTagMaker.defineWidget].
-class Tag {
+/// To construct a node, use a [TagSet] or a subclass of [TagDef].
+/// To define a custom tag, use [BaseTagSet.defineTemplate] or [BaseTagSet.defineWidget].
+class TagNode {
   final TagDef def;
   final Map<Symbol, dynamic> propMap;
   Props _props;
 
-  Tag._raw(this.def, this.propMap);
+  TagNode._raw(this.def, this.propMap);
 
   /// Provides access to the tag's props as a map.
   operator[](Symbol key) => propMap[key];
@@ -33,7 +33,7 @@ class Tag {
   }
 }
 
-/// A wrapper allowing a [Tag]'s props to be accessed as fields.
+/// A wrapper allowing a [TagNode]'s props to be accessed as fields.
 @proxy
 class Props {
   final Map<Symbol, dynamic> _props;
@@ -52,7 +52,7 @@ class Props {
 }
 
 /// A Tag that can be serialized to JSON.
-class JsonableTag extends Tag implements Jsonable {
+class JsonableTag extends TagNode implements Jsonable {
   JsonableTag._raw(TagDef def, Map<Symbol, dynamic> propMap) : super._raw(def,  propMap) {
     assert(def.jsonMapper.checkPropKeys(propMap));
   }

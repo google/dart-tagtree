@@ -7,7 +7,7 @@ class _Transaction extends _Update {
   final _HandlerMap handlers;
 
   // What to do
-  final Tag nextTagTree;
+  final TagNode nextTagTree;
   final HandleFunc nextHandler;
   final List<_Widget> _widgetsToUpdate;
 
@@ -51,7 +51,7 @@ class _Transaction extends _Update {
   }
 
   /// Renders a tag tree and returns the new view tree.
-  _View _replaceTree(String path, _View current, Tag next) {
+  _View _replaceTree(String path, _View current, TagNode next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
       _View view = mountView(next, html, path, 0);

@@ -12,7 +12,7 @@ import 'dart:math';
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new TagMaker();
+final $ = new TagSet();
 final Sunflower = new WidgetDef(make: () => new _Sunflower());
 
 main() => root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
@@ -46,7 +46,7 @@ class _Sunflower extends Widget<int> {
   }
 
   @override
-  Tag render() {
+  TagNode render() {
     return $.Div(inner: [
 
         $.Div(id: "container", inner: [

@@ -1,7 +1,7 @@
 part of json;
 
 /// Creates a codec that can encode any HTML tags or events supported by a TagMaker.
-TaggedJsonCodec makeCodec(TagMaker tags) {
+TaggedJsonCodec makeCodec(TagSet tags) {
   var rs = [];
   for (TagDef def in tags.defs) {
     if (def.jsonName != null) {
@@ -35,7 +35,7 @@ class JsonableTagRule extends JsonRule<JsonableTag> {
   encode(JsonableTag instance) => instance.propsToJson();
 
   @override
-  Tag decode(Map<String, dynamic> state) {
+  TagNode decode(Map<String, dynamic> state) {
     var props = _def.jsonMapper.propsFromJson(state);
     return _def.makeTag(props);
   }

@@ -6,7 +6,7 @@ import "dart:io";
 import "package:viewtree/core.dart";
 import "package:viewtree/server.dart";
 
-final $ = new TagMaker();
+final $ = new TagSet();
 
 main(List<String> args) {
 
@@ -39,7 +39,7 @@ class ButtonSession extends Session<int> {
     nextState = clicks + 1;
   }
 
-  Tag render() {
+  TagNode render() {
     return $.Div(inner: [
                  $.Div(inner: "Clicks: ${clicks}"),
                  $.Button(onClick: remote(onClick), inner: "Click to log a message"),

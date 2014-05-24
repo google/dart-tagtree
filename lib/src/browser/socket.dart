@@ -5,7 +5,7 @@ part of browser;
 /// The CSS selectors point to the container element where the views will be displayed.
 /// The ruleSet will be used to deserialize the stream. (Only tags defined in the ruleset
 /// can be deserialized.)
-mountWebSocket(String webSocketUrl, String selectors, core.TagMaker maker) {
+mountWebSocket(String webSocketUrl, String selectors, core.TagSet maker) {
   final $ = maker;
   final codec = json.makeCodec($);
 
@@ -35,7 +35,7 @@ mountWebSocket(String webSocketUrl, String selectors, core.TagMaker maker) {
       print("websocked opened");
     }
     opened = true;
-    core.Tag tag = codec.decode(e.data);
+    core.TagNode tag = codec.decode(e.data);
     render.HandleFunc func = onEvent;
     root(selectors).mount(tag, handler: func);
   });

@@ -1,7 +1,7 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new TagMaker();
+final $ = new TagSet();
 
 final Hello = new TemplateDef(
     render: ({String message}) => $.Div(inner: "Hello, ${message}")
