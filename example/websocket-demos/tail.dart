@@ -9,9 +9,9 @@ import "dart:io";
 import "package:viewtree/core.dart";
 import "package:viewtree/server.dart";
 
-final TextFile = new RemoteTagDef(
-    new TagType(#TextFile, "textFile", [new PropType(#lines, "lines")])
-);
+import "web/shared.dart";
+
+final TextFile = new RemoteTagDef(TextFileType);
 
 final $ = new TagSet()..defineTag(TextFile);
 

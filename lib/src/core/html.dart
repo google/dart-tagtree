@@ -129,7 +129,7 @@ final Protocol htmlProtocol = () {
   const onChange = const HandlerPropType(#onChange, "onChange");
   const onSubmit = const HandlerPropType(#onSubmit, "onSubmit");
 
-  return const Protocol(const [
+  return new Protocol(const [
     const TagType(#Div, "div", globalProps),
     const TagType(#Span, "span", globalProps),
     const TagType(#Header, "header", globalProps),

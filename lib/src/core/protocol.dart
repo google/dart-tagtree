@@ -3,8 +3,7 @@ part of core;
 /// A collection of tag types defining a protocol.
 class Protocol {
   final List<TagType> types;
-
-  const Protocol(this.types);
+  Protocol(this.types);
 }
 
 class TagType {
