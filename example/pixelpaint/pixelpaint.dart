@@ -18,7 +18,7 @@ abstract class CustomTags {
   RowView({y, row, palette, onMouseDown, onMouseOver, onMouseUp});
 }
 
-class AppTags extends TagSet implements CustomTags {
+class AppTags extends CustomTagSet implements CustomTags {
   AppTags() {
     defineWidget(method: #PixelPaint, make: () => new _PixelPaint());
 

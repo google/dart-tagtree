@@ -28,7 +28,7 @@ part of render;
 /// Widget.invalidate().
 abstract class _View {
 
-  final TagDef def;
+  final Tag def;
 
   /// The unique id used to find the view's HTML element.
   final String path;
@@ -58,8 +58,8 @@ class _Text extends _View {
   _Text(String path, int depth, this.value) : super(_TextDef.instance, path, depth, null);
 }
 
-class _TextDef extends TagDef {
-  static final TagDef instance = new _TextDef();
+class _TextDef extends Tag {
+  static final Tag instance = new _TextDef();
   _TextDef() : super(null);
 }
 
@@ -72,7 +72,7 @@ class _Elt extends _View {
   // Non-null if the view contains just text.
   String _childText;
 
-  _Elt(EltDef def, String path, int depth, Map<Symbol, dynamic> propMap) :
+  _Elt(ElementTag def, String path, int depth, Map<Symbol, dynamic> propMap) :
       tagName = def.tagName,
       props = propMap,
       super(def, path, depth, propMap[#ref]) {
@@ -84,7 +84,7 @@ class _Template extends _View {
   Props props;
   _View shadow;
 
-  _Template(TemplateDef def, String path, int depth, Map<Symbol, dynamic> propsMap) :
+  _Template(TemplateTag def, String path, int depth, Map<Symbol, dynamic> propsMap) :
     super(def, path, depth, propsMap[#ref]);
 }
 
@@ -95,5 +95,5 @@ class _Widget extends _View {
   WidgetController controller;
   _View shadow;
 
-  _Widget(WidgetDef def, String path, int depth, ref) : super(def, path, depth, ref);
+  _Widget(WidgetTag def, String path, int depth, ref) : super(def, path, depth, ref);
 }

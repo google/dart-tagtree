@@ -1,9 +1,8 @@
 import "package:viewtree/browser.dart";
-import "package:viewtree/core.dart";
 
 import "shared.dart";
 
-final $ = new TagSet()
+final $ = new CustomTagSet()
   ..defineTemplate(
       type: TextFileType,
       render: ({List<String> lines}) => $.Pre(inner: lines.join("\n"))

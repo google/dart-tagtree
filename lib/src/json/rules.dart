@@ -1,11 +1,11 @@
 part of json;
 
 /// Creates a codec that can encode any HTML tags or events supported by a TagMaker.
-TaggedJsonCodec makeCodec(TagSet tags) {
+TaggedJsonCodec makeCodec(HtmlTagSet tags) {
   var rs = [];
-  for (TagDef def in tags.defs) {
-    if (def.type != null) {
-      rs.add(new JsonableTagRule(def));
+  for (Tag tag in tags.values) {
+    if (tag.type != null) {
+      rs.add(new JsonableNodeRule(tag));
     }
   }
   rs.add(new _HandleRule());
@@ -20,24 +20,24 @@ TaggedJsonCodec makeCodec(TagSet tags) {
   return new TaggedJsonCodec(rs);
 }
 
-/// Encodes an Elt as tagged JSON.
-class JsonableTagRule extends JsonRule<JsonableTag> {
-  final TagDef _def;
+class JsonableNodeRule extends JsonRule<JsonableNode> {
+  final Tag tag;
 
-  JsonableTagRule(TagDef def) :
-    _def = def,
-    super(def.jsonMapper.tagName);
-
-  @override
-  bool appliesTo(Jsonable instance) => instance is JsonableTag && instance.def == _def;
+  JsonableNodeRule(Tag tag) :
+    this.tag = tag,
+    super(tag.type.name) {
+  }
 
   @override
-  encode(JsonableTag instance) => instance.propsToJson();
+  bool appliesTo(Jsonable instance) => instance is JsonableNode && instance.tag == tag;
+
+  @override
+  encode(JsonableNode instance) => instance.tag.type.propsToJson(instance.propMap);
 
   @override
   TagNode decode(Map<String, dynamic> state) {
-    var props = _def.jsonMapper.propsFromJson(state);
-    return _def.makeTag(props);
+    var props = tag.type.propsFromJson(state);
+    return tag.makeNode(props);
   }
 }
 

@@ -11,9 +11,9 @@ import "package:viewtree/server.dart";
 
 import "web/shared.dart";
 
-final TextFile = new RemoteTagDef(TextFileType);
+final TextFile = new RemoteTag(TextFileType);
 
-final $ = new TagSet()..defineTag(TextFile);
+final $ = new HtmlTagSet()..addTag(null, TextFile);
 
 main(List<String> args) {
   if (args.length == 0) {

@@ -2,8 +2,8 @@ import 'dart:async' show Timer;
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new TagSet();
-final SecondsElapsed = new WidgetDef(make: () => new _SecondsElapsed());
+final $ = new HtmlTagSet();
+final SecondsElapsed = new WidgetTag(make: () => new _SecondsElapsed());
 
 main() => root("#container").mount(SecondsElapsed());
 

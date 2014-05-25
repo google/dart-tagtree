@@ -1,8 +1,8 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new TagSet();
-final ReversableText = new WidgetDef(make: () => new _ReversableText());
+final $ = new HtmlTagSet();
+final ReversableText = new WidgetTag(make: () => new _ReversableText());
 
 main() => root("#container").mount(ReversableText(label: "Click me!"));
 

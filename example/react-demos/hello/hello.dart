@@ -1,9 +1,9 @@
 import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
 
-final $ = new TagSet();
+final $ = new HtmlTagSet();
 
-final Hello = new TemplateDef(
+final Hello = new TemplateTag(
     render: ({String message}) => $.Div(inner: "Hello, ${message}")
 );
 

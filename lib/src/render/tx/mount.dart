@@ -33,7 +33,7 @@ abstract class _Mount {
   }
 
   _View _mountTag(TagNode tag, StringBuffer out, String path, int depth) {
-    TagDef def = tag.def;
+    Tag def = tag.tag;
 
     if (def is _TextDef) {
       _Text text = new _Text(path, depth, tag.props[#value]);
@@ -41,14 +41,14 @@ abstract class _Mount {
       out.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
       return text;
 
-    } else if (def is TemplateDef) {
+    } else if (def is TemplateTag) {
       _Template view = new _Template(def, path, depth, tag.propMap);
-      TagNode shadow = def.render(tag.propMap);
+      TagNode shadow = def.renderProps(tag.propMap);
       view.shadow = mountView(shadow, out, path, depth + 1);
       view.props = tag.props;
       return view;
 
-    } else if (def is WidgetDef) {
+    } else if (def is WidgetTag) {
       var w = def.make();
       var v = new _Widget(def, path, depth, tag[#ref]);
       var c = w.mount(tag.propMap, () => invalidateWidget(v));
@@ -63,7 +63,7 @@ abstract class _Mount {
 
       return v;
 
-    } else if (def is EltDef) {
+    } else if (def is ElementTag) {
       _Elt elt = new _Elt(def, path, depth, tag.propMap);
       _mountElt(elt, out);
       return elt;
@@ -92,7 +92,7 @@ abstract class _Mount {
     }
   }
 
-  void _writeStartTag(StringBuffer out, EltDef def, String path, Map<Symbol, dynamic> _props) {
+  void _writeStartTag(StringBuffer out, ElementTag def, String path, Map<Symbol, dynamic> _props) {
     out.write("<${def.tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var val = _props[key];
@@ -133,7 +133,7 @@ abstract class _Mount {
       List<TagNode> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(_TextDef.instance.makeTag({#value: item}));
+          children.add(_TextDef.instance.makeNode({#value: item}));
         } else if (item is TagNode) {
           children.add(item);
         } else {

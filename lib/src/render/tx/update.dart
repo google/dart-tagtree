@@ -14,7 +14,7 @@ abstract class _Update extends _Mount with _Unmount {
   // Either updates a view in place or unmounts and remounts it.
   // Returns the new view.
   _View updateOrReplace(_View current, TagNode next) {
-    if (current.def == next.def) {
+    if (current.def == next.tag) {
       _updateInPlace(current, next);
       return current;
     } else {
@@ -48,11 +48,11 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   void _updateTemplate(_Template current, TagNode nextTag) {
-    TemplateDef def = current.def;
-    if (!def.shouldUpdate(current.props, nextTag.props)) {
+    TemplateTag def = current.def;
+    if (def.shouldUpdate != null && !def.shouldUpdate(current.props, nextTag.props)) {
       return;
     }
-    TagNode newShadow = def.render(nextTag.propMap);
+    TagNode newShadow = def.renderProps(nextTag.propMap);
     current.shadow = updateOrReplace(current.shadow, newShadow);
     current.props = nextTag.props;
   }
@@ -103,7 +103,7 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   /// Updates DOM attributes and event handlers of an Elt.
-  void _updateDomProperties(EltDef def, String eltPath, Map<Symbol, dynamic> oldProps,
+  void _updateDomProperties(ElementTag def, String eltPath, Map<Symbol, dynamic> oldProps,
                             Map<Symbol, dynamic> newProps) {
 
     // Delete any removed props
@@ -167,7 +167,7 @@ abstract class _Update extends _Mount with _Unmount {
       List<TagNode> children = [];
       for (var item in newInner) {
         if (item is String) {
-          children.add(_TextDef.instance.makeTag({#value: item}));
+          children.add(_TextDef.instance.makeNode({#value: item}));
         } else if (item is TagNode) {
           children.add(item);
         } else {

@@ -73,22 +73,11 @@ abstract class HtmlTags {
     inner, innerHtml});
 
   /// The definitions of all HTML tags.
-  /// (Subclasses must install them using [BaseTagMaker#defineTags].)
-  List<TagDef> get htmlDefs => _htmlDefs;
-
-  static List<TagDef> _htmlDefs = () {
-
-    var tags = <TagDef>[];
-
-    for (TagType type in htmlProtocol.types) {
-      tags.add(new EltDef(type));
-    }
-
-    return tags;
-  }();
+  /// (Subclasses must install them using [BaseTagMaker#defineTag].)
+  List<Tag> get htmlTags => _htmlTags;
 }
 
-final Protocol htmlProtocol = () {
+final List<Tag> _htmlTags = () {
 
   const leafGlobalProps = const [
     const AttributeType(#id, "id"),
@@ -129,7 +118,7 @@ final Protocol htmlProtocol = () {
   const onChange = const HandlerPropType(#onChange, "onChange");
   const onSubmit = const HandlerPropType(#onSubmit, "onSubmit");
 
-  return new Protocol(const [
+  const allTypes = const [
     const TagType(#Div, "div", globalProps),
     const TagType(#Span, "span", globalProps),
     const TagType(#Header, "header", globalProps),
@@ -157,7 +146,9 @@ final Protocol htmlProtocol = () {
         const [onChange, value, defaultValue, type, min, max]),
     const TagType(#TextArea, "textarea", leafGlobalProps, const [onChange, value, defaultValue]),
     const TagType(#Button, "button", globalProps)
-  ]);
+  ];
+
+  return allTypes.map((t) => new ElementTag(t)).toList();
 }();
 
 final Map<Symbol, String> _htmlHandlerNames = {

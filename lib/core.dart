@@ -13,7 +13,7 @@ part 'src/core/tagdef.dart';
 part 'src/core/event.dart';
 part 'src/core/html.dart';
 part 'src/core/json.dart';
-part 'src/core/protocol.dart';
+part 'src/core/tagtype.dart';
 part 'src/core/state.dart';
 part 'src/core/tagset.dart';
 part 'src/core/tagnode.dart';

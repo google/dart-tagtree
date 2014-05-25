@@ -31,7 +31,7 @@ abstract class JsonRule<T extends Jsonable> {
   /// (The tag must be unique within a [JsonRuleSet].)
   final String tagName;
 
-  JsonRule(this.tagName);
+  const JsonRule(this.tagName);
 
   /// Returns true if this rule can encode the instance.
   bool appliesTo(Jsonable instance);

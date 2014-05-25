@@ -2,7 +2,7 @@ import 'package:viewtree/core.dart';
 import 'package:viewtree/json.dart';
 import 'package:unittest/unittest.dart';
 
-final $ = new TagSet();
+final $ = new HtmlTagSet();
 final codec = makeCodec($);
 
 main() {
@@ -21,8 +21,8 @@ main() {
     '}]';
     expect(encoded, equals(expected));
     TagNode decoded = codec.decode(encoded);
-    EltDef def = decoded.def;
-    expect("div", equals(def.tagName));
+    ElementTag def = decoded.tag;
+    expect(def.type.name, equals("div"));
     var p = decoded.props;
     expect(p.clazz, equals("something"));
     expect(p.inner, isList);

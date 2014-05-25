@@ -6,7 +6,7 @@ import "dart:io";
 import "package:viewtree/core.dart";
 import "package:viewtree/server.dart";
 
-final $ = new TagSet();
+final $ = new HtmlTagSet();
 
 main(List<String> args) {
 
