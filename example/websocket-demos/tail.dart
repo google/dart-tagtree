@@ -10,9 +10,7 @@ import "package:viewtree/core.dart";
 import "package:viewtree/server.dart";
 
 final TextFile = new RemoteTagDef(
-    method: #TextFile,
-    jsonName: "textFile",
-    props: [new PropType(#lines, "lines")]
+    new TagType(#TextFile, "textFile", [new PropType(#lines, "lines")])
 );
 
 final $ = new TagSet()..defineTag(TextFile);

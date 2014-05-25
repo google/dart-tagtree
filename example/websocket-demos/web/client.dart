@@ -3,9 +3,7 @@ import "package:viewtree/core.dart";
 
 final $ = new TagSet()
   ..defineTemplate(
-      method: #textFile,
-      jsonName: "textFile",
-      props: [new PropType(#lines, "lines")],
+      type: new TagType(#textFile, "textFile", [new PropType(#lines, "lines")]),
       render: ({List<String> lines}) => $.Pre(inner: lines.join("\n"))
   );
 

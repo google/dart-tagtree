@@ -21,7 +21,7 @@ class TagType {
   final List<PropType> _props1;
   final List<PropType> _props2;
 
-  const TagType(this.sym, this.name, this._props1, [this._props2]);
+  const TagType(this.sym, [this.name, this._props1 = const [], this._props2]);
 
   List<PropType> get props {
     var out = _props[this];

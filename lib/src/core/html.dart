@@ -80,8 +80,8 @@ abstract class HtmlTags {
 
     var tags = <TagDef>[];
 
-    for (TagType tag in htmlProtocol.types) {
-      tags.add(new EltDef(tag.sym, tag.name, tag.props));
+    for (TagType type in htmlProtocol.types) {
+      tags.add(new EltDef(type));
     }
 
     return tags;

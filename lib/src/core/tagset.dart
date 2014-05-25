@@ -27,9 +27,9 @@ class BaseTagSet {
   /// (To support autocomplete, TagSets might also implement an
   /// interface declaring the same method.)
   void defineTag(TagDef def) {
-    assert(def.methodName != null);
-    assert(!(_methodToDef.containsKey(def.methodName)));
-    _methodToDef[def.methodName] = def;
+    assert(def.type != null);
+    assert(!(_methodToDef.containsKey(def.type.sym)));
+    _methodToDef[def.type.sym] = def;
   }
 
   /// Defines many tags at once. (A convenience for supporting mixins.)
@@ -51,23 +51,26 @@ class BaseTagSet {
   /// used to avoid expanding the template when no properties have changed.
   ///
   /// If the custom tag should have internal state, use [defineWidget] instead.
-  void defineTemplate({Symbol method, ShouldUpdateFunc shouldUpdate, Function render,
-    String jsonName, Iterable<PropType> props: const []}) {
-    defineTag(new TemplateDef(method: method, shouldUpdate: shouldUpdate, render: render,
-        jsonName: jsonName, props: props));
+  void defineTemplate({Symbol method, TagType type, ShouldUpdateFunc shouldUpdate,
+    Function render}) {
+    assert(method == null || type == null);
+    if (type == null) {
+      assert(method != null);
+      type = new TagType(method);
+    }
+    defineTag(new TemplateDef(type: type, shouldUpdate: shouldUpdate, render: render));
   }
 
   /// Defines a custom Tag that has state.
   ///
   /// For custom tags that are stateless, use [defineTemplate] instead.
-  void defineWidget({Symbol method, CreateWidgetFunc make, String jsonName,
-    Iterable<PropType> props: const []}) {
-    defineTag(new WidgetDef(method: method, make: make, jsonName: jsonName, props: props));
-  }
-
-  /// Defines a tag with no implementation. It can be serialized but not rendered.
-  void defineRemoteTag({Symbol method, String jsonName, Iterable<PropType> props: const []}) {
-    defineTag(new RemoteTagDef(method: method, jsonName: jsonName, props: props));
+  void defineWidget({Symbol method, TagType type, CreateWidgetFunc make}) {
+    assert(method == null || type == null);
+    if (type == null) {
+      assert(method != null);
+      type = new TagType(method);
+    }
+    defineTag(new WidgetDef(type: type, make: make));
   }
 
   /// Creates a new tag for any of the TagDefs in this set.

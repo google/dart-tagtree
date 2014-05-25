@@ -3,19 +3,11 @@ part of core;
 /// A TagDef acts as a tag constructor and also determines the behavior of the
 /// tags it creates.
 abstract class TagDef {
-  /// The constructing method name on the TagMaker, or null if none.
-  final Symbol methodName;
-
-  /// The tag name to use for JSON serialization, or null if not serializable.
-  final String jsonName;
-
-  /// Optional information about the props of this tag.
-  /// (The PropDef must be present for handlers and JSON serialization.)
-  final List<PropType> _propDefs;
+  final TagType type;
 
   static final _jsonMappers = new Expando<JsonMapper>("jsonMapper");
 
-  const TagDef(this.methodName, [this.jsonName, this._propDefs = const []]);
+  const TagDef(TagType this.type);
 
   PropType operator[](Symbol key) => jsonMapper._bySymbol[key];
 
@@ -24,7 +16,7 @@ abstract class TagDef {
     // Use lazy initializion with an Expando so that TagDef can be const.
     var mapper = _jsonMappers[this];
     if (mapper == null) {
-      if (jsonName == null) {
+      if (type.name == null) {
         return null;
       }
       mapper = new JsonMapper(this);
@@ -35,7 +27,7 @@ abstract class TagDef {
 
   TagNode makeTag(Map<Symbol, dynamic> props) {
     assert(checkProps(props));
-    if (jsonName != null) {
+    if (type != null && type.name != null) {
       return new JsonableTag._raw(this, props);
     } else {
       return new TagNode._raw(this, props);
@@ -64,8 +56,8 @@ class JsonMapper {
   final Map<Symbol, PropType> _bySymbol = {};
   final Map<String, PropType> _byName = {};
 
-  JsonMapper(TagDef def) : this.tagName = def.jsonName {
-    for (var p in def._propDefs) {
+  JsonMapper(TagDef def) : this.tagName = def.type.name {
+    for (var p in def.type.props) {
       assert(p.sym != null);
       assert(!_bySymbol.containsKey(p.sym));
       _bySymbol[p.sym] = p;
@@ -113,8 +105,8 @@ class EltDef extends TagDef {
 
   /// Defines an HTML element.
   /// The tagName is used for both HTML rendering and JSON serialization.
-  const EltDef(Symbol methodName, String tagName, Iterable<PropType> props) :
-    super(methodName, tagName, props);
+  EltDef(TagType type) :
+    super(type);
 
   /// The name used when rendering the tag as HTML.
   String get tagName => jsonMapper.tagName;
@@ -155,11 +147,10 @@ class TemplateDef extends TagDef {
   /// If the custom tag should have internal state, use a WidgetDef instead.
   ///
   /// As an alternative, see [BaseTagMaker.defineTemplate].
-  TemplateDef({Symbol method, ShouldUpdateFunc shouldUpdate, Function render,
-      String jsonName, Iterable<PropType> props: const []}) :
+  TemplateDef({TagType type, ShouldUpdateFunc shouldUpdate, Function render}) :
     this.shouldUpdate = shouldUpdate == null ? _alwaysUpdate : shouldUpdate,
     this._renderFunc = render,
-    super(method, jsonName, props) {
+    super(type) {
     assert(render != null);
   }
 
@@ -175,15 +166,14 @@ class WidgetDef extends TagDef {
   final CreateWidgetFunc make;
 
   /// As an alternative, see [BaseTagMaker.defineWidget].
-  const WidgetDef({this.make, Symbol method, String jsonName,
-    Iterable<PropType> props: const []}) :
-      super(method, jsonName, props);
+  WidgetDef({TagType type, this.make}) :
+      super(type);
 }
 
 /// Creates tags with no implementation. (They cannot be rendered, only serialized.)
 class RemoteTagDef extends TagDef {
-  RemoteTagDef({Symbol method, String jsonName, Iterable<PropType> props: const []}) :
-    super(method, jsonName, props) {
-    assert(jsonName != null);
+  RemoteTagDef(TagType type) :
+    super(type) {
+    assert(type != null);
   }
 }

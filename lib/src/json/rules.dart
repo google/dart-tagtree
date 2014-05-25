@@ -4,7 +4,7 @@ part of json;
 TaggedJsonCodec makeCodec(TagSet tags) {
   var rs = [];
   for (TagDef def in tags.defs) {
-    if (def.jsonName != null) {
+    if (def.type != null) {
       rs.add(new JsonableTagRule(def));
     }
   }
