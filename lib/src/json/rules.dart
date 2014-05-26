@@ -32,11 +32,11 @@ class JsonableNodeRule extends JsonRule<JsonableNode> {
   bool appliesTo(Jsonable instance) => instance is JsonableNode && instance.tag == tag;
 
   @override
-  encode(JsonableNode instance) => instance.tag.type.propsToJson(instance.propMap);
+  encode(JsonableNode instance) => instance.tag.type.convertToStringKeys(instance.propMap);
 
   @override
   TagNode decode(Map<String, dynamic> state) {
-    var props = tag.type.propsFromJson(state);
+    var props = tag.type.convertFromStringKeys(state);
     return tag.makeNode(props);
   }
 }

@@ -5,7 +5,7 @@ part of core;
 class HtmlTagSet extends TagSet with HtmlTags {
   HtmlTagSet() {
     for (var tag in htmlTags) {
-      addTag(tag.type.sym, tag);
+      addTag(tag.type.symbol, tag);
     }
   }
 
@@ -24,10 +24,10 @@ class TagSet {
   /// Adds a tag to the set. Automatically exports a method for constructing new tag nodes.
   /// If the method is null, the TagType's symbol will be used as the method name.
   void addTag(Symbol method, Tag tag) {
-    assert(tag.checkTag());
+    assert(tag.checked());
     if (method == null) {
       assert(tag.type != null);
-      method = tag.type.sym;
+      method = tag.type.symbol;
     }
     assert(!(_methodToTag.containsKey(method)));
     _methodToTag[method] = tag;

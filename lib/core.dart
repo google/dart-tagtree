@@ -9,7 +9,7 @@ library core;
 import 'dart:async' show Stream, StreamController, StreamSink;
 
 part 'src/core/debug.dart';
-part 'src/core/tagdef.dart';
+part 'src/core/tag.dart';
 part 'src/core/event.dart';
 part 'src/core/html.dart';
 part 'src/core/json.dart';

@@ -1,31 +1,38 @@
 part of core;
 
-/// A Tag acts as a node constructor and also determines the behavior of the
-/// nodes it creates.
+/// A Tag constructs nodes and determines their behavior.
 abstract class Tag {
-  final TagType type; // may be null when the tag is only used locally.
+  // If null, there is no type checking and the tag can't be serialized.
+  final TagType type;
 
-  const Tag(TagType this.type);
+  const Tag(this.type);
 
+  /// Subclass hook to assert that the Tag is well-formed.
+  /// (Not done in the constructor so that it can be const.)
+  bool checked() => true;
+
+  /// Subclass hook to assert that a node's properties are well-formed.
+  bool checkProps(Map<Symbol, dynamic> props) => true;
+
+  /// Creates a node with this tag. The properties must match the
+  /// type (if any). Also, [checkProps] must return true.
   TagNode makeNode(Map<Symbol, dynamic> props) {
-    assert(checkTag());
+    assert(_checkNode(props));
     if (type != null) {
-      assert(type.checkPropKeys(props));
-    }
-    assert(checkProps(props));
-    if (type != null && type.name != null) {
       return new JsonableNode._raw(this, props);
     } else {
       return new TagNode._raw(this, props);
     }
   }
 
-  /// Subclass hook to check that the tag is well-formed.
-  /// (Not done in the constructor so that it can be const.)
-  bool checkTag() => true;
-
-  /// Subclass hook to check a node's properties.
-  bool checkProps(Map<Symbol, dynamic> props) => true;
+  bool _checkNode(Map<Symbol, dynamic> props) {
+    assert(checked());
+    if (type != null) {
+      assert(type.checkPropKeys(props));
+    }
+    assert(checkProps(props));
+    return true;
+  }
 
   /// Implement call() to call makeNode() with any named arguments.
   noSuchMethod(Invocation inv) {
@@ -44,7 +51,7 @@ class RemoteTag extends Tag {
   const RemoteTag(TagType type) : super(type);
 
   @override
-  bool checkTag() {
+  bool checked() {
     assert(type != null);
     return true;
   }
@@ -59,7 +66,7 @@ class ElementTag extends Tag {
   String get tagName => type.name;
 
   @override
-  bool checkTag() {
+  bool checked() {
     assert(type != null);
     return true;
   }
@@ -101,7 +108,7 @@ class TemplateTag extends Tag {
   const TemplateTag({TagType type, this.render, this.shouldUpdate}) : super(type);
 
   @override
-  bool checkTag() {
+  bool checked() {
     assert(render != null);
     return true;
   }
@@ -121,7 +128,7 @@ class WidgetTag extends Tag {
   const WidgetTag({TagType type, this.make}) : super(type);
 
   @override
-  bool checkTag() {
+  bool checked() {
     assert(make != null);
     return true;
   }
