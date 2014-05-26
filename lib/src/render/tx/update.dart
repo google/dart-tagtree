@@ -30,7 +30,7 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   /// Renders a Widget without any property changes.
-  void updateWidget(_Widget view) {
+  void updateWidget(_WidgetView view) {
     Widget w = view.controller.widget;
     var oldState = w.state;
     w.commitState();
@@ -44,23 +44,23 @@ abstract class _Update extends _Mount with _Unmount {
   void _updateInPlace(_View view, TagNode newNode) {
     TagNode old = view.updateProps(newNode);
 
-    if (view is _Template) {
+    if (view is _TemplateView) {
       _renderTemplate(view, old);
-    } else if (view is _Widget) {
+    } else if (view is _WidgetView) {
       Widget w = view.controller.widget;
       var oldState = w.state;
       w.commitState();
       _renderWidget(view, old, oldState);
-    } else if (view is _Text) {
+    } else if (view is _TextView) {
       _renderText(view, old);
-    } else if (view is _Elt) {
+    } else if (view is _EltView) {
       _renderElt(view, old);
     } else {
       throw "cannot update: ${view.runtimeType}";
     }
   }
 
-  void _renderTemplate(_Template view, TagNode old) {
+  void _renderTemplate(_TemplateView view, TagNode old) {
     TemplateTag tag = view.tag;
     if (tag.shouldRender != null && !tag.shouldRender(old.props, view.node.props)) {
       return;
@@ -69,7 +69,7 @@ abstract class _Update extends _Mount with _Unmount {
     view.shadow = updateOrReplace(view.shadow, newShadow);
   }
 
-  void _renderWidget(_Widget view, TagNode oldNode, oldState) {
+  void _renderWidget(_WidgetView view, TagNode oldNode, oldState) {
     if (!view.controller.widget.shouldRender(oldNode, oldState)) {
       return;
     }
@@ -84,20 +84,20 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  void _renderText(_Text view, TagNode old) {
+  void _renderText(_TextView view, TagNode old) {
     String newValue = view.node[#value];
     if (old[#value] != newValue) {
       dom.setInnerText(view.path, newValue);
     }
   }
 
-  void _renderElt(_Elt elt, TagNode old) {
+  void _renderElt(_EltView elt, TagNode old) {
     _updateDomProperties(elt, old);
     _updateInner(elt);
   }
 
   /// Updates DOM attributes and event handlers of an Elt.
-  void _updateDomProperties(_Elt elt, TagNode oldNode) {
+  void _updateDomProperties(_EltView elt, TagNode oldNode) {
     var tag = elt.tag;
     String path = elt.path;
     TagNode newNode = elt.node;
@@ -137,7 +137,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates the inner DOM and mount/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(_Elt elt) {
+  void _updateInner(_EltView elt) {
     String path = elt.path;
     var newInner = elt.node[#inner];
 
@@ -177,7 +177,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateChildren(_Elt elt, String path, List<TagNode> newChildren) {
+  void _updateChildren(_EltView elt, String path, List<TagNode> newChildren) {
     if (elt._children == null) {
       StringBuffer out = new StringBuffer();
       mountInner(elt, out, newChildren, null);
@@ -217,7 +217,7 @@ abstract class _Update extends _Mount with _Unmount {
     elt._childText = null;
   }
 
-  _View _mountNewChild(_Elt parent, TagNode child, int childIndex) {
+  _View _mountNewChild(_EltView parent, TagNode child, int childIndex) {
     var html = new StringBuffer();
     _View view = mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
     dom.addChildElement(parent.path, html.toString());

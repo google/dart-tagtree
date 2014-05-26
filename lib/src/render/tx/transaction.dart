@@ -9,10 +9,10 @@ class _Transaction extends _Update {
   // What to do
   final TagNode nextTagTree;
   final HandleFunc nextHandler;
-  final List<_Widget> _widgetsToUpdate;
+  final List<_WidgetView> _widgetsToUpdate;
 
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree, this.nextHandler,
-      Iterable<_Widget> widgetsToUpdate)
+      Iterable<_WidgetView> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
   _InvalidateWidgetFunc get invalidateWidget => root._invalidateWidget;
@@ -25,8 +25,8 @@ class _Transaction extends _Update {
     // Sort ancestors ahead of children.
     _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (_Widget w in _widgetsToUpdate) {
-      updateWidget(w);
+    for (_WidgetView v in _widgetsToUpdate) {
+      updateWidget(v);
     }
 
     _finish();
@@ -37,7 +37,7 @@ class _Transaction extends _Update {
       dom.mountRef(v.path, v.ref);
     }
 
-    for (_Elt form in _mountedForms) {
+    for (_EltView form in _mountedForms) {
       dom.mountForm(form.path);
     }
 

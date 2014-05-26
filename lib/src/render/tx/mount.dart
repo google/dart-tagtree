@@ -8,7 +8,7 @@ abstract class _Mount {
 
   // What was mounted
   final List<_View> _mountedRefs = [];
-  final List<_Elt> _mountedForms = [];
+  final List<_EltView> _mountedForms = [];
   final List<EventSink> _mountedWidgets = [];
   void addHandler(HandlerType type, String path, val);
 
@@ -35,43 +35,43 @@ abstract class _Mount {
   _View _mountTag(TagNode node, StringBuffer out, String path, int depth) {
     Tag tag = node.tag;
     if (tag is _TextTag) {
-      _Text text = new _Text(path, depth, node[#value]);
+      _TextView view = new _TextView(path, depth, node[#value]);
       // need to surround with a span to support incremental updates to a child
-      out.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(node[#value])}</span>");
-      return text;
+      out.write("<span data-path=${view.path}>${HTML_ESCAPE.convert(node[#value])}</span>");
+      return view;
 
     } else if (tag is TemplateTag) {
-      _Template view = new _Template(node, path, depth);
+      _TemplateView view = new _TemplateView(node, path, depth);
       TagNode shadow = node.applyProps(tag.render);
       view.shadow = mountView(shadow, out, path, depth + 1);
       return view;
 
     } else if (tag is WidgetTag) {
-      var w = tag.make();
-      var v = new _Widget(node, path, depth);
-      var c = w.mount(node, () => invalidateWidget(v));
-      v.controller = c;
+      var widget = tag.make();
+      var view = new _WidgetView(node, path, depth);
+      var c = widget.mount(node, () => invalidateWidget(view));
+      view.controller = c;
 
-      TagNode newShadow = w.render();
-      v.shadow = mountView(newShadow, out, v.path, v.depth + 1);
+      TagNode newShadow = widget.render();
+      view.shadow = mountView(newShadow, out, view.path, view.depth + 1);
 
       if (c.didMount.hasListener) {
         _mountedWidgets.add(c.didMount);
       }
 
-      return v;
+      return view;
 
     } else if (tag is ElementTag) {
-      _Elt elt = new _Elt(node, path, depth);
-      _mountElt(elt, out);
-      return elt;
+      _EltView view = new _EltView(node, path, depth);
+      _mountElt(view, out);
+      return view;
 
     } else {
-      throw "can't mount tag: ${node.runtimeType}";
+      throw "can't mount node for unknown tag type: ${tag.runtimeType}";
     }
   }
 
-  void _mountElt(_Elt elt, StringBuffer out) {
+  void _mountElt(_EltView elt, StringBuffer out) {
     _writeStartTag(out, elt);
 
     if (elt.tagName == "textarea") {
@@ -90,7 +90,7 @@ abstract class _Mount {
     }
   }
 
-  void _writeStartTag(StringBuffer out, _Elt elt) {
+  void _writeStartTag(StringBuffer out, _EltView elt) {
     out.write("<${elt.tagName} data-path=\"${elt.path}\"");
     for (Symbol key in elt.node.propKeys) {
       var type = elt.tag.getPropType(key);
@@ -113,7 +113,7 @@ abstract class _Mount {
     out.write(">");
   }
 
-  void mountInner(_Elt elt, StringBuffer out, inner, String innerHtml) {
+  void mountInner(_EltView elt, StringBuffer out, inner, String innerHtml) {
 
     if (inner == null) {
       if (innerHtml != null) {

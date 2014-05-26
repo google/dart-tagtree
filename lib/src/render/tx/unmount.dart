@@ -10,15 +10,15 @@ abstract class _Unmount {
   /// and marks them as unmounted. (Calls releaseElement but doesn't actually
   /// change the DOM.)
   void unmount(_View v, {bool willReplace: false}) {
-    if (v is _Text) {
+    if (v is _TextView) {
       releaseElement(v.path, v.ref, willReplace: willReplace);
-    } else if (v is _Elt) {
+    } else if (v is _EltView) {
       unmountInner(v);
       releaseElement(v.path, v.ref, willReplace: willReplace);
-    } else if (v is _Template) {
+    } else if (v is _TemplateView) {
       unmount(v.shadow);
       v.shadow = null;
-    } else if (v is _Widget) {
+    } else if (v is _WidgetView) {
       _unmountWidget(v, willReplace);
     } else {
       throw "unable to unmount ${v.runtimeType}";
@@ -26,7 +26,7 @@ abstract class _Unmount {
     v._unmount();
   }
 
-  void _unmountWidget(_Widget view, bool willReplace) {
+  void _unmountWidget(_WidgetView view, bool willReplace) {
     if (view.shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }
@@ -37,7 +37,7 @@ abstract class _Unmount {
     view.shadow = null;
   }
 
-  void unmountInner(_Elt elt) {
+  void unmountInner(_EltView elt) {
     if (elt._children != null) {
       for (_View child in elt._children) {
         unmount(child);

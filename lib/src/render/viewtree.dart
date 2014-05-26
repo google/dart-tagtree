@@ -61,12 +61,12 @@ abstract class _View {
   }
 }
 
-/// A node representing some plain text that was rendered as a <span>.
+/// A view node for some text within mixed-content HTML.
 ///
-/// To simulate mixed-content HTML, we render plain text inside a <span>, so that
-/// it can easily be updated using its data-path attribute.
-class _Text extends _View {
-  _Text(String path, int depth, String value) :
+/// To simulate mixed-content HTML, we render the text inside a <span>,
+/// so that it can easily be updated using its data-path attribute.
+class _TextView extends _View {
+  _TextView(String path, int depth, String value) :
     super(new TagNode(const _TextTag(), {#value: value}), path, depth);
 }
 
@@ -74,34 +74,34 @@ class _TextTag extends Tag {
   const _TextTag() : super(null);
 }
 
-/// A node representing a rendered HTML element.
-class _Elt extends _View {
+/// A view node for a rendered HTML element.
+class _EltView extends _View {
   final String tagName;
   // Non-null if the element has at least one non-text child.
   List<_View> _children;
   // Non-null if the view contains just text.
   String _childText;
 
-  _Elt(TagNode node, String path, int depth) :
+  _EltView(TagNode node, String path, int depth) :
       tagName = node.tag.type.name,
       super(node, path, depth) {
   }
 }
 
-/// A node representing a rendered template.
-class _Template extends _View {
+/// A view node for a rendered template.
+class _TemplateView extends _View {
   _View shadow;
-  _Template(TagNode node, String path, int depth) : super(node, path, depth);
+  _TemplateView(TagNode node, String path, int depth) : super(node, path, depth);
 }
 
-typedef _InvalidateWidgetFunc(_Widget v);
+typedef _InvalidateWidgetFunc(_WidgetView v);
 
-/// A node representing a rendered widget.
-class _Widget extends _View {
+/// A view node for a rendered widget.
+class _WidgetView extends _View {
   WidgetController controller;
   _View shadow;
 
-  _Widget(TagNode node, String path, int depth) : super(node, path, depth);
+  _WidgetView(TagNode node, String path, int depth) : super(node, path, depth);
 
   @override
   TagNode updateProps(TagNode next) {
