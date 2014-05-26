@@ -51,7 +51,7 @@ class TagNodeRule extends JsonRule<TagNode> {
 }
 
 class _HandlerRule extends JsonRule<Handler> {
-  _HandlerRule(): super("handle");
+  _HandlerRule(): super("handler");
 
   @override
   bool appliesTo(Jsonable instance) => (instance is Handler);
@@ -64,7 +64,7 @@ class _HandlerRule extends JsonRule<Handler> {
     if (array is List && array.length >= 2) {
       return new Handler(array[0], array[1]);
     } else {
-      throw "can't decode Handle: ${array.runtimeType}";
+      throw "can't decode Handler: ${array.runtimeType}";
     }
   }
 }

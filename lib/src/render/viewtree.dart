@@ -1,6 +1,6 @@
 part of render;
 
-/// A View is a record of how a Tag was rendered to the DOM.
+/// A View records how a TagNode was rendered in the most recent animation frame.
 ///
 /// Each Root has a tree of Views that records how its DOM was last rendered.
 /// Between animation frames, the view tree should match the DOM. When rendering an
@@ -17,18 +17,17 @@ part of render;
 /// replace each view with its shadow, resulting in a tree containing only element
 /// and text nodes.
 ///
-/// Each View conceptually has an owner that rendered its corresponding Tag. For top-level
+/// Each View conceptually has an owner that rendered the corresponding TagNode. For top-level
 /// tags that aren't in a shadow tree, the owner is outside the framework and makes changes
 /// by calling Root.mount(). For Views inside a shadow tree, the owner is the template or
-/// widget whose render method created the shadow tree.
+/// widget node whose render method created the shadow tree.
 ///
 /// Most Views have no state of their own; all their state is copied from the corresponding
 /// Tag. Therefore, they only need to be updated when their owner is rendered. However,
-/// widgets have their own state and therefore can start a render on their own by calling
+/// widgets have their own state and therefore can start a render by calling
 /// Widget.invalidate().
 abstract class _View {
-
-  final Tag def;
+  final Tag tag;
 
   /// The unique id used to find the view's HTML element.
   final String path;
@@ -41,7 +40,7 @@ abstract class _View {
 
   bool _mounted = true;
 
-  _View(this.def, this.path, this.depth, this.ref);
+  _View(this.tag, this.path, this.depth, this.ref);
 
   void _unmount() {
     assert(_mounted);
@@ -65,16 +64,16 @@ class _TextTag extends Tag {
 /// A node representing a rendered HTML element.
 class _Elt extends _View {
   final String tagName;
-  Map<Symbol, dynamic> props;
+  Map<Symbol, dynamic> propMap;
   // Non-null if the element has at least one non-text child.
   List<_View> _children;
   // Non-null if the view contains just text.
   String _childText;
 
-  _Elt(ElementTag def, String path, int depth, Map<Symbol, dynamic> propMap) :
-      tagName = def.tagName,
-      props = propMap,
-      super(def, path, depth, propMap[#ref]) {
+  _Elt(ElementTag tag, String path, int depth, Map<Symbol, dynamic> propMap) :
+      tagName = tag.type.name,
+      this.propMap = propMap,
+      super(tag, path, depth, propMap[#ref]) {
   }
 }
 
@@ -83,8 +82,8 @@ class _Template extends _View {
   Props props;
   _View shadow;
 
-  _Template(TemplateTag def, String path, int depth, Map<Symbol, dynamic> propsMap) :
-    super(def, path, depth, propsMap[#ref]);
+  _Template(TemplateTag tag, String path, int depth, Map<Symbol, dynamic> propsMap) :
+    super(tag, path, depth, propsMap[#ref]);
 }
 
 typedef _InvalidateWidgetFunc(_Widget v);
@@ -94,5 +93,5 @@ class _Widget extends _View {
   WidgetController controller;
   _View shadow;
 
-  _Widget(WidgetTag def, String path, int depth, ref) : super(def, path, depth, ref);
+  _Widget(WidgetTag tag, String path, int depth, ref) : super(tag, path, depth, ref);
 }

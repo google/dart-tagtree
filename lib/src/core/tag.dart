@@ -54,9 +54,6 @@ class ElementTag extends Tag {
 
   const ElementTag(TagType type) : super(type);
 
-  /// The name used when rendering the tag as HTML.
-  String get tagName => type.name;
-
   @override
   bool checked() {
     assert(type != null);
@@ -71,17 +68,6 @@ class ElementTag extends Tag {
     assert(props[#value] == null || props[#defaultValue] == null);
     return true;
   }
-
-  String getAttributeName(Symbol propKey) {
-    var prop = type.propsBySymbol[propKey];
-    if (prop is AttributeType) {
-      return prop.name;
-    } else {
-      return null;
-    }
-  }
-
-  bool isHandler(Symbol propKey) => type.propsBySymbol[propKey] is HandlerType;
 }
 
 /// Creates tags that are rendered by expanding a template.
@@ -105,7 +91,8 @@ class TemplateTag extends Tag {
     return true;
   }
 
-  TagNode renderProps(Map<Symbol, dynamic> props) {
+  /// Evaluates the template using the supplied properties.
+  TagNode expand(Map<Symbol, dynamic> props) {
     return Function.apply(render, [], props);
   }
 

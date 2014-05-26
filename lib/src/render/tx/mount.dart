@@ -24,34 +24,34 @@ abstract class _Mount {
   /// view tree, not the depth in the DOM tree (like the path). For example,
   /// the root of a Widget's shadow tree has the same path, but its depth is
   /// incremented.
-  _View mountView(TagNode tag, StringBuffer html, String path, int depth) {
-    _View view = _mountTag(tag, html, path, depth);
+  _View mountView(TagNode node, StringBuffer html, String path, int depth) {
+    _View view = _mountTag(node, html, path, depth);
     if (view.ref != null) {
       _mountedRefs.add(view);
     }
     return view;
   }
 
-  _View _mountTag(TagNode tag, StringBuffer out, String path, int depth) {
-    Tag def = tag.tag;
+  _View _mountTag(TagNode node, StringBuffer out, String path, int depth) {
+    Tag tag = node.tag;
 
-    if (def is _TextTag) {
-      _Text text = new _Text(path, depth, tag.props[#value]);
+    if (tag is _TextTag) {
+      _Text text = new _Text(path, depth, node[#value]);
       // need to surround with a span to support incremental updates to a child
       out.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
       return text;
 
-    } else if (def is TemplateTag) {
-      _Template view = new _Template(def, path, depth, tag.propMap);
-      TagNode shadow = def.renderProps(tag.propMap);
+    } else if (tag is TemplateTag) {
+      _Template view = new _Template(tag, path, depth, node.propMap);
+      TagNode shadow = tag.expand(node.propMap);
       view.shadow = mountView(shadow, out, path, depth + 1);
-      view.props = tag.props;
+      view.props = node.props;
       return view;
 
-    } else if (def is WidgetTag) {
-      var w = def.make();
-      var v = new _Widget(def, path, depth, tag[#ref]);
-      var c = w.mount(tag.propMap, () => invalidateWidget(v));
+    } else if (tag is WidgetTag) {
+      var w = tag.make();
+      var v = new _Widget(tag, path, depth, node[#ref]);
+      var c = w.mount(node.propMap, () => invalidateWidget(v));
       v.controller = c;
 
       TagNode newShadow = w.render();
@@ -63,26 +63,26 @@ abstract class _Mount {
 
       return v;
 
-    } else if (def is ElementTag) {
-      _Elt elt = new _Elt(def, path, depth, tag.propMap);
+    } else if (tag is ElementTag) {
+      _Elt elt = new _Elt(tag, path, depth, node.propMap);
       _mountElt(elt, out);
       return elt;
 
     } else {
-      throw "can't mount tag: ${tag.runtimeType}";
+      throw "can't mount tag: ${node.runtimeType}";
     }
   }
 
   void _mountElt(_Elt elt, StringBuffer out) {
-    _writeStartTag(out, elt.def, elt.path, elt.props);
+    _writeStartTag(out, elt.tag, elt.path, elt.propMap);
 
     if (elt.tagName == "textarea") {
-      String val = elt.props[#defaultValue];
+      String val = elt.propMap[#defaultValue];
       if (val != null) {
         out.write(HTML_ESCAPE.convert(val));
       }
     } else {
-      mountInner(elt, out, elt.props[#inner], elt.props[#innerHtml]);
+      mountInner(elt, out, elt.propMap[#inner], elt.propMap[#innerHtml]);
     }
 
     out.write("</${elt.tagName}>");
@@ -93,7 +93,7 @@ abstract class _Mount {
   }
 
   void _writeStartTag(StringBuffer out, ElementTag tag, String path, Map<Symbol, dynamic> _props) {
-    out.write("<${tag.tagName} data-path=\"${path}\"");
+    out.write("<${tag.type.name} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
       var type = tag.getPropType(key);
       var val = _props[key];
@@ -105,7 +105,7 @@ abstract class _Mount {
         out.write(" ${type.name}=\"${escaped}\"");
       }
     }
-    if (tag.tagName == "input") {
+    if (tag.type.name == "input") {
       String val = _props[#defaultValue];
       if (val != null) {
         String escaped = HTML_ESCAPE.convert(val);

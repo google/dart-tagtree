@@ -14,7 +14,7 @@ abstract class _Update extends _Mount with _Unmount {
   // Either updates a view in place or unmounts and remounts it.
   // Returns the new view.
   _View updateOrReplace(_View current, TagNode next) {
-    if (current.def == next.tag) {
+    if (current.tag == next.tag) {
       _updateInPlace(current, next);
       return current;
     } else {
@@ -48,11 +48,11 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   void _updateTemplate(_Template current, TagNode nextTag) {
-    TemplateTag def = current.def;
-    if (def.shouldUpdate != null && !def.shouldUpdate(current.props, nextTag.props)) {
+    TemplateTag tag = current.tag;
+    if (tag.shouldUpdate != null && !tag.shouldUpdate(current.props, nextTag.props)) {
       return;
     }
-    TagNode newShadow = def.renderProps(nextTag.propMap);
+    TagNode newShadow = tag.expand(nextTag.propMap);
     current.shadow = updateOrReplace(current.shadow, newShadow);
     current.props = nextTag.props;
   }
@@ -94,11 +94,11 @@ abstract class _Update extends _Mount with _Unmount {
     String path = elt.path;
     assert(path != null);
 
-    Map<Symbol, dynamic> oldProps = elt.props;
+    Map<Symbol, dynamic> oldProps = elt.propMap;
     Map<Symbol, dynamic> newProps = next.propMap;
 
-    elt.props = newProps;
-    _updateDomProperties(elt.def, path, oldProps, newProps);
+    elt.propMap = newProps;
+    _updateDomProperties(elt.tag, path, oldProps, newProps);
     _updateInner(elt, path, newProps[#inner], newProps[#innerHtml]);
   }
 
