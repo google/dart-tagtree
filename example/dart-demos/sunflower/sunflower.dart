@@ -28,9 +28,9 @@ class _Sunflower extends Widget<int> {
     didUpdate.listen((_) => draw());
   }
 
-  onPropsChange({startSeeds, seedRadius}) {
-    this.startSeeds = startSeeds;
-    this.seedRadius = seedRadius;
+  setProps(TagNode node) {
+    this.startSeeds = node.props.startSeeds;
+    this.seedRadius = node.props.seedRadius;
   }
 
   @override

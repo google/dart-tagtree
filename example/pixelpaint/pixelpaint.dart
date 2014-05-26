@@ -25,7 +25,7 @@ class AppTags extends CustomTagSet implements CustomTags {
     defineWidget(method: #GridView, make: () => new _GridView());
 
     defineTemplate(method: #RowView,
-      shouldUpdate: (props, next) => !props.row.equals(next.row),
+      shouldRender: (props, next) => !props.row.equals(next.row),
       render: ({int y, Row row, Map<int, String> palette,
                PixelHandler onMouseDown, PixelHandler onMouseOver, Function onMouseUp}) {
         var cells = [];
@@ -52,10 +52,10 @@ class _PixelPaint extends Widget<Grid> {
   // A list of CSS styles to use for the pixels.
   List<String> palette;
 
-  onPropsChange({width, height, palette}) {
-    this.width = width;
-    this.height = height;
-    this.palette = palette;
+  setProps(TagNode node) {
+    this.width = node.props.width;
+    this.height = node.props.height;
+    this.palette = node.props.palette;
   }
 
   @override
@@ -79,10 +79,10 @@ class _GridView extends Widget<bool> {
   Map<int, String> palette;
   PixelHandler onPaint;
 
-  onPropsChange({grid, palette, onPaint}) {
-    this.grid = grid;
-    this.palette = palette;
-    this.onPaint = onPaint;
+  setProps(TagNode node) {
+    this.grid = node.props.grid;
+    this.palette = node.props.palette;
+    this.onPaint = node.props.onPaint;
   }
 
   @override

@@ -1,35 +1,66 @@
 part of core;
 
-/// A Widget is the implementation of a custom [TagNode] that has state.
-/// S is the type of the state object. It can be any type, but must be
-/// cloneable using the [cloneState] method.
+/// A Widget is the implementation of a [WidgetTag]. It implements a tag
+/// that can change on its own, unlike a [TemplateTag], which only changes
+/// passively when an ancestor is rendered.
 ///
-/// Each widget must have an onPropsChange() method that updates its props.
-/// It should have a named argument for each property of the WidgetTag.
+/// A Widget contains internal state. S is the type of the state object.
+/// It can be any type, but you must override the [cloneState] method if
+/// it's not a bool, num, or String.
+///
+/// Each widget has an associated [TagNode] that was rendered to create
+/// the widget. The widget must copy its props from this node whenever it
+/// changes, by implementing [setProps].
+///
+/// A Widget may access the DOM by rendering an element tag with its "ref"
+/// property set. The DOM will be available during callbacks
+/// for [didMount], [didUpdate], and [willUnmount] events.
 abstract class Widget<S> extends StateMixin<S> {
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
-
   var _invalidate; // non-null when mounted
 
-  /// Called by the render library.
+  /// Initializes the widget.
+  /// Called automatically when the associated node is first rendered.
   WidgetController mount(TagNode node, invalidate()) {
-    var c = new WidgetController(this);
-    c.setProps(node);
+    setProps(node);
     initState();
     _invalidate = invalidate;
-    return c;
+    return new WidgetController(this);
   }
 
-  /// Returns true between the time when the widget's first animation frame
-  /// was rendered up to (and not including) the first animation frame when
-  /// it was removed.
+  /// Copies the assocated node's props into the widget.
+  /// Subclasses must implement.
+  /// Called automatically when the node changes.
+  void setProps(TagNode node);
+
+  /// Asks for the widget to be rendered again.
+  /// Called automatically after the widget's state changes.
+  /// (That is, whenever [nextState] is accessed.)
+  @override
+  void invalidate() => _invalidate();
+
+  /// If shouldRender returns false, rendering will be skipped.
+  /// Subclasses may override this method to improve performance.
+  /// Called automatically in the animation frame after [setProps] or [invalidate].
+  bool shouldRender(TagNode oldNode, S oldState) => true;
+
+  /// Constructs the tag tree to be rendered in place of this Widget.
+  /// Called automatically for first animation frame containing
+  /// the widget, and in any animation frame where [shouldRender] returned true.
+  TagNode render();
+
+  /// Returns true when the widget is visible.
+  /// That is, isMounted changes to true when mount() is automatically
+  /// called while rendering the first animation frame displaying the widget.
+  /// It changes to false while rendering the first animation frame that
+  /// doesn't include the widget.
   bool get isMounted => _invalidate != null;
 
-  /// A stream that receives an event at the end of the animation frame when
-  /// the widget was mounted. The widget's DOM is valid and can be accessed
-  /// and BrowserRefs (if any) can be used to access it.
+  /// A stream that receives one event at the end of the animation frame when
+  /// the widget first appears. When the event is received, the widget's DOM can
+  /// be accessed using a ref.
   Stream get didMount => _didMount.stream;
 
   /// A stream that receives an event at the end of the animation frame when the
@@ -39,14 +70,6 @@ abstract class Widget<S> extends StateMixin<S> {
   /// A stream that receives an event during the animation frame when the widget
   /// is being unmounted. The widget's DOM hasn't been removed yet.
   Stream get willUnmount => _willUnmount.stream;
-
-  @override
-  void invalidate() => _invalidate();
-
-  /// Constructs the tag tree to be rendered in place of this Widget.
-  /// The render library calls this function during the next animation frame after invalidate()
-  /// was called.
-  TagNode render();
 }
 
 /// The API that the render library uses to control the widget.
@@ -59,12 +82,7 @@ class WidgetController {
   StreamController get didUpdate => widget._didUpdate;
   StreamController get willUnmount => widget._willUnmount;
 
-  /// Calls the widget's onPropsChange() with the node's props as named parameters.
-  void setProps(TagNode node) => node.applyProps(_suppressWarning(widget).onPropsChange);
-
   void unmount() {
     widget._invalidate = null;
   }
-
-  static _suppressWarning(x) => x;
 }

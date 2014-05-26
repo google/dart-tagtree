@@ -47,7 +47,7 @@ abstract class _View {
 
   bool get mounted => node != null;
 
-  TagNode update(TagNode newNode) {
+  TagNode updateProps(TagNode newNode) {
     assert(node != null);
     assert(tag == newNode.tag);
     var old = node;
@@ -104,14 +104,13 @@ class _Widget extends _View {
   _Widget(TagNode node, String path, int depth) : super(node, path, depth);
 
   @override
-  TagNode update(TagNode next) {
+  TagNode updateProps(TagNode next) {
     assert(controller.widget.isMounted);
     TagNode old = node;
     if (next != null) {
-      super.update(next);
-      controller.setProps(next);
+      super.updateProps(next);
+      controller.widget.setProps(next);
     }
-    controller.widget.commitState();
     return old;
   }
 }

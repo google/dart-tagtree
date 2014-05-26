@@ -9,8 +9,8 @@ main() => root("#container").mount(ReversableText(label: "Click me!"));
 class _ReversableText extends Widget<bool> {
   String label;
 
-  onPropsChange({label}) {
-    this.label = label;
+  setProps(TagNode node) {
+    this.label = node.props.label;
   }
 
   @override

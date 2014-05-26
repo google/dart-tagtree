@@ -72,7 +72,7 @@ class ElementTag extends Tag {
 
 /// Creates tags that are rendered by expanding a template.
 class TemplateTag extends Tag {
-  final ShouldUpdateFunc shouldUpdate;
+  final ShouldUpdateFunc shouldRender;
   final Function render;
 
   /// Defines a custom tag that's rendered by expanding a template.
@@ -83,7 +83,7 @@ class TemplateTag extends Tag {
   /// avoid expanding the template when no properties have changed.
   ///
   /// If the custom tag should have internal state, use a WidgetDef instead.
-  const TemplateTag({TagType type, this.render, this.shouldUpdate}) : super(type);
+  const TemplateTag({TagType type, this.render, this.shouldRender}) : super(type);
 
   @override
   bool checked() {

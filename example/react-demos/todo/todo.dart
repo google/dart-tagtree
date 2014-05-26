@@ -15,7 +15,7 @@ class _TodoState {
 
 class _TodoApp extends Widget<_TodoState> {
 
-  void onPropsChange() {}
+  void setProps(TagNode node) {}
 
   @override
   _TodoState createFirstState() => new _TodoState('', []);

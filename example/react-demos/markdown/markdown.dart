@@ -10,8 +10,8 @@ main() => root("#container").mount(MarkdownEditor(defaultText: "Type some *markd
 class _MarkdownEditor extends Widget<String> {
   String defaultText;
 
-  onPropsChange({defaultText}) {
-    this.defaultText = defaultText;
+  setProps(TagNode node) {
+    this.defaultText = node.props.defaultText;
   }
 
   @override

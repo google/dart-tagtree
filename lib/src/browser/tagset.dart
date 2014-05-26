@@ -11,9 +11,9 @@ class CustomTagSet extends core.HtmlTagSet {
   /// used to avoid expanding the template when no properties have changed.
   ///
   /// If the custom tag should have internal state, use [defineWidget] instead.
-  void defineTemplate({Symbol method, core.TagType type, core.ShouldUpdateFunc shouldUpdate,
+  void defineTemplate({Symbol method, core.TagType type, core.ShouldUpdateFunc shouldRender,
     Function render}) {
-    addTag(method, new core.TemplateTag(type: type, shouldUpdate: shouldUpdate, render: render));
+    addTag(method, new core.TemplateTag(type: type, shouldRender: shouldRender, render: render));
   }
 
   /// Defines a custom Tag that has state.

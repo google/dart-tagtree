@@ -16,7 +16,7 @@ class _SecondsElapsed extends Widget<int> {
     willUnmount.listen((_) => timer.cancel());
   }
 
-  onPropsChange() {}
+  setProps(TagNode node) {}
 
   @override
   int createFirstState() => 0;

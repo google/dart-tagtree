@@ -31,8 +31,10 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Renders a Widget without any property changes.
   void updateWidget(_Widget view) {
-    view.update(null);
-    _renderWidget(view);
+    Widget w = view.controller.widget;
+    var oldState = w.state;
+    w.commitState();
+    _renderWidget(view, view.node, oldState);
   }
 
   /// Updates a view in place.
@@ -40,12 +42,15 @@ abstract class _Update extends _Mount with _Unmount {
   /// After the update, current should have the same props as next and any DOM changes
   /// needed should have been sent to frame.
   void _updateInPlace(_View view, TagNode newNode) {
-    TagNode old = view.update(newNode);
+    TagNode old = view.updateProps(newNode);
 
     if (view is _Template) {
       _renderTemplate(view, old);
     } else if (view is _Widget) {
-      _renderWidget(view);
+      Widget w = view.controller.widget;
+      var oldState = w.state;
+      w.commitState();
+      _renderWidget(view, old, oldState);
     } else if (view is _Text) {
       _renderText(view, old);
     } else if (view is _Elt) {
@@ -57,14 +62,18 @@ abstract class _Update extends _Mount with _Unmount {
 
   void _renderTemplate(_Template view, TagNode old) {
     TemplateTag tag = view.tag;
-    if (tag.shouldUpdate != null && !tag.shouldUpdate(old.props, view.node.props)) {
+    if (tag.shouldRender != null && !tag.shouldRender(old.props, view.node.props)) {
       return;
     }
     TagNode newShadow = view.node.applyProps(tag.render);
     view.shadow = updateOrReplace(view.shadow, newShadow);
   }
 
-  void _renderWidget(_Widget view) {
+  void _renderWidget(_Widget view, TagNode oldNode, oldState) {
+    if (!view.controller.widget.shouldRender(oldNode, oldState)) {
+      return;
+    }
+
     var c = view.controller;
     TagNode newShadow = c.widget.render();
     view.shadow = updateOrReplace(view.shadow, newShadow);
