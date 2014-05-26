@@ -4,7 +4,6 @@
 library server;
 
 import 'package:viewtree/core.dart' as core;
-import 'package:viewtree/json.dart' as json;
 
 import 'dart:async' show scheduleMicrotask;
 import 'dart:convert' show Codec;
@@ -23,7 +22,7 @@ class WebSocketRoot {
   bool renderScheduled = false;
 
   WebSocketRoot(this._socket, core.HtmlTagSet maker) :
-      _codec = json.makeCodec(maker);
+      _codec = core.makeCodec(maker);
 
   /// Starts running a Session on this WebSocket.
   void mount(Session s) {

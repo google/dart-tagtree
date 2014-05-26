@@ -8,6 +8,8 @@ library core;
 
 import 'dart:async' show Stream, StreamController, StreamSink;
 
+import 'package:viewtree/json.dart';
+
 part 'src/core/debug.dart';
 part 'src/core/tag.dart';
 part 'src/core/event.dart';

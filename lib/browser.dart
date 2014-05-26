@@ -4,7 +4,6 @@
 library browser;
 
 import 'package:viewtree/core.dart' as core;
-import 'package:viewtree/json.dart' as json;
 import 'package:viewtree/render.dart' as render;
 
 import 'dart:async' show StreamSubscription;

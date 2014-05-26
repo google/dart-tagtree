@@ -39,7 +39,7 @@ class TagSet {
     if (tag == null) {
       throw "can't find method for constructing a tag node: ${method}";
     }
-    return tag.makeNode(props);
+    return new TagNode(tag, props);
   }
 
   /// Returns each tag in this TagSet.
@@ -48,12 +48,12 @@ class TagSet {
   /// Tags may also be created by calling a method with the same name.
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {
-      Tag def = _methodToTag[inv.memberName];
-      if (def != null) {
+      Tag tag = _methodToTag[inv.memberName];
+      if (tag != null) {
         if (!inv.positionalArguments.isEmpty) {
           throw "positional arguments not supported when creating tags";
         }
-        return def.makeNode(inv.namedArguments);
+        return new TagNode(tag, inv.namedArguments);
       }
     }
     return super.noSuchMethod(inv);

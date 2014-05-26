@@ -1,31 +1,22 @@
 part of json;
 
 class TaggedJsonCodec extends Codec<dynamic, String> {
-  final Iterable<JsonRule> _rules;
-  final _cache = <String, JsonRule>{};
+  Converter<dynamic, String> encoder;
+  Converter<String, dynamic> decoder;
 
-  const TaggedJsonCodec(this._rules);
-
-  Map<String, JsonRule> get ruleset {
-    if (!_cache.isEmpty) {
-      return _cache;
+  TaggedJsonCodec(Iterable<JsonRule> rules, Iterable<TagFinder> getters) {
+    var tagToRule = <String, JsonRule>{};
+    for (var r in rules) {
+      assert(!tagToRule.containsKey(r.tagName));
+      tagToRule[r.tagName] = r;
     }
-    assert(!_rules.isEmpty);
-    var map = <String, JsonRule>{};
-    for (var rule in _rules) {
-      assert(!map.containsKey(rule.tagName));
-      map[rule.tagName] = rule;
-    }
-    _cache.addAll(map);
-    return _cache;
+    encoder = new TaggedJsonEncoder(tagToRule, getters);
+    decoder = new TaggedJsonDecoder(tagToRule);
   }
-
-  Converter<dynamic, String> get encoder => new TaggedJsonEncoder(ruleset);
-  Converter<String, dynamic> get decoder => new TaggedJsonDecoder(ruleset);
 }
 
 /// A rule to be applied when encoding and decoding objects with a certain tag.
-abstract class JsonRule<T extends Jsonable> {
+abstract class JsonRule<T> {
 
   /// A tag used on the wire to identify instances encoded using this rule.
   /// (The tag must be unique within a [JsonRuleSet].)
@@ -34,7 +25,7 @@ abstract class JsonRule<T extends Jsonable> {
   const JsonRule(this.tagName);
 
   /// Returns true if this rule can encode the instance.
-  bool appliesTo(Jsonable instance);
+  bool appliesTo(instance);
 
   /// Returns the state of a Dart object as a JSON-encodable tree.
   /// The result may contain Jsonable instances and these will be
@@ -45,14 +36,28 @@ abstract class JsonRule<T extends Jsonable> {
   T decode(jsonTree);
 }
 
+/// A TagFinder finds the JSON tag for encoding an instance.
+abstract class TagFinder<T> {
+
+  /// Returns true if this finder works for the given instance,
+  /// and all other instances with the same runtime type.
+  bool appliesToType(instance);
+
+  String getTag(T instance);
+}
+
 /// Encodes a Dart object as a tree of tagged JSON.
 ///
 /// The tree may contain values directly encodable as JSON (String, Map, List, and so on)
-/// and instances of Jsonable where Jsonable.jsonTag matches a rule in the given ruleset.
+/// or instances for which there is a [TagFinder] that returns the tag of the rule to use.
 class TaggedJsonEncoder extends Converter<dynamic, String> {
   final Map<String, JsonRule> _rules;
+  final Iterable<TagFinder> _getters;
 
-  TaggedJsonEncoder(this._rules);
+  /// A cache that's populated when a runtime type is first seen.
+  final _getterCache = <Type, TagFinder>{};
+
+  TaggedJsonEncoder(this._rules, this._getters);
 
   String convert(object) {
     StringBuffer out = new StringBuffer();
@@ -61,28 +66,23 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
   }
 
   void _encodeTree(StringBuffer out, v) {
-    if (v is Jsonable) {
-      String tag = v.jsonTag;
-      if (tag == null) {
-        throw "unable to encode instance as JSON: ${v.runtimeType}";
-      }
-      var rule = _rules[tag];
-      if (rule == null) {
-        throw "no rule for tag: ${tag}";
-      }
-      assert(rule.appliesTo(v));
-      var data = rule.encode(v);
-      out.write("[${JSON.encode(tag)},");
-      _encodeTree(out, data);
-      out.write("]");
-    } else if (v is List) {
+
+    if (v == null || v is bool || v is num || v is String) {
+      out.write(JSON.encode(v));
+      return;
+    }
+
+    if (v is List) {
       out.write("[0");
       for (var item in v) {
         out.write(",");
         _encodeTree(out, item);
       }
       out.write("]");
-    } else if (v is Map) {
+      return;
+    }
+
+    if (v is Map) {
       Map<String, Object> m = v;
       out.write("{");
       bool first = true;
@@ -95,9 +95,55 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
         first = false;
       });
       out.write("}");
-    } else {
-      out.write(JSON.encode(v));
+      return;
     }
+
+    JsonRule rule = _findRule(v);
+    if (rule == null) {
+      // encoding will probably fail, but give the default encoder a chance.
+      out.write(JSON.encode(v));
+      return;
+    }
+
+    assert(rule.appliesTo(v));
+    var data = rule.encode(v);
+    out.write("[${JSON.encode(rule.tagName)},");
+    _encodeTree(out, data);
+    out.write("]");
+  }
+
+  /// Returns the rule or null if there is none.
+  JsonRule _findRule(v) {
+    TagFinder getter = _findGetter(v);
+    if (getter == null) {
+      return null;
+    }
+
+    String tag = getter.getTag(v);
+    if (tag == null) {
+      return null;
+    }
+
+    return _rules[tag];
+  }
+
+  /// Returns the TagGetter or null if there is none.
+  TagFinder _findGetter(v) {
+    if (_getterCache.containsKey(v.runtimeType)) {
+      return _getterCache[v.runtimeType];
+    }
+
+    // We haven't seen this type before, so search the slow way.
+    for (var getter in _getters) {
+      if (getter.appliesToType(v)) {
+        _getterCache[v.runtimeType] = getter;
+        return getter;
+      }
+    }
+
+    // Not found. Cache this so we don't search again.
+    _getterCache[v.runtimeType] = null;
+    return null;
   }
 }
 

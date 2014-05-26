@@ -167,7 +167,7 @@ abstract class _Update extends _Mount with _Unmount {
       List<TagNode> children = [];
       for (var item in newInner) {
         if (item is String) {
-          children.add(_TextDef.instance.makeNode({#value: item}));
+          children.add(new TagNode(const _TextTag(), {#value: item}));
         } else if (item is TagNode) {
           children.add(item);
         } else {

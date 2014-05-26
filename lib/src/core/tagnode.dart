@@ -11,14 +11,14 @@ part of core;
 /// they sometimes store arbitrary JSON, child tags, or callback functions.
 ///
 /// The children of a node (if any) are usually stored in its "inner" prop.
-///
-/// To construct a node, use a [TagSet] or a subclass of [Tag].
 class TagNode {
   final Tag tag;
   final Map<Symbol, dynamic> propMap;
   Props _props;
 
-  TagNode._raw(this.tag, this.propMap);
+  TagNode(this.tag, this.propMap) {
+    assert(tag.checkNode(this));
+  }
 
   /// Provides access to the tag's props as a map.
   operator[](Symbol key) => propMap[key];
@@ -30,11 +30,6 @@ class TagNode {
     }
     return _props;
   }
-}
-
-class JsonableNode extends TagNode implements Jsonable {
-  JsonableNode._raw(Tag def, Map<Symbol, dynamic> propMap) : super._raw(def,  propMap);
-  String get jsonTag => tag.type.name;
 }
 
 /// A wrapper allowing a [TagNode]'s props to be accessed as fields.

@@ -55,12 +55,11 @@ abstract class _View {
 /// it can easily be updated using its data-path attribute.
 class _Text extends _View {
   String value;
-  _Text(String path, int depth, this.value) : super(_TextDef.instance, path, depth, null);
+  _Text(String path, int depth, this.value) : super(const _TextTag(), path, depth, null);
 }
 
-class _TextDef extends Tag {
-  static final Tag instance = new _TextDef();
-  _TextDef() : super(null);
+class _TextTag extends Tag {
+  const _TextTag() : super(null);
 }
 
 /// A node representing a rendered HTML element.

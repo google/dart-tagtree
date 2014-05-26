@@ -7,7 +7,7 @@ part of browser;
 /// can be deserialized.)
 mountWebSocket(String webSocketUrl, String selectors, core.HtmlTagSet maker) {
   final $ = maker;
-  final codec = json.makeCodec($);
+  final codec = core.makeCodec($);
 
   showStatus(String message) {
     print(message);

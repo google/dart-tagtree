@@ -14,33 +14,22 @@ abstract class Tag {
   /// Subclass hook to assert that a node's properties are well-formed.
   bool checkProps(Map<Symbol, dynamic> props) => true;
 
-  /// Creates a node with this tag. The properties must match the
-  /// type (if any). Also, [checkProps] must return true.
-  TagNode makeNode(Map<Symbol, dynamic> props) {
-    assert(_checkNode(props));
-    if (type != null) {
-      return new JsonableNode._raw(this, props);
-    } else {
-      return new TagNode._raw(this, props);
-    }
-  }
-
-  bool _checkNode(Map<Symbol, dynamic> props) {
+  bool checkNode(TagNode node) {
     assert(checked());
     if (type != null) {
-      assert(type.checkPropKeys(props));
+      assert(type.checkPropKeys(node.propMap));
     }
-    assert(checkProps(props));
+    assert(checkProps(node.propMap));
     return true;
   }
 
-  /// Implement call() to call makeNode() with any named arguments.
+  /// Implement call() to create the node with any named arguments.
   noSuchMethod(Invocation inv) {
     if (inv.isMethod && inv.memberName == #call) {
       if (!inv.positionalArguments.isEmpty) {
         throw "positional arguments not supported for node creation";
       }
-      return makeNode(inv.namedArguments);
+      return new TagNode(this, inv.namedArguments);
     }
     return super.noSuchMethod(inv);
   }
