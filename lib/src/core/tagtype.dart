@@ -74,9 +74,9 @@ class TagType {
   }
 
   /// Verifies that a node's properties have the correct keys.
-  bool checkPropKeys(Map<Symbol, dynamic> propMap) {
+  bool checkPropKeys(TagNode node) {
     var bySym = propsBySymbol;
-    for (Symbol key in propMap.keys) {
+    for (Symbol key in node.propKeys) {
       if (!bySym.containsKey(key)) {
         throw "property not supported: ${key}";
       }

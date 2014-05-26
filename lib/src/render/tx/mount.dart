@@ -34,24 +34,22 @@ abstract class _Mount {
 
   _View _mountTag(TagNode node, StringBuffer out, String path, int depth) {
     Tag tag = node.tag;
-
     if (tag is _TextTag) {
       _Text text = new _Text(path, depth, node[#value]);
       // need to surround with a span to support incremental updates to a child
-      out.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(text.value)}</span>");
+      out.write("<span data-path=${text.path}>${HTML_ESCAPE.convert(node[#value])}</span>");
       return text;
 
     } else if (tag is TemplateTag) {
-      _Template view = new _Template(tag, path, depth, node.propMap);
-      TagNode shadow = tag.expand(node.propMap);
+      _Template view = new _Template(node, path, depth);
+      TagNode shadow = node.applyProps(tag.render);
       view.shadow = mountView(shadow, out, path, depth + 1);
-      view.props = node.props;
       return view;
 
     } else if (tag is WidgetTag) {
       var w = tag.make();
-      var v = new _Widget(tag, path, depth, node[#ref]);
-      var c = w.mount(node.propMap, () => invalidateWidget(v));
+      var v = new _Widget(node, path, depth);
+      var c = w.mount(node, () => invalidateWidget(v));
       v.controller = c;
 
       TagNode newShadow = w.render();
@@ -64,7 +62,7 @@ abstract class _Mount {
       return v;
 
     } else if (tag is ElementTag) {
-      _Elt elt = new _Elt(tag, path, depth, node.propMap);
+      _Elt elt = new _Elt(node, path, depth);
       _mountElt(elt, out);
       return elt;
 
@@ -74,15 +72,15 @@ abstract class _Mount {
   }
 
   void _mountElt(_Elt elt, StringBuffer out) {
-    _writeStartTag(out, elt.tag, elt.path, elt.propMap);
+    _writeStartTag(out, elt);
 
     if (elt.tagName == "textarea") {
-      String val = elt.propMap[#defaultValue];
+      String val = elt.node[#defaultValue];
       if (val != null) {
         out.write(HTML_ESCAPE.convert(val));
       }
     } else {
-      mountInner(elt, out, elt.propMap[#inner], elt.propMap[#innerHtml]);
+      mountInner(elt, out, elt.node[#inner], elt.node[#innerHtml]);
     }
 
     out.write("</${elt.tagName}>");
@@ -92,21 +90,21 @@ abstract class _Mount {
     }
   }
 
-  void _writeStartTag(StringBuffer out, ElementTag tag, String path, Map<Symbol, dynamic> _props) {
-    out.write("<${tag.type.name} data-path=\"${path}\"");
-    for (Symbol key in _props.keys) {
-      var type = tag.getPropType(key);
-      var val = _props[key];
+  void _writeStartTag(StringBuffer out, _Elt elt) {
+    out.write("<${elt.tagName} data-path=\"${elt.path}\"");
+    for (Symbol key in elt.node.propKeys) {
+      var type = elt.tag.getPropType(key);
+      var val = elt.node[key];
       if (type is HandlerType) {
-        addHandler(type, path, val);
+        addHandler(type, elt.path, val);
         continue;
       } else if (type is AttributeType) {
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
         out.write(" ${type.name}=\"${escaped}\"");
       }
     }
-    if (tag.type.name == "input") {
-      String val = _props[#defaultValue];
+    if (elt.tagName == "input") {
+      String val = elt.node[#defaultValue];
       if (val != null) {
         String escaped = HTML_ESCAPE.convert(val);
         out.write(" value=\"${escaped}\"");
@@ -116,7 +114,6 @@ abstract class _Mount {
   }
 
   void mountInner(_Elt elt, StringBuffer out, inner, String innerHtml) {
-
 
     if (inner == null) {
       if (innerHtml != null) {

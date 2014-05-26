@@ -38,13 +38,26 @@ abstract class _View {
   /// The owner's reference to the DOM. May be null.
   final ref;
 
-  bool _mounted = true;
+  TagNode node;
 
-  _View(this.tag, this.path, this.depth, this.ref);
+  _View(TagNode node, this.path, this.depth) :
+    this.tag = node.tag,
+    this.ref = node[#ref],
+    this.node = node;
+
+  bool get mounted => node != null;
+
+  TagNode update(TagNode newNode) {
+    assert(node != null);
+    assert(tag == newNode.tag);
+    var old = node;
+    node = newNode;
+    return old;
+  }
 
   void _unmount() {
-    assert(_mounted);
-    _mounted = false;
+    assert(node != null);
+    node = null;
   }
 }
 
@@ -53,8 +66,8 @@ abstract class _View {
 /// To simulate mixed-content HTML, we render plain text inside a <span>, so that
 /// it can easily be updated using its data-path attribute.
 class _Text extends _View {
-  String value;
-  _Text(String path, int depth, this.value) : super(const _TextTag(), path, depth, null);
+  _Text(String path, int depth, String value) :
+    super(new TagNode(const _TextTag(), {#value: value}), path, depth);
 }
 
 class _TextTag extends Tag {
@@ -64,26 +77,21 @@ class _TextTag extends Tag {
 /// A node representing a rendered HTML element.
 class _Elt extends _View {
   final String tagName;
-  Map<Symbol, dynamic> propMap;
   // Non-null if the element has at least one non-text child.
   List<_View> _children;
   // Non-null if the view contains just text.
   String _childText;
 
-  _Elt(ElementTag tag, String path, int depth, Map<Symbol, dynamic> propMap) :
-      tagName = tag.type.name,
-      this.propMap = propMap,
-      super(tag, path, depth, propMap[#ref]) {
+  _Elt(TagNode node, String path, int depth) :
+      tagName = node.tag.type.name,
+      super(node, path, depth) {
   }
 }
 
 /// A node representing a rendered template.
 class _Template extends _View {
-  Props props;
   _View shadow;
-
-  _Template(TemplateTag tag, String path, int depth, Map<Symbol, dynamic> propsMap) :
-    super(tag, path, depth, propsMap[#ref]);
+  _Template(TagNode node, String path, int depth) : super(node, path, depth);
 }
 
 typedef _InvalidateWidgetFunc(_Widget v);
@@ -93,5 +101,17 @@ class _Widget extends _View {
   WidgetController controller;
   _View shadow;
 
-  _Widget(WidgetTag tag, String path, int depth, ref) : super(tag, path, depth, ref);
+  _Widget(TagNode node, String path, int depth) : super(node, path, depth);
+
+  @override
+  TagNode update(TagNode next) {
+    assert(controller.widget.isMounted);
+    TagNode old = node;
+    if (next != null) {
+      super.update(next);
+      controller.setProps(next);
+    }
+    controller.widget.commitState();
+    return old;
+  }
 }

@@ -29,123 +29,114 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
+  /// Renders a Widget without any property changes.
+  void updateWidget(_Widget view) {
+    view.update(null);
+    _renderWidget(view);
+  }
+
   /// Updates a view in place.
   ///
   /// After the update, current should have the same props as next and any DOM changes
   /// needed should have been sent to frame.
-  void _updateInPlace(_View current, TagNode next) {
-    if (current is _Template) {
-      _updateTemplate(current, next);
-    } else if (current is _Widget) {
-      updateWidget(current, next);
-    } else if (current is _Text) {
-      _updateText(current, next);
-    } else if (current is _Elt) {
-      _updateElt(current, next);
+  void _updateInPlace(_View view, TagNode newNode) {
+    TagNode old = view.update(newNode);
+
+    if (view is _Template) {
+      _renderTemplate(view, old);
+    } else if (view is _Widget) {
+      _renderWidget(view);
+    } else if (view is _Text) {
+      _renderText(view, old);
+    } else if (view is _Elt) {
+      _renderElt(view, old);
     } else {
-      throw "cannot update: ${current.runtimeType}";
+      throw "cannot update: ${view.runtimeType}";
     }
   }
 
-  void _updateTemplate(_Template current, TagNode nextTag) {
-    TemplateTag tag = current.tag;
-    if (tag.shouldUpdate != null && !tag.shouldUpdate(current.props, nextTag.props)) {
+  void _renderTemplate(_Template view, TagNode old) {
+    TemplateTag tag = view.tag;
+    if (tag.shouldUpdate != null && !tag.shouldUpdate(old.props, view.node.props)) {
       return;
     }
-    TagNode newShadow = tag.expand(nextTag.propMap);
-    current.shadow = updateOrReplace(current.shadow, newShadow);
-    current.props = nextTag.props;
+    TagNode newShadow = view.node.applyProps(tag.render);
+    view.shadow = updateOrReplace(view.shadow, newShadow);
   }
 
-  void updateWidget(_Widget v, [TagNode next]) {
-    var c = v.controller;
-    var w = c.widget;
+  void _renderWidget(_Widget view) {
+    var c = view.controller;
+    TagNode newShadow = c.widget.render();
+    view.shadow = updateOrReplace(view.shadow, newShadow);
 
-    // Update the widget
-    if (next != null && !w.shouldUpdate(next)) {
-      return;
-    }
-    assert(w.isMounted);
-    w.commitState();
-    if (next != null) {
-      c.setProps(next.propMap);
-    }
-    TagNode newShadow = w.render();
-
-    // Update the DOM
-    v.shadow = updateOrReplace(v.shadow, newShadow);
-
-    // Schedule the didUpdate event
+    // Schedule events.
     if (c.didUpdate.hasListener) {
       _updatedWidgets.add(c.didUpdate);
     }
   }
 
-  void _updateText(_Text current, TagNode nextTag) {
-    String next = nextTag.props[#value];
-    if (current.value == next) {
-      return; // no internal state to update
+  void _renderText(_Text view, TagNode old) {
+    String newValue = view.node[#value];
+    if (old[#value] != newValue) {
+      dom.setInnerText(view.path, newValue);
     }
-    current.value = next;
-    dom.setInnerText(current.path, current.value);
   }
 
-  void _updateElt(_Elt elt, TagNode next) {
-    String path = elt.path;
-    assert(path != null);
-
-    Map<Symbol, dynamic> oldProps = elt.propMap;
-    Map<Symbol, dynamic> newProps = next.propMap;
-
-    elt.propMap = newProps;
-    _updateDomProperties(elt.tag, path, oldProps, newProps);
-    _updateInner(elt, path, newProps[#inner], newProps[#innerHtml]);
+  void _renderElt(_Elt elt, TagNode old) {
+    _updateDomProperties(elt, old);
+    _updateInner(elt);
   }
 
   /// Updates DOM attributes and event handlers of an Elt.
-  void _updateDomProperties(ElementTag tag, String eltPath, Map<Symbol, dynamic> oldProps,
-                            Map<Symbol, dynamic> newProps) {
+  void _updateDomProperties(_Elt elt, TagNode oldNode) {
+    var tag = elt.tag;
+    String path = elt.path;
+    TagNode newNode = elt.node;
 
     // Delete any removed props
-    for (Symbol key in oldProps.keys) {
-      if (newProps.containsKey(key)) {
+    for (Symbol key in oldNode.propKeys) {
+      if (newNode[key] != null) {
         continue;
       }
 
       var type = tag.getPropType(key);
       if (type is HandlerType) {
-        removeHandler(type, eltPath);
+        removeHandler(type, path);
       } else if (type is AttributeType) {
-        dom.removeAttribute(eltPath, type.name);
+        dom.removeAttribute(path, type.name);
       }
     }
 
     // Update any new or changed props
-    for (Symbol key in newProps.keys) {
-      var oldVal = oldProps[key];
-      var newVal = newProps[key];
+    for (Symbol key in newNode.propKeys) {
+      var oldVal = oldNode[key];
+      var newVal = newNode[key];
       if (oldVal == newVal) {
         continue;
       }
 
       var type = tag.getPropType(key);
       if (type is HandlerType) {
-        setHandler(type, eltPath, newVal);
+        setHandler(type, path, newVal);
         continue;
       } else if (type is AttributeType) {
         String val = _makeDomVal(key, newVal);
-        dom.setAttribute(eltPath, type.name, val);
+        dom.setAttribute(path, type.name, val);
       }
     }
   }
 
   /// Updates the inner DOM and mount/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(_Elt elt, String path, newInner, newInnerHtml) {
+  void _updateInner(_Elt elt) {
+    String path = elt.path;
+    var newInner = elt.node[#inner];
+
     if (newInner == null) {
       unmountInner(elt);
-      if (newInnerHtml != null) {
-        dom.setInnerHtml(path, newInnerHtml);
+      var innerHtml = elt.node[#innerHtml];
+      if (innerHtml != null) {
+        dom.setInnerHtml(path, innerHtml);
       } else {
         dom.setInnerText(path, "");
       }
@@ -178,7 +169,6 @@ abstract class _Update extends _Mount with _Unmount {
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
   void _updateChildren(_Elt elt, String path, List<TagNode> newChildren) {
-
     if (elt._children == null) {
       StringBuffer out = new StringBuffer();
       mountInner(elt, out, newChildren, null);

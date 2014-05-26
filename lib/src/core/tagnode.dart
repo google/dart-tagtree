@@ -13,22 +13,35 @@ part of core;
 /// The children of a node (if any) are usually stored in its "inner" prop.
 class TagNode {
   final Tag tag;
-  final Map<Symbol, dynamic> propMap;
+  final Map<Symbol, dynamic> _propsMap;
   Props _props;
 
-  TagNode(this.tag, this.propMap) {
+  TagNode(this.tag, this._propsMap) {
     assert(tag.checkNode(this));
   }
 
-  /// Provides access to the tag's props as a map.
-  operator[](Symbol key) => propMap[key];
+  /// Returns the key of each prop.
+  Iterable<Symbol> get propKeys => _propsMap.keys;
+
+  /// Returns the value of a property.
+  operator[](Symbol key) => _propsMap[key];
 
   /// Provides access to the tag's props as fields.
   Props get props {
     if (_props == null) {
-      _props = new Props(propMap);
+      _props = new Props(_propsMap);
     }
     return _props;
+  }
+
+  /// Calls a function with this node's props as named parameters.
+  applyProps(Function f) => Function.apply(f, [], _propsMap);
+
+  /// Returns this node's props as a map with string keys instead of symbols.
+  /// (The tag must have a type.)
+  Map<String, dynamic> get propsWithStringKeys {
+    assert(tag.type != null);
+    return tag.type.convertToStringKeys(_propsMap);
   }
 }
 

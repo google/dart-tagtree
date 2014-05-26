@@ -41,7 +41,7 @@ class TagNodeRule extends JsonRule<TagNode> {
   bool appliesTo(TagNode instance) => instance is TagNode && instance.tag == tag;
 
   @override
-  encode(TagNode instance) => instance.tag.type.convertToStringKeys(instance.propMap);
+  encode(TagNode instance) => instance.propsWithStringKeys;
 
   @override
   TagNode decode(Map<String, dynamic> state) {

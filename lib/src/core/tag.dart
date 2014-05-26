@@ -12,14 +12,14 @@ abstract class Tag {
   bool checked() => true;
 
   /// Subclass hook to assert that a node's properties are well-formed.
-  bool checkProps(Map<Symbol, dynamic> props) => true;
+  bool checkProps(TagNode node) => true;
 
   bool checkNode(TagNode node) {
     assert(checked());
     if (type != null) {
-      assert(type.checkPropKeys(node.propMap));
+      assert(type.checkPropKeys(node));
     }
-    assert(checkProps(node.propMap));
+    assert(checkProps(node));
     return true;
   }
 
@@ -61,11 +61,11 @@ class ElementTag extends Tag {
   }
 
   @override
-  bool checkProps(Map<Symbol, dynamic> props) {
-    var inner = props[#inner];
-    assert(inner == null || props[#innerHtml] == null);
+  bool checkProps(TagNode node) {
+    var inner = node[#inner];
+    assert(inner == null || node[#innerHtml] == null);
     assert(inner == null || inner is String || inner is TagNode || inner is Iterable);
-    assert(props[#value] == null || props[#defaultValue] == null);
+    assert(node[#value] == null || node[#defaultValue] == null);
     return true;
   }
 }
@@ -89,11 +89,6 @@ class TemplateTag extends Tag {
   bool checked() {
     assert(render != null);
     return true;
-  }
-
-  /// Evaluates the template using the supplied properties.
-  TagNode expand(Map<Symbol, dynamic> props) {
-    return Function.apply(render, [], props);
   }
 
   static _alwaysUpdate(p, next) => true;

@@ -3,6 +3,9 @@ part of core;
 /// A Widget is the implementation of a custom [TagNode] that has state.
 /// S is the type of the state object. It can be any type, but must be
 /// cloneable using the [cloneState] method.
+///
+/// Each widget must have an onPropsChange() method that updates its props.
+/// It should have a named argument for each property of the WidgetTag.
 abstract class Widget<S> extends StateMixin<S> {
   final _didMount = new StreamController.broadcast();
   final _didUpdate = new StreamController.broadcast();
@@ -11,9 +14,9 @@ abstract class Widget<S> extends StateMixin<S> {
   var _invalidate; // non-null when mounted
 
   /// Called by the render library.
-  WidgetController mount(Map<Symbol, dynamic> props, invalidate()) {
+  WidgetController mount(TagNode node, invalidate()) {
     var c = new WidgetController(this);
-    c.setProps(props);
+    c.setProps(node);
     initState();
     _invalidate = invalidate;
     return c;
@@ -44,10 +47,6 @@ abstract class Widget<S> extends StateMixin<S> {
   /// The render library calls this function during the next animation frame after invalidate()
   /// was called.
   TagNode render();
-
-  /// Determines whether the Widget will be rendered during an update.
-  /// (If false, it will be skipped.)
-  bool shouldUpdate(TagNode nextVersion) => true;
 }
 
 /// The API that the render library uses to control the widget.
@@ -60,9 +59,8 @@ class WidgetController {
   StreamController get didUpdate => widget._didUpdate;
   StreamController get willUnmount => widget._willUnmount;
 
-  /// Calls the widget's onPropsChange() with the passed-in props as named parameters.
-  void setProps(Map<Symbol, dynamic> newProps) =>
-    Function.apply(_suppressWarning(widget).onPropsChange, [], newProps);
+  /// Calls the widget's onPropsChange() with the node's props as named parameters.
+  void setProps(TagNode node) => node.applyProps(_suppressWarning(widget).onPropsChange);
 
   void unmount() {
     widget._invalidate = null;

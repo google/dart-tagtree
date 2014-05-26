@@ -41,7 +41,7 @@ abstract class Root {
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
   void _invalidateWidget(_Widget view) {
-    assert(view._mounted);
+    assert(view.mounted);
     _widgetsToUpdate.add(view);
     _requestAnimationFrame();
   }
