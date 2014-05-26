@@ -1,6 +1,6 @@
 part of render;
 
-typedef void HandleFunc(HandleCall call);
+typedef void HandleFunc(HandlerCall call);
 
 /// A Root is a place on an HTML page where a tag tree may be rendered.
 abstract class Root {
@@ -36,7 +36,7 @@ abstract class Root {
 
   /// Calls any event handlers that were present in the most recently
   /// rendered tag tree.
-  void dispatchEvent(TagEvent e) => _dispatch(e, _handlers);
+  void dispatchEvent(HandlerEvent e) => _dispatch(e, _handlers);
 
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)

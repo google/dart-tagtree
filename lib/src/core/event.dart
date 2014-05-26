@@ -1,42 +1,53 @@
 part of core;
 
+typedef HandlerFunc(HandlerEvent e);
+
 /// An event to be delivered to a handler in a tag tree.
-class TagEvent {
+class HandlerEvent implements Jsonable {
+  final HandlerType type;
 
-  /// The path to the node that should handle this event.
-  final String nodePath;
-
-  /// The key of the property that should handle this event.
-  final Symbol propKey;
+  /// The path in the rendered tree to the element that should handle this event.
+  /// (It's always an element since templates and widgets have been expanded.)
+  final String elementPath;
 
   /// The value of the event. (Should be serializable for remote handlers.)
   final value;
 
-  TagEvent(this.nodePath, this.propKey, this.value) {
-    assert(nodePath != null);
-    assert(propKey != null);
+  HandlerEvent(this.type, this.elementPath, this.value) {
+    assert(type != null);
+    assert(elementPath != null);
   }
+
+  @override
+  String get jsonTag => type.name;
 }
 
-typedef EventHandler(TagEvent e);
+const onClick = const HandlerType(#onClick, "onClick");
+const onMouseDown = const HandlerType(#onMouseDown, "onMouseDown");
+const onMouseOver = const HandlerType(#onMouseOver, "onMouseOver");
+const onMouseUp = const HandlerType(#onMouseUp, "onMouseUp");
+const onMouseOut = const HandlerType(#onMouseOut, "onMouseOut");
+
+const onChange = const HandlerType(#onChange, "onChange");
+const onSubmit = const HandlerType(#onSubmit, "onSubmit");
 
 /// A unique id that identifies a remote event handler.
-class Handle implements Jsonable {
+class Handler implements Jsonable {
   final int frameId;
   final int id;
 
-  Handle(this.frameId, this.id);
+  Handler(this.frameId, this.id);
 
   @override
-  String get jsonTag => "handle";
+  String get jsonTag => "handler";
 }
 
 /// A call to a remote handler.
-class HandleCall implements Jsonable {
-  final Handle handle;
-  final TagEvent event;
+class HandlerCall implements Jsonable {
+  final Handler handle;
+  final HandlerEvent event;
 
-  HandleCall(this.handle, this.event);
+  HandlerCall(this.handle, this.event);
 
   @override
   String get jsonTag => "call";

@@ -8,8 +8,8 @@ abstract class _Update extends _Mount with _Unmount {
 
   // What was updated
   final List<EventSink> _updatedWidgets = [];
-  void setHandler(Symbol key, String path, EventHandler handler);
-  void removeHandler(Symbol key, String path);
+  void setHandler(HandlerType type, String path, HandlerFunc handler);
+  void removeHandler(HandlerType type, String path);
 
   // Either updates a view in place or unmounts and remounts it.
   // Returns the new view.
@@ -103,7 +103,7 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   /// Updates DOM attributes and event handlers of an Elt.
-  void _updateDomProperties(ElementTag def, String eltPath, Map<Symbol, dynamic> oldProps,
+  void _updateDomProperties(ElementTag tag, String eltPath, Map<Symbol, dynamic> oldProps,
                             Map<Symbol, dynamic> newProps) {
 
     // Delete any removed props
@@ -112,14 +112,11 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (def.isHandler(key)) {
-        removeHandler(key, eltPath);
-        continue;
-      }
-
-      String att = def.getAttributeName(key);
-      if (att != null) {
-        dom.removeAttribute(eltPath, att);
+      var type = tag.getPropType(key);
+      if (type is HandlerType) {
+        removeHandler(type, eltPath);
+      } else if (type is AttributeType) {
+        dom.removeAttribute(eltPath, type.name);
       }
     }
 
@@ -131,15 +128,13 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      if (def.isHandler(key)) {
-        setHandler(key, eltPath, newVal);
+      var type = tag.getPropType(key);
+      if (type is HandlerType) {
+        setHandler(type, eltPath, newVal);
         continue;
-      }
-
-      String att = def.getAttributeName(key);
-      if (att != null) {
+      } else if (type is AttributeType) {
         String val = _makeDomVal(key, newVal);
-        dom.setAttribute(eltPath, att, val);
+        dom.setAttribute(eltPath, type.name, val);
       }
     }
   }

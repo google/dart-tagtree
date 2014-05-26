@@ -2,8 +2,8 @@ part of core;
 
 /// A set of tags that starts out empty.
 class TagSet {
-  final Map<Symbol, Tag> _methodToTag = <Symbol, Tag>{};
-  final Map<Symbol, String> _handleNames = <Symbol, String>{};
+  final _methodToTag = <Symbol, Tag>{};
+  final _handlerTypes = <Symbol, HandlerType>{};
 
   /// Adds a tag to the set. Automatically exports a method for constructing new tag nodes.
   /// If the method is null, the TagType's symbol will be used as the method name.
@@ -17,8 +17,8 @@ class TagSet {
     _methodToTag[method] = tag;
     if (tag.type != null) {
       for (PropType p in tag.type.props) {
-        if (p is HandlerPropType) {
-          _handleNames[p.sym] = p.name;
+        if (p is HandlerType) {
+          _handlerTypes[p.sym] = p;
         }
       }
     }
@@ -36,9 +36,8 @@ class TagSet {
   /// Returns each tag in this TagSet.
   Iterable<Tag> get values => _methodToTag.values;
 
-  Iterable<Symbol> get eventTypes => _handleNames.keys;
-
-  String getEventName(Symbol type) => _handleNames[type];
+  /// Returns the handler types supported by tags in this set.
+  Iterable<HandlerType> get handlerTypes => _handlerTypes.values;
 
   /// Tags may also be created by calling a method with the same name.
   noSuchMethod(Invocation inv) {

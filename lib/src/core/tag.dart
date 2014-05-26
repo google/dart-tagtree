@@ -23,6 +23,9 @@ abstract class Tag {
     return true;
   }
 
+  /// Returns the type associated with one of the tag's properties.
+  PropType getPropType(Symbol propKey) => type == null ? null : type.propsBySymbol[propKey];
+
   /// Implement call() to create the node with any named arguments.
   noSuchMethod(Invocation inv) {
     if (inv.isMethod && inv.memberName == #call) {
@@ -78,7 +81,7 @@ class ElementTag extends Tag {
     }
   }
 
-  bool isHandler(Symbol propKey) => type.propsBySymbol[propKey] is HandlerPropType;
+  bool isHandler(Symbol propKey) => type.propsBySymbol[propKey] is HandlerType;
 }
 
 /// Creates tags that are rendered by expanding a template.

@@ -30,7 +30,7 @@ class WebSocketRoot {
     _session = s;
     _session._mount(this);
     _socket.forEach((String data) {
-      core.HandleCall call = _codec.decode(data);
+      core.HandlerCall call = _codec.decode(data);
       if (_handleFrame != null) {
         var func = _handleFrame.handlers[call.handle.id];
         if (func != null) {
@@ -84,7 +84,7 @@ abstract class Session<S> extends core.StateMixin<S> {
 
   /// Wraps an event callback so that it can be sent over the WebSocket.
   /// This method may only be called during render.
-  core.Handle remote(Function eventHandler) {
+  core.Handler remote(Function eventHandler) {
     return _root._nextFrame.createHandle(eventHandler);
   }
 }
@@ -96,8 +96,8 @@ class _Frame {
 
   _Frame(this.id);
 
-  core.Handle createHandle(Function func) {
-    var h = new core.Handle(id, nextHandlerId++);
+  core.Handler createHandle(Function func) {
+    var h = new core.Handler(id, nextHandlerId++);
     handlers[h.id] = func;
     return h;
   }

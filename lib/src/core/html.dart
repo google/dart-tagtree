@@ -95,22 +95,22 @@ final List<Tag> _htmlTags = () {
   const leafGlobalProps = const [
     const AttributeType(#id, "id"),
     const AttributeType(#clazz, "class"),
-    const HandlerPropType(#onClick, "onClick"),
-    const HandlerPropType(#onMouseDown, "onMouseDown"),
-    const HandlerPropType(#onMouseOver, "onMouseOver"),
-    const HandlerPropType(#onMouseUp, "onMouseUp"),
-    const HandlerPropType(#onMouseOut, "onMouseOut"),
+    onClick,
+    onMouseDown,
+    onMouseOver,
+    onMouseUp,
+    onMouseOut,
     const PropType(#ref, "ref"),
   ];
 
   const globalProps = const [
     const AttributeType(#id, "id"),
     const AttributeType(#clazz, "class"),
-    const HandlerPropType(#onClick, "onClick"),
-    const HandlerPropType(#onMouseDown, "onMouseDown"),
-    const HandlerPropType(#onMouseOver, "onMouseOver"),
-    const HandlerPropType(#onMouseUp, "onMouseUp"),
-    const HandlerPropType(#onMouseOut, "onMouseOut"),
+    onClick,
+    onMouseDown,
+    onMouseOver,
+    onMouseUp,
+    onMouseOut,
     const PropType(#ref, "ref"),
     const PropType(#inner, "inner"),
     const PropType(#innerHtml, "innerHtml")
@@ -128,8 +128,6 @@ final List<Tag> _htmlTags = () {
   const defaultValue = const PropType(#defaultValue, "defaultValue");
   const min = const AttributeType(#min, "min");
   const max = const AttributeType(#max, "max");
-  const onChange = const HandlerPropType(#onChange, "onChange");
-  const onSubmit = const HandlerPropType(#onSubmit, "onSubmit");
 
   const allTypes = const [
     const TagType(#Div, "div", globalProps),
@@ -163,14 +161,3 @@ final List<Tag> _htmlTags = () {
 
   return allTypes.map((t) => new ElementTag(t)).toList();
 }();
-
-final Map<Symbol, String> _htmlHandlerNames = {
-  #onChange: "onChange",
-  #onClick: "onClick",
-  #onMouseDown: "onMouseDown",
-  #onMouseOver: "onMouseOver",
-  #onMouseUp: "onMouseUp",
-  #onMouseOut: "onMouseOut",
-  #onSubmit: "onSubmit"
-};
-

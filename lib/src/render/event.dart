@@ -2,21 +2,21 @@ part of render;
 
 /// Contains all the handlers for one Root.
 class _HandlerMap {
-  // A multimap from (handler key, path) to an event handler.
-  final _handlers = <Symbol, Map<String, EventHandler>> {};
+  // A multimap from (handler key, path) to the handler to call.
+  final _handlers = <Symbol, Map<String, HandlerFunc>> {};
 
-  EventHandler getHandler(Symbol key, String path) {
-    _handlers.putIfAbsent(key, () => {});
-    return _handlers[key][path];
+  HandlerFunc getHandler(HandlerType type, String path) {
+    _handlers.putIfAbsent(type.sym, () => {});
+    return _handlers[type.sym][path];
   }
 
-  void setHandler(Symbol key, String path, EventHandler handler) {
-    _handlers.putIfAbsent(key, () => {});
-    _handlers[key][path] = handler;
+  void setHandler(HandlerType type, String path, HandlerFunc handler) {
+    _handlers.putIfAbsent(type.sym, () => {});
+    _handlers[type.sym][path] = handler;
   }
 
-  void removeHandler(Symbol key, String path) {
-    _handlers[key].remove(path);
+  void removeHandler(HandlerType type, String path) {
+    _handlers[type.sym].remove(path);
   }
 
   void removeHandlersForPath(String path) {
@@ -34,24 +34,24 @@ bool _inViewEvent = false;
 /// Note: widgets may also change state outside any event handler;
 /// for example, due to a timer.
 /// TODO: bubbling. For now, just exact match.
-void _dispatch(TagEvent e, _HandlerMap handlers) {
+void _dispatch(HandlerEvent e, _HandlerMap handlers) {
   if (_inViewEvent) {
     // React does this too; see EVENT_SUPPRESSION
-    print("ignored ${e.propKey} received while processing another event");
+    print("ignored ${e.type.name} received while processing another event");
     return;
   }
   _inViewEvent = true;
   try {
-    if (e.nodePath != null) {
-      EventHandler h = handlers.getHandler(e.propKey, e.nodePath);
+    if (e.elementPath != null) {
+      HandlerFunc h = handlers.getHandler(e.type, e.elementPath);
       if (h != null) {
-        debugLog("\n### ${e.propKey}");
+        debugLog("\n### ${e.type.name}");
         h(e);
       } else {
-        debugLog("\n (${e.propKey})");
+        debugLog("\n (${e.type.name})");
       }
     } else {
-      debugLog("\n (${e.propKey})");
+      debugLog("\n (${e.type.name})");
     }
   } finally {
     _inViewEvent = false;

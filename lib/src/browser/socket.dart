@@ -17,7 +17,7 @@ mountWebSocket(String webSocketUrl, String selectors, core.HtmlTagSet maker) {
   bool opened = false;
   var ws = new WebSocket(webSocketUrl);
 
-  void onEvent(core.HandleCall call) {
+  void onEvent(core.HandlerCall call) {
     String json = codec.encode(call);
     ws.sendString(json);
   }

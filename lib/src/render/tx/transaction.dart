@@ -65,18 +65,18 @@ class _Transaction extends _Update {
   // What was done
 
   @override
-  void addHandler(Symbol key, String path, val) {
-    handlers.setHandler(key, path, _wrapHandler(val));
+  void addHandler(HandlerType type, String path, val) {
+    handlers.setHandler(type, path, _wrapHandler(val));
   }
 
   @override
-  void setHandler(Symbol key, String path, val) {
-    handlers.setHandler(key, path, _wrapHandler(val));
+  void setHandler(HandlerType type, String path, val) {
+    handlers.setHandler(type, path, _wrapHandler(val));
   }
 
   @override
-  void removeHandler(Symbol key, String path) {
-    handlers.removeHandler(key, path);
+  void removeHandler(HandlerType type, String path) {
+    handlers.removeHandler(type, path);
   }
 
   @override
@@ -85,15 +85,15 @@ class _Transaction extends _Update {
     handlers.removeHandlersForPath(path);
   }
 
-  EventHandler _wrapHandler(val) {
-    if (val is EventHandler) {
+  HandlerFunc _wrapHandler(val) {
+    if (val is HandlerFunc) {
       return val;
-    } else if (val is Handle) {
+    } else if (val is Handler) {
       if (nextHandler == null) {
-        throw "can't render a Handle without a handler function installed";
+        throw "can't render a Handler without a handler function installed";
       }
-      return (TagEvent e) {
-        nextHandler(new HandleCall(val, e));
+      return (HandlerEvent e) {
+        nextHandler(new HandlerCall(val, e));
       };
     } else {
       throw "can't convert to event handler: ${val.runtimeType}";

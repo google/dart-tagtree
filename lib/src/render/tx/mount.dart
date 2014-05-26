@@ -10,7 +10,7 @@ abstract class _Mount {
   final List<_View> _mountedRefs = [];
   final List<_Elt> _mountedForms = [];
   final List<EventSink> _mountedWidgets = [];
-  void addHandler(Symbol key, String path, val);
+  void addHandler(HandlerType type, String path, val);
 
   /// Writes the view tree to HTML and assigns an id to each View.
   ///
@@ -92,21 +92,20 @@ abstract class _Mount {
     }
   }
 
-  void _writeStartTag(StringBuffer out, ElementTag def, String path, Map<Symbol, dynamic> _props) {
-    out.write("<${def.tagName} data-path=\"${path}\"");
+  void _writeStartTag(StringBuffer out, ElementTag tag, String path, Map<Symbol, dynamic> _props) {
+    out.write("<${tag.tagName} data-path=\"${path}\"");
     for (Symbol key in _props.keys) {
+      var type = tag.getPropType(key);
       var val = _props[key];
-      if (def.isHandler(key)) {
-        addHandler(key, path, val);
+      if (type is HandlerType) {
+        addHandler(type, path, val);
         continue;
-      }
-      String att = def.getAttributeName(key);
-      if (att != null) {
+      } else if (type is AttributeType) {
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
-        out.write(" ${att}=\"${escaped}\"");
+        out.write(" ${type.name}=\"${escaped}\"");
       }
     }
-    if (def.tagName == "input") {
+    if (tag.tagName == "input") {
       String val = _props[#defaultValue];
       if (val != null) {
         String escaped = HTML_ESCAPE.convert(val);

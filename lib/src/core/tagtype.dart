@@ -150,13 +150,13 @@ class AttributeType extends PropType {
   }
 }
 
-/// The type of event handler.
-class HandlerPropType extends PropType {
-  const HandlerPropType(Symbol sym, String name) : super(sym, name);
+/// The type of a property that can store an event handler.
+class HandlerType extends PropType {
+  const HandlerType(Symbol sym, String name) : super(sym, name);
 
   @override
   bool checkValue(dynamic value) {
-    assert(value is Function || value is Handle);
+    assert(value is HandlerFunc || value is Handler);
     return true;
   }
 }

@@ -20,11 +20,11 @@ class _TodoApp extends Widget<_TodoState> {
   @override
   _TodoState createFirstState() => new _TodoState('', []);
 
-  void onChange(TagEvent e) {
+  void onChange(HandlerEvent e) {
     nextState.text = e.value;
   }
 
-  void handleSubmit(TagEvent e) {
+  void handleSubmit(HandlerEvent e) {
     nextState
       ..items = (new List.from(state.items)..add(state.text))
       ..text = "";
