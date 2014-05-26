@@ -9,8 +9,8 @@ class TagEvent {
   /// The key of the property that should handle this event.
   final Symbol propKey;
 
-  /// The value of the event.
-  final String value;
+  /// The value of the event. (Should be serializable for remote handlers.)
+  final value;
 
   TagEvent(this.nodePath, this.propKey, this.value) {
     assert(nodePath != null);
