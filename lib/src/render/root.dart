@@ -36,7 +36,7 @@ abstract class Root {
 
   /// Calls any event handlers that were present in the most recently
   /// rendered tag tree.
-  void dispatchEvent(HtmlEvent e) => _dispatch(e, _handlers);
+  void dispatchEvent(TagEvent e) => _dispatch(e, _handlers);
 
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)

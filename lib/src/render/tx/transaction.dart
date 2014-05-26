@@ -92,7 +92,7 @@ class _Transaction extends _Update {
       if (nextHandler == null) {
         throw "can't render a Handle without a handler function installed";
       }
-      return (HtmlEvent e) {
+      return (TagEvent e) {
         nextHandler(new HandleCall(val, e));
       };
     } else {

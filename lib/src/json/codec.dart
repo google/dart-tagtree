@@ -52,12 +52,12 @@ abstract class TagFinder<T> {
 /// or instances for which there is a [TagFinder] that returns the tag of the rule to use.
 class TaggedJsonEncoder extends Converter<dynamic, String> {
   final Map<String, JsonRule> _rules;
-  final Iterable<TagFinder> _getters;
+  final Iterable<TagFinder> _finders;
 
   /// A cache that's populated when a runtime type is first seen.
-  final _getterCache = <Type, TagFinder>{};
+  final _finderCache = <Type, TagFinder>{};
 
-  TaggedJsonEncoder(this._rules, this._getters);
+  TaggedJsonEncoder(this._rules, this._finders);
 
   String convert(object) {
     StringBuffer out = new StringBuffer();
@@ -98,7 +98,7 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
       return;
     }
 
-    JsonRule rule = _findRule(v);
+    JsonRule rule = _getRule(v);
     if (rule == null) {
       // encoding will probably fail, but give the default encoder a chance.
       out.write(JSON.encode(v));
@@ -113,36 +113,42 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
   }
 
   /// Returns the rule or null if there is none.
-  JsonRule _findRule(v) {
-    TagFinder getter = _findGetter(v);
-    if (getter == null) {
+  JsonRule _getRule(v) {
+    TagFinder finder = _getFinder(v);
+    if (finder == null) {
       return null;
     }
 
-    String tag = getter.getTag(v);
+    String tag = finder.getTag(v);
     if (tag == null) {
+      print("finder didn't find a tag for ${v.runtimeType}");
       return null;
     }
 
-    return _rules[tag];
+    var out = _rules[tag];
+    if (out == null) {
+      print("rule not found for tag: ${tag}");
+    }
+    return out;
   }
 
   /// Returns the TagGetter or null if there is none.
-  TagFinder _findGetter(v) {
-    if (_getterCache.containsKey(v.runtimeType)) {
-      return _getterCache[v.runtimeType];
+  TagFinder _getFinder(v) {
+    if (_finderCache.containsKey(v.runtimeType)) {
+      return _finderCache[v.runtimeType];
     }
 
     // We haven't seen this type before, so search the slow way.
-    for (var getter in _getters) {
-      if (getter.appliesToType(v)) {
-        _getterCache[v.runtimeType] = getter;
-        return getter;
+    for (var finder in _finders) {
+      if (finder.appliesToType(v)) {
+        _finderCache[v.runtimeType] = finder;
+        return finder;
       }
     }
 
     // Not found. Cache this so we don't search again.
-    _getterCache[v.runtimeType] = null;
+    print("finder not found for ${v.runtimeType}: ${v}");
+    _finderCache[v.runtimeType] = null;
     return null;
   }
 }

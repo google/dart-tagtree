@@ -41,7 +41,7 @@ class _Sunflower extends Widget<int> {
   int get centerX => maxD ~/ 2;
   int get centerY => maxD ~/ 2;
 
-  void onChange(ChangeEvent e) {
+  void onChange(TagEvent e) {
     nextState = int.parse(e.value);
   }
 

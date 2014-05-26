@@ -61,7 +61,7 @@ class _BrowserRoot extends render.Root {
       if (path == null) {
         return;
       }
-      root.dispatchEvent(new core.HtmlEvent(handlerKey, path));
+      root.dispatchEvent(new core.TagEvent(path, handlerKey, null));
     }
 
     container.onClick.listen((e) => handle(e, #onClick));
@@ -85,7 +85,7 @@ class _BrowserRoot extends render.Root {
         print("can't get value of target: ${path}");
         return;
       }
-      root.dispatchEvent(new core.ChangeEvent(path, value));
+      root.dispatchEvent(new core.TagEvent(path, #onChange, value));
     });
 
     // TODO: implement many more events.

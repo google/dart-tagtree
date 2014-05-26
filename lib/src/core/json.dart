@@ -10,8 +10,19 @@ class NodeTagFinder implements TagFinder<TagNode> {
   String getTag(TagNode instance) => instance.tag.type == null ? null : instance.tag.type.name;
 }
 
+class EventTagFinder implements TagFinder<TagEvent> {
+  final TagSet tags;
+  const EventTagFinder(this.tags);
+
+  @override
+  bool appliesToType(instance) => instance is TagEvent;
+
+  @override
+  String getTag(TagEvent instance) => tags.getEventName(instance.propKey);
+}
+
 /// Creates a codec that can encode any HTML tags or events supported by a TagMaker.
-TaggedJsonCodec makeCodec(HtmlTagSet tags) {
+TaggedJsonCodec makeCodec(TagSet tags) {
   var rules = <JsonRule>[];
 
   for (Tag tag in tags.values) {
@@ -21,16 +32,13 @@ TaggedJsonCodec makeCodec(HtmlTagSet tags) {
   }
 
   rules.add(new _HandleRule());
-  for (Symbol key in tags.handlerNames.keys) {
-    if (key == #onChange) {
-      rules.add(new _ChangeEventRule());
-    } else {
-      rules.add(new _EventRule(key, tags.handlerNames[key]));
-    }
+  for (Symbol type in tags.eventTypes) {
+    rules.add(new _EventRule(type, tags.getEventName(type)));
   }
   rules.add(new _HandleCallRule());
 
-  return new TaggedJsonCodec(rules, [const JsonableFinder(), const NodeTagFinder()]);
+  return new TaggedJsonCodec(rules,
+      [const JsonableFinder(), const NodeTagFinder(), new EventTagFinder(tags)]);
 }
 
 class TagNodeRule extends JsonRule<TagNode> {
@@ -73,41 +81,25 @@ class _HandleRule extends JsonRule<Handle> {
   }
 }
 
-class _EventRule extends JsonRule<HtmlEvent> {
+class _EventRule extends JsonRule<TagEvent> {
   final Symbol _type;
 
   _EventRule(Symbol type, String tagName) : super(tagName), _type = type;
 
   @override
-  bool appliesTo(Jsonable instance) => (instance is HtmlEvent);
+  bool appliesTo(instance) => (instance is TagEvent);
 
   @override
-  encode(HtmlEvent e) => e.targetPath;
+  encode(TagEvent e) => [e.nodePath, e.value];
 
   @override
-  HtmlEvent decode(s) {
-    if (s is String) {
-      return new HtmlEvent(_type, s);
+  TagEvent decode(array) {
+    if (array is List && array.length == 2) {
+      return new TagEvent(array[0], _type, array[1]);
     } else {
-      throw "can't decode ViewEvent: ${s.runtimeType}";
+      throw "can't decode TagEvent: ${array.runtimeType}";
     }
   }
-}
-
-class _ChangeEventRule extends JsonRule<ChangeEvent> {
-  _ChangeEventRule() : super("onChange");
-
-  @override
-  bool appliesTo(Jsonable instance) => (instance is ChangeEvent);
-
-  @override
-  encode(ChangeEvent e) => {
-    "target": e.targetPath,
-    "value": e.value,
-  };
-
-  @override
-  HtmlEvent decode(map) => new ChangeEvent(map["target"], map["value"]);
 }
 
 class _HandleCallRule extends JsonRule<HandleCall> {

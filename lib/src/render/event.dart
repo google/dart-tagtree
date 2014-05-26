@@ -34,24 +34,24 @@ bool _inViewEvent = false;
 /// Note: widgets may also change state outside any event handler;
 /// for example, due to a timer.
 /// TODO: bubbling. For now, just exact match.
-void _dispatch(HtmlEvent e, _HandlerMap handlers) {
+void _dispatch(TagEvent e, _HandlerMap handlers) {
   if (_inViewEvent) {
     // React does this too; see EVENT_SUPPRESSION
-    print("ignored ${e.type} received while processing another event");
+    print("ignored ${e.propKey} received while processing another event");
     return;
   }
   _inViewEvent = true;
   try {
-    if (e.targetPath != null) {
-      EventHandler h = handlers.getHandler(e.type, e.targetPath);
+    if (e.nodePath != null) {
+      EventHandler h = handlers.getHandler(e.propKey, e.nodePath);
       if (h != null) {
-        debugLog("\n### ${e.type}");
+        debugLog("\n### ${e.propKey}");
         h(e);
       } else {
-        debugLog("\n (${e.type})");
+        debugLog("\n (${e.propKey})");
       }
     } else {
-      debugLog("\n (${e.type})");
+      debugLog("\n (${e.propKey})");
     }
   } finally {
     _inViewEvent = false;

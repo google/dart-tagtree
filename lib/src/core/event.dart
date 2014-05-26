@@ -1,34 +1,24 @@
 part of core;
 
-/// A synthetic, browser-independent event.
-class HtmlEvent implements Jsonable {
+/// An event to be delivered to a handler in a tag tree.
+class TagEvent {
 
-  @override
-  String get jsonTag => _htmlHandlerNames[type];
+  /// The path to the node that should handle this event.
+  final String nodePath;
 
-  /// A symbol indicating what kind of event this is; #onChange, #onSubmit, and so on.
-  /// (This is the same key used as the Element prop when creating the Element.)
-  final Symbol type;
+  /// The key of the property that should handle this event.
+  final Symbol propKey;
 
-  final String targetPath;
+  /// The value of the event.
+  final String value;
 
-  HtmlEvent(this.type, this.targetPath) {
-    assert(type != null);
-    assert(targetPath != null);
+  TagEvent(this.nodePath, this.propKey, this.value) {
+    assert(nodePath != null);
+    assert(propKey != null);
   }
 }
 
-/// Indicates that the user changed the value in a form control.
-/// (This event happens after every keystroke.)
-class ChangeEvent extends HtmlEvent {
-
-  /// The new value in the <input> or <textarea> element.
-  final value;
-
-  ChangeEvent(String path, this.value): super(#onChange, path);
-}
-
-typedef EventHandler(HtmlEvent e);
+typedef EventHandler(TagEvent e);
 
 /// A unique id that identifies a remote event handler.
 class Handle implements Jsonable {
@@ -44,7 +34,7 @@ class Handle implements Jsonable {
 /// A call to a remote handler.
 class HandleCall implements Jsonable {
   final Handle handle;
-  final HtmlEvent event;
+  final TagEvent event;
 
   HandleCall(this.handle, this.event);
 

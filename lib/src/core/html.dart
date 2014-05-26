@@ -1,6 +1,19 @@
 part of core;
 
-/// A TagMaker mixin that provides HTML tags.
+/// A set of tags that may be used to construct a tag tree.
+/// Automatically includes HTML tags.
+class HtmlTagSet extends TagSet with HtmlTags {
+  HtmlTagSet() {
+    for (var tag in htmlTags) {
+      addTag(tag.type.symbol, tag);
+    }
+  }
+
+  // Suppress warnings
+  noSuchMethod(Invocation inv) => super.noSuchMethod(inv);
+}
+
+/// A TagSet mixin that provides HTML tags.
 /// TODO: implement more elements and attributes.
 abstract class HtmlTags {
 

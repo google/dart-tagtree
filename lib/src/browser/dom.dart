@@ -67,7 +67,7 @@ class _DomUpdater implements render.DomUpdater {
       if (path != null) {
         e.preventDefault();
         e.stopPropagation();
-        root.dispatchEvent(new core.HtmlEvent(#onSubmit, path));
+        root.dispatchEvent(new core.TagEvent(path, #onSubmit, null));
       }
     });
   }
