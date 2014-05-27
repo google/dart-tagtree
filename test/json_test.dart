@@ -1,4 +1,4 @@
-import 'package:viewtree/core.dart';
+import 'package:tagtree/core.dart';
 import 'package:unittest/unittest.dart';
 
 final $ = new HtmlTagSet();

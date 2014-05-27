@@ -3,7 +3,7 @@ library widget;
 
 import 'dart:async' show Stream, StreamController, StreamSink;
 
-import 'package:viewtree/core.dart';
+import 'package:tagtree/core.dart';
 
 part 'src/widget/state.dart';
 part 'src/widget/tag.dart';

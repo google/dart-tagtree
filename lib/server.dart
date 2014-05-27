@@ -3,8 +3,8 @@
  */
 library server;
 
-import 'package:viewtree/core.dart' as core;
-import 'package:viewtree/widget.dart' show StateMixin;
+import 'package:tagtree/core.dart' as core;
+import 'package:tagtree/widget.dart' show StateMixin;
 
 import 'dart:async' show scheduleMicrotask;
 import 'dart:convert' show Codec;

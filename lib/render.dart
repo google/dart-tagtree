@@ -8,8 +8,8 @@
 /// See the browser library for a complete implementation.
 library render;
 
-import 'package:viewtree/core.dart';
-import 'package:viewtree/widget.dart';
+import 'package:tagtree/core.dart';
+import 'package:tagtree/widget.dart';
 
 import 'dart:async' show EventSink;
 import 'dart:convert';

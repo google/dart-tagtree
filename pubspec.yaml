@@ -1,7 +1,11 @@
-name: viewtree
+name: tagtree
 version: 0.1.0
 author: Brian Slesinsky
-description: A framework for building HTML views using reactive programming. Inspired by the React JavaScript library.
+description: |-
+  A UI component framework based on trees of tagged nodes.
+  Includes support for JSON serialization and streaming UI updates over a websocket.
+
+  (Inspired by the React JavaScript library.)
 dependencies:
   browser: any
 dev_dependencies:

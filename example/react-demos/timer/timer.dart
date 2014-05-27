@@ -1,6 +1,6 @@
 import 'dart:async' show Timer;
-import 'package:viewtree/core.dart';
-import 'package:viewtree/browser.dart';
+import 'package:tagtree/core.dart';
+import 'package:tagtree/browser.dart';
 
 final $ = new HtmlTagSet();
 final SecondsElapsed = new WidgetTag(make: () => new _SecondsElapsed());

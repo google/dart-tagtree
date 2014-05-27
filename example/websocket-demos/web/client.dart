@@ -1,4 +1,4 @@
-import "package:viewtree/browser.dart";
+import "package:tagtree/browser.dart";
 
 import "shared.dart";
 

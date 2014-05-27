@@ -3,8 +3,8 @@
 
 import "dart:io";
 
-import "package:viewtree/core.dart";
-import "package:viewtree/server.dart";
+import "package:tagtree/core.dart";
+import "package:tagtree/server.dart";
 
 final $ = new HtmlTagSet();
 

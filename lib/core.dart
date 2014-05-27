@@ -1,12 +1,12 @@
 /**
- * This library includes the tag tree and basic types shared between client and server.
+ * This library includes the core data structures shared between client and server.
  *
- * To mount a tag tree in a browser, you also need package:viewtree/browser.dart.
- * To handle sessions on the server, you also need package:viewtree/server.dart.
+ * To render a tag tree in a browser, you also need package:tagtree/browser.dart.
+ * To handle sessions on the server, you also need package:tagtree/server.dart.
  */
 library core;
 
-import 'package:viewtree/json.dart';
+import 'package:tagtree/json.dart';
 
 part 'src/core/event.dart';
 part 'src/core/html.dart';

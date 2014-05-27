@@ -6,8 +6,8 @@ import "dart:async" show Completer, Future, Stream, StreamController, StreamSink
 import "dart:convert" show UTF8;
 import "dart:io";
 
-import "package:viewtree/core.dart";
-import "package:viewtree/server.dart";
+import "package:tagtree/core.dart";
+import "package:tagtree/server.dart";
 
 import "web/shared.dart";
 

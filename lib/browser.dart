@@ -7,11 +7,11 @@ import 'dart:async' show StreamSubscription;
 import 'dart:collection' show HashMap;
 import 'dart:html';
 
-import 'package:viewtree/core.dart' as core;
-import 'package:viewtree/render.dart' as render;
-import 'package:viewtree/widget.dart';
+import 'package:tagtree/core.dart' as core;
+import 'package:tagtree/render.dart' as render;
+import 'package:tagtree/widget.dart';
 
-export 'package:viewtree/widget.dart';
+export 'package:tagtree/widget.dart';
 
 part 'src/browser/dom.dart';
 part 'src/browser/root.dart';

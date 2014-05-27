@@ -3,14 +3,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// Ported to ViewTree by Brian Slesinsky
+// Ported to TagTree by Brian Slesinsky
 
 library sunflower;
 
 import 'dart:html';
 import 'dart:math';
-import 'package:viewtree/core.dart';
-import 'package:viewtree/browser.dart';
+import 'package:tagtree/core.dart';
+import 'package:tagtree/browser.dart';
 
 final $ = new HtmlTagSet();
 final Sunflower = new WidgetTag(make: () => new _Sunflower());

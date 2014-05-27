@@ -1,6 +1,6 @@
 import 'package:markdown/markdown.dart' show markdownToHtml;
-import 'package:viewtree/browser.dart';
-import 'package:viewtree/core.dart';
+import 'package:tagtree/browser.dart';
+import 'package:tagtree/core.dart';
 
 final $ = new HtmlTagSet();
 final MarkdownEditor = new WidgetTag(make: () => new _MarkdownEditor());
