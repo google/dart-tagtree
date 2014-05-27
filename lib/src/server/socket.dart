@@ -1,9 +1,9 @@
 part of server;
 
-WebSocketRoot socketRoot(WebSocket socket, core.HtmlTagSet maker) =>
+WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker) =>
     new WebSocketRoot(socket, maker);
 
-/// A Session container that renders to a WebSocket.
+/// A WebSocketRoot runs a [Session] on a WebSocket.
 class WebSocketRoot {
   final WebSocket _socket;
   final Codec<dynamic, String> _codec;
@@ -12,7 +12,7 @@ class WebSocketRoot {
   _Frame _handleFrame, _nextFrame;
   bool renderScheduled = false;
 
-  WebSocketRoot(this._socket, core.HtmlTagSet maker) :
+  WebSocketRoot(this._socket, core.TagSet maker) :
       _codec = core.makeCodec(maker);
 
   /// Starts running a Session on this WebSocket.
@@ -23,7 +23,7 @@ class WebSocketRoot {
     _socket.forEach((String data) {
       core.HandlerCall call = _codec.decode(data);
       if (_handleFrame != null) {
-        var func = _handleFrame.handlers[call.handle.id];
+        var func = _handleFrame.handlers[call.handler.id];
         if (func != null) {
           func(call.event);
         } else {
@@ -65,7 +65,7 @@ class _Frame {
 
   _Frame(this.id);
 
-  core.Handler createHandle(Function func) {
+  core.Handler createHandler(Function func) {
     var h = new core.Handler(id, nextHandlerId++);
     handlers[h.id] = func;
     return h;

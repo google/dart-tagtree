@@ -1,7 +1,6 @@
-part of core;
+part of html;
 
-/// A set of tags that may be used to construct a tag tree.
-/// Automatically includes HTML tags.
+/// A TagSet that includes HTML tags and events.
 class HtmlTagSet extends TagSet with HtmlTags {
   HtmlTagSet() {
     for (var tag in htmlTags) {
@@ -116,7 +115,7 @@ final List<Tag> _htmlTags = () {
     const PropType(#innerHtml, "innerHtml")
   ];
 
-  const inner = const PropType(#inner, "inner");
+  const inner = const MixedContentType(#inner, "inner");
   const innerHtml = const PropType(#innerHtml, "innerHtml");
 
   const src = const AttributeType(#src, "src");

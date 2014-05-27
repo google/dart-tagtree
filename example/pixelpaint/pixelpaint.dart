@@ -25,7 +25,7 @@ class AppTags extends CustomTagSet implements CustomTags {
     defineWidget(method: #GridView, make: () => new _GridView());
 
     defineTemplate(method: #RowView,
-      shouldRender: (props, next) => !props.row.equals(next.row),
+      shouldRender: (node, nextNode) => !node[#row].equals(nextNode[#row]),
       render: ({int y, Row row, Map<int, String> palette,
                PixelHandler onMouseDown, PixelHandler onMouseOver, Function onMouseUp}) {
         var cells = [];

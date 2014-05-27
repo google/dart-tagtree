@@ -8,8 +8,7 @@ library core;
 
 import 'package:tagtree/json.dart';
 
-part 'src/core/event.dart';
-part 'src/core/html.dart';
+part 'src/core/handler.dart';
 part 'src/core/json.dart';
 part 'src/core/tag.dart';
 part 'src/core/tagtype.dart';

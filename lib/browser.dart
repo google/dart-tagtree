@@ -8,10 +8,12 @@ import 'dart:collection' show HashMap;
 import 'dart:html';
 
 import 'package:tagtree/core.dart' as core;
+import 'package:tagtree/html.dart' as html;
 import 'package:tagtree/render.dart' as render;
 import 'package:tagtree/widget.dart';
 
 export 'package:tagtree/widget.dart';
+export 'package:tagtree/html.dart';
 
 part 'src/browser/dom.dart';
 part 'src/browser/root.dart';

@@ -97,7 +97,7 @@ class _HandlerCallRule extends JsonRule<HandlerCall> {
   bool appliesTo(Jsonable instance) => (instance is HandlerCall);
 
   @override
-  encode(HandlerCall call) => [call.handle.frameId, call.handle.id, call.event];
+  encode(HandlerCall call) => [call.handler.frameId, call.handler.id, call.event];
 
   @override
   HandlerCall decode(array) {

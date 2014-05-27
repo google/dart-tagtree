@@ -90,7 +90,7 @@ class _Transaction extends _Update {
       return val;
     } else if (val is Handler) {
       if (nextHandler == null) {
-        throw "can't render a Handler without a handler function installed";
+        throw "can't render a Handler because remote handlers aren't configured";
       }
       return (HandlerEvent e) {
         nextHandler(new HandlerCall(val, e));

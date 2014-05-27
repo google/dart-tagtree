@@ -140,6 +140,17 @@ class PropType {
   }
 }
 
+/// The type of a property that stores HTML mixed content.
+class MixedContentType extends PropType {
+  const MixedContentType(Symbol sym, String name) : super(sym, name);
+
+  @override
+  bool checkValue(inner) {
+    assert(inner == null || inner is String || inner is TagNode || inner is Iterable);
+    return true;
+  }
+}
+
 /// The type of an HTML attribute.
 class AttributeType extends PropType {
   const AttributeType(Symbol sym, String name) : super(sym, name);

@@ -64,11 +64,11 @@ class _BrowserRoot extends render.Root {
       root.dispatchEvent(new core.HandlerEvent(type, path, null));
     }
 
-    container.onClick.listen((e) => handle(e, core.onClick));
-    container.onMouseDown.listen((e) => handle(e, core.onMouseDown));
-    container.onMouseOver.listen((e) => handle(e, core.onMouseOver));
-    container.onMouseUp.listen((e) => handle(e, core.onMouseUp));
-    container.onMouseOut.listen((e) => handle(e, core.onMouseOut));
+    container.onClick.listen((e) => handle(e, html.onClick));
+    container.onMouseDown.listen((e) => handle(e, html.onMouseDown));
+    container.onMouseOver.listen((e) => handle(e, html.onMouseOver));
+    container.onMouseUp.listen((e) => handle(e, html.onMouseUp));
+    container.onMouseOut.listen((e) => handle(e, html.onMouseOut));
 
     // Form events are tricky. We want an onChange event to fire every time
     // the value in a text box changes. The native 'input' event does this,
@@ -85,7 +85,7 @@ class _BrowserRoot extends render.Root {
         print("can't get value of target: ${path}");
         return;
       }
-      root.dispatchEvent(new core.HandlerEvent(core.onChange, path, value));
+      root.dispatchEvent(new core.HandlerEvent(html.onChange, path, value));
     });
 
     // TODO: implement many more events.

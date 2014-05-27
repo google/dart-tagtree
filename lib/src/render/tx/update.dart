@@ -62,7 +62,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   void _renderTemplate(_TemplateView view, TagNode old) {
     TemplateTag tag = view.tag;
-    if (tag.shouldRender != null && !tag.shouldRender(old.props, view.node.props)) {
+    if (tag.shouldRender != null && !tag.shouldRender(old, view.node)) {
       return;
     }
     TagNode newShadow = view.node.applyProps(tag.render);
