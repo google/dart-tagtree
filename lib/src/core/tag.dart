@@ -72,7 +72,7 @@ class ElementTag extends Tag {
 
 /// Creates tags that are rendered by expanding a template.
 class TemplateTag extends Tag {
-  final ShouldUpdateFunc shouldRender;
+  final ShouldRenderFunc shouldRender;
   final Function render;
 
   /// Defines a custom tag that's rendered by expanding a template.
@@ -94,4 +94,4 @@ class TemplateTag extends Tag {
   static _alwaysUpdate(p, next) => true;
 }
 
-typedef bool ShouldUpdateFunc(Props p, Props next);
+typedef bool ShouldRenderFunc(Props p, Props next);
