@@ -1,6 +1,6 @@
 part of core;
 
-/// Creates a codec that can encode and decode tag trees and handler calls.
+/// Creates a codec for tag trees and handler calls.
 TaggedJsonCodec makeCodec(TagSet tags) {
   var rules = <JsonRule>[];
 

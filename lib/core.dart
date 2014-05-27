@@ -6,17 +6,12 @@
  */
 library core;
 
-import 'dart:async' show Stream, StreamController, StreamSink;
-
 import 'package:viewtree/json.dart';
 
-part 'src/core/debug.dart';
-part 'src/core/tag.dart';
 part 'src/core/event.dart';
 part 'src/core/html.dart';
 part 'src/core/json.dart';
+part 'src/core/tag.dart';
 part 'src/core/tagtype.dart';
-part 'src/core/state.dart';
 part 'src/core/tagset.dart';
 part 'src/core/tagnode.dart';
-part 'src/core/widget.dart';

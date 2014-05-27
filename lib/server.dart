@@ -4,6 +4,7 @@
 library server;
 
 import 'package:viewtree/core.dart' as core;
+import 'package:viewtree/widget.dart' show StateMixin;
 
 import 'dart:async' show scheduleMicrotask;
 import 'dart:convert' show Codec;
@@ -67,7 +68,7 @@ class WebSocketRoot {
   }
 }
 
-abstract class Session<S> extends core.StateMixin<S> {
+abstract class Session<S> extends StateMixin<S> {
   WebSocketRoot _root;
 
   _mount(root) {

@@ -1,4 +1,4 @@
-part of core;
+part of render;
 
 const bool debug = false;
 

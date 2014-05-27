@@ -1,5 +1,5 @@
-import 'package:viewtree/core.dart';
 import 'package:viewtree/browser.dart';
+import 'package:viewtree/core.dart';
 
 final $ = new AppTags();
 

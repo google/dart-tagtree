@@ -19,8 +19,8 @@ class CustomTagSet extends core.HtmlTagSet {
   /// Defines a custom Tag that has state.
   ///
   /// For custom tags that are stateless, use [defineTemplate] instead.
-  void defineWidget({Symbol method, core.TagType type, core.CreateWidgetFunc make}) {
-    addTag(method, new core.WidgetTag(type: type, make: make));
+  void defineWidget({Symbol method, core.TagType type, CreateWidgetFunc make}) {
+    addTag(method, new WidgetTag(type: type, make: make));
   }
 
   // Suppress warnings

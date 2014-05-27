@@ -1,4 +1,4 @@
-part of core;
+part of widget;
 
 /// A Widget is the implementation of a [WidgetTag]. It implements a tag
 /// that can change on its own, unlike a [TemplateTag], which only changes
