@@ -1,6 +1,6 @@
 part of browser;
 
-class CustomTagSet extends html.HtmlTagSet {
+class CustomTagSet extends HtmlTagSet {
 
   /// Defines a custom tag that's rendered by expanding a template.
   ///
@@ -11,15 +11,15 @@ class CustomTagSet extends html.HtmlTagSet {
   /// used to avoid expanding the template when no properties have changed.
   ///
   /// If the custom tag should have internal state, use [defineWidget] instead.
-  void defineTemplate({Symbol method, core.TagType type, core.ShouldRenderFunc shouldRender,
+  void defineTemplate({Symbol method, TagType type, ShouldRenderFunc shouldRender,
     Function render}) {
-    addTag(method, new core.TemplateTag(type: type, shouldRender: shouldRender, render: render));
+    addTag(method, new TemplateTag(type: type, shouldRender: shouldRender, render: render));
   }
 
   /// Defines a custom Tag that has state.
   ///
   /// For custom tags that are stateless, use [defineTemplate] instead.
-  void defineWidget({Symbol method, core.TagType type, CreateWidgetFunc make}) {
+  void defineWidget({Symbol method, TagType type, CreateWidgetFunc make}) {
     addTag(method, new WidgetTag(type: type, make: make));
   }
 

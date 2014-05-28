@@ -1,7 +1,5 @@
 part of render;
 
-typedef void HandleFunc(HandlerCall call);
-
 /// A Root is a place on an HTML page where a tag tree may be rendered.
 abstract class Root {
   final int id;
@@ -10,7 +8,6 @@ abstract class Root {
 
   bool _frameRequested = false;
   TagNode _nextTagTree;
-  HandleFunc _nextHandler;
   final Set<_WidgetView> _widgetsToUpdate = new Set();
 
   Root(this.id);
@@ -28,9 +25,8 @@ abstract class Root {
   /// Sets the tag tree to be rendered on the next animation frame.
   /// (If called more than once between two frames, only the last call will
   /// have any effect.)
-  void mount(TagNode nextTagTree, {HandleFunc handler}) {
+  void mount(TagNode nextTagTree) {
     _nextTagTree = nextTagTree;
-    _nextHandler = handler;
     _requestAnimationFrame();
   }
 
@@ -54,12 +50,10 @@ abstract class Root {
   }
 
   void _render(DomUpdater dom) {
-    _Transaction tx = new _Transaction(this, dom, _handlers, _nextTagTree, _nextHandler,
-        _widgetsToUpdate);
+    _Transaction tx = new _Transaction(this, dom, _handlers, _nextTagTree, _widgetsToUpdate);
 
     _frameRequested = false;
     _nextTagTree = null;
-    _nextHandler = null;
     _widgetsToUpdate.clear();
 
     bool wasEmpty = _renderedTree == null;

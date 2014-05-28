@@ -8,6 +8,4 @@ final $ = new CustomTagSet()
       render: ({List<String> lines}) => $.Pre(inner: lines.join("\n"))
   );
 
-main() {
-  mountWebSocket("ws://localhost:8080/ws", "#view", $);
-}
+main() => root("#view").mount(Slot(src: "ws://localhost:8080/ws", tagSet: $));

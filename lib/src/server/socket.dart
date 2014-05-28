@@ -23,7 +23,7 @@ class WebSocketRoot {
     _socket.forEach((String data) {
       core.HandlerCall call = _codec.decode(data);
       if (_handleFrame != null) {
-        var func = _handleFrame.handlers[call.handler.id];
+        var func = _handleFrame.handlers[call.id.id];
         if (func != null) {
           func(call.event);
         } else {
@@ -65,8 +65,8 @@ class _Frame {
 
   _Frame(this.id);
 
-  core.Handler createHandler(Function func) {
-    var h = new core.Handler(id, nextHandlerId++);
+  core.HandlerId createHandler(Function func) {
+    var h = new core.HandlerId(id, nextHandlerId++);
     handlers[h.id] = func;
     return h;
   }

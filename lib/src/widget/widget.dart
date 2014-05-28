@@ -25,14 +25,15 @@ abstract class Widget<S> extends StateMixin<S> {
   /// Called automatically when the associated node is first rendered.
   WidgetController mount(TagNode node, invalidate()) {
     setProps(node);
-    initState();
+    initState(); // depends on props
     _invalidate = invalidate;
     return new WidgetController(this);
   }
 
   /// Copies the assocated node's props into the widget.
   /// Subclasses must implement.
-  /// Called automatically when the node changes.
+  /// Called automatically before [createFirstState]
+  /// and whenever the associated widget tag is rendered.
   void setProps(TagNode node);
 
   /// Asks for the widget to be rendered again.

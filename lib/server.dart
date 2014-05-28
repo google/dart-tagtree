@@ -14,5 +14,4 @@ import 'dart:io';
 export 'package:tagtree/html.dart';
 
 part 'src/server/session.dart';
-part 'src/server/tag.dart';
 part 'src/server/socket.dart';

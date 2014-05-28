@@ -1,7 +1,17 @@
 part of core;
 
+typedef void OnEventFunc(HandlerCall call);
+
 /// Creates a codec for tag trees and handler calls.
-TaggedJsonCodec makeCodec(TagSet tags) {
+/// Any decoded Handlers will be replaced with a [HandlerFunc] that calls
+/// onEvent.
+TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
+  if (onEvent == null) {
+    onEvent = (HandlerCall e) {
+      print("ignored event to remote handler: ${e}");
+    };
+  }
+
   var rules = <JsonRule>[];
 
   for (Tag tag in tags.values) {
@@ -10,7 +20,7 @@ TaggedJsonCodec makeCodec(TagSet tags) {
     }
   }
 
-  rules.add(new _HandlerRule());
+  rules.add(new _HandlerIdRule(onEvent));
   for (var type in tags.handlerTypes) {
     rules.add(new _HandlerEventRule(type));
   }
@@ -50,19 +60,24 @@ class TagNodeRule extends JsonRule<TagNode> {
   }
 }
 
-class _HandlerRule extends JsonRule<Handler> {
-  _HandlerRule(): super("handler");
+class _HandlerIdRule extends JsonRule<HandlerId> {
+  final OnEventFunc onHandlerCalled;
+
+  _HandlerIdRule(this.onHandlerCalled): super("handler");
 
   @override
-  bool appliesTo(Jsonable instance) => (instance is Handler);
+  bool appliesTo(instance) => (instance is HandlerId);
 
   @override
-  encode(Handler h) => [h.frameId, h.id];
+  encode(HandlerId h) => [h.frameId, h.id];
 
   @override
-  Jsonable decode(array) {
+  decode(array) {
     if (array is List && array.length >= 2) {
-      return new Handler(array[0], array[1]);
+      var id = new HandlerId(array[0], array[1]);
+      return (HandlerEvent event) {
+        onHandlerCalled(new HandlerCall(id, event));
+      };
     } else {
       throw "can't decode Handler: ${array.runtimeType}";
     }
@@ -97,12 +112,12 @@ class _HandlerCallRule extends JsonRule<HandlerCall> {
   bool appliesTo(Jsonable instance) => (instance is HandlerCall);
 
   @override
-  encode(HandlerCall call) => [call.handler.frameId, call.handler.id, call.event];
+  encode(HandlerCall call) => [call.id.frameId, call.id.id, call.event];
 
   @override
   HandlerCall decode(array) {
     if (array is List && array.length >= 3) {
-      return new HandlerCall(new Handler(array[0], array[1]), array[2]);
+      return new HandlerCall(new HandlerId(array[0], array[1]), array[2]);
     } else {
       throw "can't decode HandleCall: ${array.runtimeType}";
     }

@@ -7,8 +7,9 @@ import 'dart:async' show StreamSubscription;
 import 'dart:collection' show HashMap;
 import 'dart:html';
 
-import 'package:tagtree/core.dart' as core;
-import 'package:tagtree/html.dart' as html;
+import 'package:tagtree/core.dart';
+import 'package:tagtree/html.dart';
+import 'package:tagtree/json.dart' show TaggedJsonCodec;
 import 'package:tagtree/render.dart' as render;
 import 'package:tagtree/widget.dart';
 

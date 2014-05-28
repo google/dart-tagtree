@@ -167,7 +167,7 @@ class HandlerType extends PropType {
 
   @override
   bool checkValue(dynamic value) {
-    assert(value is HandlerFunc || value is Handler);
+    assert(value is HandlerFunc || value is HandlerId);
     return true;
   }
 }

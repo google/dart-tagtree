@@ -8,10 +8,9 @@ class _Transaction extends _Update {
 
   // What to do
   final TagNode nextTagTree;
-  final HandleFunc nextHandler;
   final List<_WidgetView> _widgetsToUpdate;
 
-  _Transaction(this.root, this.dom, this.handlers, this.nextTagTree, this.nextHandler,
+  _Transaction(this.root, this.dom, this.handlers, this.nextTagTree,
       Iterable<_WidgetView> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
@@ -66,12 +65,12 @@ class _Transaction extends _Update {
 
   @override
   void addHandler(HandlerType type, String path, val) {
-    handlers.setHandler(type, path, _wrapHandler(val));
+    handlers.setHandler(type, path, val);
   }
 
   @override
   void setHandler(HandlerType type, String path, val) {
-    handlers.setHandler(type, path, _wrapHandler(val));
+    handlers.setHandler(type, path, val);
   }
 
   @override
@@ -83,20 +82,5 @@ class _Transaction extends _Update {
   void releaseElement(String path, ref, {bool willReplace: false}) {
     dom.detachElement(path, ref, willReplace: willReplace);
     handlers.removeHandlersForPath(path);
-  }
-
-  HandlerFunc _wrapHandler(val) {
-    if (val is HandlerFunc) {
-      return val;
-    } else if (val is Handler) {
-      if (nextHandler == null) {
-        throw "can't render a Handler because remote handlers aren't configured";
-      }
-      return (HandlerEvent e) {
-        nextHandler(new HandlerCall(val, e));
-      };
-    } else {
-      throw "can't convert to event handler: ${val.runtimeType}";
-    }
   }
 }

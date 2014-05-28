@@ -91,3 +91,14 @@ class ElementTag extends Tag {
     return true;
   }
 }
+
+/// A RemoteTag has no behavior, but can be sent over the network.
+class RemoteTag extends Tag {
+  const RemoteTag(TagType type) : super(type);
+
+  @override
+  bool checked() {
+    assert(type != null);
+    return true;
+  }
+}

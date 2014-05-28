@@ -20,26 +20,26 @@ class HandlerEvent implements Jsonable {
   String get jsonTag => type.name;
 }
 
-/// A HandlerFunc receives events locally (in the browser).
+/// A HandlerFunc receives events from the render library (in the browser).
 typedef HandlerFunc(HandlerEvent e);
 
-/// A Handler is the unique id of a remote event handler (on the server).
-class Handler implements Jsonable {
+/// A HandlerId is the unique id of a remote event handler (on the server).
+class HandlerId implements Jsonable {
   final int frameId;
   final int id;
 
-  Handler(this.frameId, this.id);
+  HandlerId(this.frameId, this.id);
 
   @override
   String get jsonTag => "handler";
 }
 
-/// A HandlerCall contains an event being delivered to a remote event handler.
+/// A HandlerCall contains an event to be delivered to a remote event handler.
 class HandlerCall implements Jsonable {
-  final Handler handler;
+  final HandlerId id;
   final HandlerEvent event;
 
-  HandlerCall(this.handler, this.event);
+  HandlerCall(this.id, this.event);
 
   @override
   String get jsonTag => "call";
