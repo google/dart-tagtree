@@ -1,64 +1,71 @@
 part of core;
 
-/// TagNodes form a tree data structure similar to a tree of HTML elements.
-/// They are more general than HTML elements because they support custom tags without
-/// requiring any browser support.
+/// A TaggedNode is a node in an abstract syntax tree that will be rendered to HTML.
+/// A tree of TaggedNodes ("tag tree") is somwhat like a tree of HTML elements with
+/// the addition of special nodes for templates and widgets.
 ///
-/// Each node has a [Tag] that determines its behavior: whether it has state,
-/// how it will be rendered to HTML, and whether it can be serialized as JSON.
-///
-/// A node's props are similar to HTML attributes, but instead of storing a string,
-/// they sometimes store arbitrary JSON, child tags, or callback functions.
-///
-/// The children of a node (if any) are usually stored in its "inner" prop.
-class TagNode {
-  final Tag tag;
-  final Map<Symbol, dynamic> _propsMap;
-  Props _props;
+/// Nodes have no built-in behavior. To render a tag tree to HTML, there must be a
+/// rule for each tag determining how it will be rendered.
+abstract class TaggedNode {
 
-  TagNode(this.tag, this._propsMap) {
-    assert(tag.checkNode(this));
+  /// The constructor of each TaggedNode should be const.
+  /// It should take a named parameter for each property.
+  const TaggedNode();
+
+  /// The unique key for any rules determining this tag's behavior.
+  /// The tag is also used in the node's JSON encoding.
+  String get tag;
+
+  /// Constructs a property map containing every field.
+  /// A property may contain JSON data (extended to include
+  /// other TagNodes) or a [HandlerFunc].
+  ///
+  /// A node's children may be stored in any prop. By convention,
+  /// they are usually stored in the "inner" prop.
+  Map<String, dynamic> get propsMap {
+    throw "propsMap isn't implemented for ${tag}";
   }
+
+  Props get asProps {
+    var p = _propsCache[this];
+    if (p == null) {
+      p = new Props(this);
+      _propsCache[p] = p;
+    }
+    return p;
+  }
+
+  static final _propsCache = new Expando<Props>();
+}
+
+/// An alternate representation of a TagNode
+/// (Used to send it over the network.)
+class Props {
+  final String tag;
+  final Map<String, dynamic> propsMap;
+  Props(TaggedNode node) : tag = node.tag, propsMap = node.propsMap;
 
   /// Returns the key of each prop.
-  Iterable<Symbol> get propKeys => _propsMap.keys;
+  Iterable<String> get keys => propsMap.keys;
 
   /// Returns the value of a property.
-  operator[](Symbol key) => _propsMap[key];
-
-  /// Provides access to the tag's props as fields.
-  Props get props {
-    if (_props == null) {
-      _props = new Props(_propsMap);
-    }
-    return _props;
-  }
-
-  /// Calls a function with this node's props as named parameters.
-  applyProps(Function f) => Function.apply(f, [], _propsMap);
-
-  /// Returns this node's props as a map with string keys instead of symbols.
-  /// (The tag must have a type.)
-  Map<String, dynamic> get propsWithStringKeys {
-    assert(tag.type != null);
-    return tag.type.convertToStringKeys(_propsMap);
-  }
+  operator[](String key) => propsMap[key];
 }
 
-/// A wrapper allowing a [TagNode]'s props to be accessed as fields.
-@proxy
-class Props {
-  final Map<Symbol, dynamic> _props;
+class ElementNode extends TaggedNode {
+  final ElementTag eltTag;
+  final Map<String, dynamic> propsMap;
 
-  const Props(this._props);
-
-  noSuchMethod(Invocation inv) {
-    if (inv.isGetter) {
-      if (_props.containsKey(inv.memberName)) {
-        return _props[inv.memberName];
-      }
-    }
-    print("keys: ${_props.keys.join(", ")}");
-    return super.noSuchMethod(inv);
+  ElementNode(this.eltTag, this.propsMap) {
+    assert(eltTag.checkNode(this));
   }
+
+  String get tag => eltTag.type.name;
+
+  /// Returns the key of each prop.
+  Iterable<String> get keys => propsMap.keys;
+
+  /// Returns the value of a property.
+  operator[](String key) => propsMap[key];
 }
+

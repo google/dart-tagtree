@@ -19,4 +19,3 @@ export 'package:tagtree/html.dart';
 part 'src/browser/dom.dart';
 part 'src/browser/root.dart';
 part 'src/browser/socket.dart';
-part 'src/browser/tagset.dart';

@@ -13,28 +13,35 @@ import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
 final $ = new HtmlTagSet();
-final Sunflower = new WidgetTag(make: () => new _Sunflower());
 
-main() => root("#sunflower").mount(Sunflower(startSeeds: 500, seedRadius: 2));
+class Sunflower extends TaggedNode {
+  get tag => "Sunflower";
+  final int startSeeds;
+  final int seedRadius;
+  const Sunflower({this.startSeeds, this.seedRadius});
+}
 
-class _Sunflower extends Widget<int> {
+main() =>
+    root("#sunflower")
+      ..addWidget("Sunflower", () => new _Sunflower())
+      ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));
+
+class _Sunflower extends Widget<Sunflower, int> {
   final _canvas = new Ref<CanvasElement>();
 
-  int startSeeds;
-  num seedRadius;
+  Sunflower node;
 
   _Sunflower() {
     didMount.listen((_) => draw());
     didUpdate.listen((_) => draw());
   }
 
-  setProps(TagNode node) {
-    this.startSeeds = node.props.startSeeds;
-    this.seedRadius = node.props.seedRadius;
+  setProps(Sunflower node) {
+    this.node = node;
   }
 
   @override
-  int createFirstState() => startSeeds;
+  int createFirstState() => node.startSeeds;
 
   int get seeds => state;
   int get maxD => 300;
@@ -46,7 +53,7 @@ class _Sunflower extends Widget<int> {
   }
 
   @override
-  TagNode render() {
+  ElementNode render() {
     return $.Div(inner: [
 
         $.Div(id: "container", inner: [
@@ -69,12 +76,12 @@ class _Sunflower extends Widget<int> {
   /// Draw the complete figure for the current number of seeds.
   void draw() {
     CanvasRenderingContext2D context = _canvas.elt.context2D;
-    num scaleFactor = seedRadius * 2;
+    num scaleFactor = node.seedRadius * 2;
     context.clearRect(0, 0, maxD, maxD);
     for (var i = 0; i < seeds; i++) {
       final num theta = i * TAU / PHI;
       final num r = sqrt(i) * scaleFactor;
-      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), seedRadius);
+      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), node.seedRadius);
     }
   }
 

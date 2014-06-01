@@ -14,10 +14,8 @@ TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
 
   var rules = <JsonRule>[];
 
-  for (Tag tag in tags.values) {
-    if (tag.type != null) {
-      rules.add(new TagNodeRule(tag));
-    }
+  for (String tag in tags.tags) {
+      rules.add(new TagNodeRule(tag, tags.getMaker(tag)));
   }
 
   rules.add(new _HandlerIdRule(onEvent));
@@ -29,35 +27,29 @@ TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   return new TaggedJsonCodec(rules, [const JsonableFinder(), const NodeTagFinder()]);
 }
 
-class NodeTagFinder implements TagFinder<TagNode> {
+class NodeTagFinder implements TagFinder<TaggedNode> {
   const NodeTagFinder();
 
   @override
-  bool appliesToType(instance) => instance is TagNode;
+  bool appliesToType(instance) => instance is TaggedNode;
 
   @override
-  String getTag(TagNode instance) => instance.tag.type == null ? null : instance.tag.type.name;
+  String getTag(TaggedNode instance) => instance.tag;
 }
 
-class TagNodeRule extends JsonRule<TagNode> {
-  final Tag tag;
+class TagNodeRule extends JsonRule<TaggedNode> {
+  final NodeMaker maker;
 
-  TagNodeRule(Tag tag) :
-    this.tag = tag,
-    super(tag.type.name) {
-  }
+  TagNodeRule(String tag, this.maker) : super(tag);
 
   @override
-  bool appliesTo(TagNode instance) => instance is TagNode && instance.tag == tag;
+  bool appliesTo(TaggedNode instance) => instance is TaggedNode && instance.tag == tagName;
 
   @override
-  encode(TagNode instance) => instance.propsWithStringKeys;
+  encode(TaggedNode instance) => instance.propsMap;
 
   @override
-  TagNode decode(Map<String, dynamic> state) {
-    var props = tag.type.convertFromStringKeys(state);
-    return new TagNode(tag, props);
-  }
+  TaggedNode decode(Map<String, dynamic> propsMap) => maker(propsMap);
 }
 
 class _HandlerIdRule extends JsonRule<HandlerId> {

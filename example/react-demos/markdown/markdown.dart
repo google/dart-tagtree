@@ -3,15 +3,23 @@ import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
 final $ = new HtmlTagSet();
-final MarkdownEditor = new WidgetTag(make: () => new _MarkdownEditor());
 
-main() => root("#container").mount(MarkdownEditor(defaultText: "Type some *markdown* here!"));
+class MarkdownEditor extends TaggedNode {
+  get tag => "MarkdownEditor";
+  final String defaultText;
+  const MarkdownEditor({this.defaultText});
+}
 
-class _MarkdownEditor extends Widget<String> {
+main() =>
+    root("#container")
+      ..addWidget("MarkdownEditor", () => new _MarkdownEditor())
+      ..mount(const MarkdownEditor(defaultText: "Type some *markdown* here!"));
+
+class _MarkdownEditor extends Widget<MarkdownEditor, String> {
   String defaultText;
 
-  setProps(TagNode node) {
-    this.defaultText = node.props.defaultText;
+  setProps(MarkdownEditor node) {
+    this.defaultText = node.defaultText;
   }
 
   @override
@@ -23,7 +31,7 @@ class _MarkdownEditor extends Widget<String> {
     nextState = e.value;
   }
 
-  TagNode render() =>
+  ElementNode render() =>
     $.Div(clazz: "MarkdownEditor", inner: [
       $.H3(inner: "Input"),
       $.TextArea(onChange: handleChange, defaultValue: text),

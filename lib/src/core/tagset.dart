@@ -1,53 +1,56 @@
 part of core;
 
-/// A set of tags that starts out empty.
+typedef TaggedNode NodeMaker(Map<String, dynamic> propsMap);
+
+/// A TagSet defines a set of tags that may be sent over the network.
 class TagSet {
-  final _methodToTag = <Symbol, Tag>{};
-  final _handlerTypes = <Symbol, HandlerType>{};
+  final _nodeMakers = <String, NodeMaker>{};
+  final _methodToTag = <Symbol, String>{};
+  final _paramToPropKey = <Symbol, Map<Symbol, String>>{};
+  final _handlerTypes = <String, HandlerType>{};
 
-  /// Adds a tag to the set. Automatically exports a method for constructing new tag nodes.
-  /// If the method is null, the TagType's symbol will be used as the method name.
-  void addTag(Symbol method, Tag tag) {
-    assert(tag.checked());
-    if (method == null) {
-      assert(tag.type != null);
-      method = tag.type.symbol;
+  /// Makes a tag available for serialization and deserialization.
+  /// If any handlers
+  void addTag(String tag, NodeMaker maker, {Iterable<HandlerType> handlerTypes: const []}) {
+    _nodeMakers[tag] = maker;
+    for (HandlerType t in handlerTypes) {
+      _handlerTypes[t.name] = t;
     }
-    assert(!(_methodToTag.containsKey(method)));
+  }
+
+  void addMethod(Symbol method, String tag, Map<Symbol, String> namedParams) {
+   assert(method != null);
+   assert(tag != null);
+   assert(namedParams != null);
+   assert(_nodeMakers[tag] != null);
     _methodToTag[method] = tag;
-    if (tag.type != null) {
-      for (PropType p in tag.type.props) {
-        if (p is HandlerType) {
-          _handlerTypes[p.sym] = p;
-        }
-      }
-    }
+    _paramToPropKey[method] = namedParams;
   }
 
-  /// Creates a new tag for any of the TagDefs in this set.
-  TagNode makeNode(Symbol method, Map<Symbol, dynamic> props) {
-    Tag tag = _methodToTag[method];
-    if (tag == null) {
-      throw "can't find method for constructing a tag node: ${method}";
-    }
-    return new TagNode(tag, props);
-  }
-
-  /// Returns each tag in this TagSet.
-  Iterable<Tag> get values => _methodToTag.values;
+  Iterable<String> get tags => _nodeMakers.keys;
 
   /// Returns the handler types supported by tags in this set.
   Iterable<HandlerType> get handlerTypes => _handlerTypes.values;
 
+  NodeMaker getMaker(String tag) => _nodeMakers[tag];
+
+  TaggedNode makeNode(String tag, Map<String, dynamic> propsMap) =>
+      _nodeMakers[tag](propsMap);
+
   /// Tags may also be created by calling a method with the same name.
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {
-      Tag tag = _methodToTag[inv.memberName];
+      String tag = _methodToTag[inv.memberName];
       if (tag != null) {
         if (!inv.positionalArguments.isEmpty) {
           throw "positional arguments not supported when creating tags";
         }
-        return new TagNode(tag, inv.namedArguments);
+        var toKey = _paramToPropKey[inv.memberName];
+        var propsMap = <String, dynamic>{};
+        for (Symbol name in inv.namedArguments.keys) {
+          propsMap[toKey[name]] = inv.namedArguments[name];
+        }
+        return makeNode(tag, propsMap);
       }
     }
     return super.noSuchMethod(inv);

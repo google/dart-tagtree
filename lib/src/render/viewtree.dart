@@ -27,29 +27,25 @@ part of render;
 /// widgets have their own state and therefore can start a render by calling
 /// Widget.invalidate().
 abstract class _View {
-  final Tag tag;
-
   /// The unique id used to find the view's HTML element.
   final String path;
 
   /// The depth of this node in the view tree (not in the DOM).
   final int depth;
 
+  final Renderer renderer;
+
   /// The owner's reference to the DOM. May be null.
   final ref;
 
-  TagNode node;
+  TaggedNode node;
 
-  _View(TagNode node, this.path, this.depth) :
-    this.tag = node.tag,
-    this.ref = node[#ref],
-    this.node = node;
+  _View(this.path, this.depth, this.renderer, this.ref, this.node);
 
   bool get mounted => node != null;
 
-  TagNode updateProps(TagNode newNode) {
+  TaggedNode updateProps(TaggedNode newNode) {
     assert(node != null);
-    assert(tag == newNode.tag);
     var old = node;
     node = newNode;
     return old;
@@ -66,12 +62,10 @@ abstract class _View {
 /// To simulate mixed-content HTML, we render the text inside a <span>,
 /// so that it can easily be updated using its data-path attribute.
 class _TextView extends _View {
-  _TextView(String path, int depth, String value) :
-    super(new TagNode(const _TextTag(), {#value: value}), path, depth);
-}
+  _TextView(String path, int depth, _TextNode node) :
+    super(path, depth, null, null, node);
 
-class _TextTag extends Tag {
-  const _TextTag() : super(null);
+  _TextNode get node => super.node;
 }
 
 /// A view node for a rendered HTML element.
@@ -82,16 +76,22 @@ class _EltView extends _View {
   // Non-null if the view contains just text.
   String _childText;
 
-  _EltView(TagNode node, String path, int depth) :
-      tagName = node.tag.type.name,
-      super(node, path, depth) {
+  _EltView(ElementNode node, String path, int depth) :
+      tagName = node.eltTag.type.name,
+      super(path, depth, null, node["ref"], node) {
   }
+
+  ElementNode get node => super.node;
+  ElementTag get eltTag => node.eltTag;
 }
 
 /// A view node for a rendered template.
 class _TemplateView extends _View {
   _View shadow;
-  _TemplateView(TagNode node, String path, int depth) : super(node, path, depth);
+  _TemplateView(String path, int depth, Renderer render, TaggedNode node) :
+    super(path, depth, render, null, node);
+
+  _TemplateRenderer get renderer => super.renderer;
 }
 
 typedef _InvalidateWidgetFunc(_WidgetView v);
@@ -101,12 +101,15 @@ class _WidgetView extends _View {
   WidgetController controller;
   _View shadow;
 
-  _WidgetView(TagNode node, String path, int depth) : super(node, path, depth);
+  _WidgetView(String path, int depth, _WidgetRenderer render, TaggedNode node) :
+    super(path, depth, render, null, node);
+
+  _WidgetRenderer get renderer => super.renderer;
 
   @override
-  TagNode updateProps(TagNode next) {
+  TaggedNode updateProps(TaggedNode next) {
     assert(controller.widget.isMounted);
-    TagNode old = node;
+    TaggedNode old = node;
     if (next != null) {
       super.updateProps(next);
       controller.widget.setProps(next);

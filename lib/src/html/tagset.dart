@@ -3,8 +3,18 @@ part of html;
 /// A TagSet that includes HTML tags and events.
 class HtmlTagSet extends TagSet with HtmlTags {
   HtmlTagSet() {
-    for (var tag in htmlTags) {
-      addTag(tag.type.symbol, tag);
+    for (ElementTag tag in htmlTags) {
+      var maker = (Map<String, dynamic> props) {
+        return new ElementNode(tag, props);
+      };
+      var handlerTypes = tag.type.props.where((t) => t is HandlerType);
+      addTag(tag.type.name, maker, handlerTypes: handlerTypes);
+
+      var namedProps = <Symbol, String>{};
+      for (var propType in tag.type.props) {
+        namedProps[propType.sym] = propType.name;
+      }
+      addMethod(tag.type.symbol, tag.type.name, namedProps);
     }
   }
 
@@ -16,80 +26,80 @@ class HtmlTagSet extends TagSet with HtmlTags {
 /// TODO: implement more elements and attributes.
 abstract class HtmlTags {
 
-  TagNode Div({id, clazz, ref,
+  ElementNode Div({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  TagNode Span({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-
-  TagNode Header({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  TagNode Footer({id, clazz, ref,
+  ElementNode Span({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  TagNode H1({id, clazz, ref,
+  ElementNode Header({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  TagNode H2({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  TagNode H3({id, clazz, ref,
+  ElementNode Footer({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  TagNode P({id, clazz, ref,
+  ElementNode H1({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  TagNode Pre({id, clazz, ref,
+  ElementNode H2({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-
-  TagNode Ul({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  TagNode Li({id, clazz, ref,
+  ElementNode H3({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  TagNode Table({id, clazz, ref,
+  ElementNode P({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  TagNode Tr({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  TagNode Td({id, clazz, ref,
+  ElementNode Pre({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  TagNode Img({id, clazz, ref,
+  ElementNode Ul({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  ElementNode Li({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+
+  ElementNode Table({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  ElementNode Tr({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  ElementNode Td({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+
+  ElementNode Img({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height, src});
-  TagNode Canvas({id, clazz, ref,
+  ElementNode Canvas({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height});
 
-  TagNode Form({id, clazz, ref,
+  ElementNode Form({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
     inner, innerHtml});
-  TagNode Input({id, clazz, ref,
+  ElementNode Input({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue, type, min, max});
-  TagNode TextArea({id, clazz, ref,
+  ElementNode TextArea({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue});
-  TagNode Button({id, clazz, ref,
+  ElementNode Button({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
   /// The definitions of all HTML tags.
   /// (Subclasses must install them using [BaseTagMaker#defineTag].)
-  List<Tag> get htmlTags => _htmlTags;
+  List<ElementTag> get htmlTags => _htmlTags;
 }
 
-final List<Tag> _htmlTags = () {
+final List<ElementTag> _htmlTags = () {
 
   const leafGlobalProps = const [
     const AttributeType(#id, "id"),

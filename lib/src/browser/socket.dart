@@ -4,31 +4,29 @@ part of browser;
 /// The server responds with a stream of tag trees that will be displayed in the slot.
 /// [src] is the URL of the websocket to open and [tagSet] contains the tags that
 /// may sent over the network.
-TagNode Slot({String src, HtmlTagSet tagSet}) {
-  if (tagSet == null) {
-    tagSet = new HtmlTagSet();
-  }
-  return new TagNode(slotTag, {#src: src, #tagSet: tagSet});
+class Slot extends TaggedNode {
+  String get tag => "Slot";
+  final String src;
+  final TagSet tagSet;
+  const Slot({this.src, this.tagSet});
 }
 
-final slotTag = new WidgetTag(make: () => new _Slot());
-
-class _Slot extends Widget<TagNode> {
+class SlotWidget extends Widget<Slot, TaggedNode> {
   String src;
   HtmlTagSet $;
   _Connection conn;
 
   @override
-  void setProps(TagNode node) {
-    if ($ != node.props.tagSet) {
-      $ = node.props.tagSet;
+  void setProps(Slot node) {
+    if ($ != node.tagSet) {
+      $ = node.tagSet;
       if (conn != null) {
         conn.onTagSetChange($);
       }
     }
 
-    if (src != node.props.src) {
-      src = node.props.src;
+    if (src != node.src) {
+      src = node.src;
       if (conn != null) {
         conn.close();
         conn = null;
@@ -38,12 +36,12 @@ class _Slot extends Widget<TagNode> {
   }
 
   @override
-  TagNode createFirstState() => $.Div(inner: "Loading...");
+  ElementNode createFirstState() => $.Div(inner: "Loading...");
 
   @override
-  TagNode render() => state;
+  ElementNode render() => state;
 
-  void showServerAnimationFrame(TagNode tagTree) {
+  void showServerAnimationFrame(ElementNode tagTree) {
     nextState = tagTree;
   }
 
@@ -56,7 +54,7 @@ class _Slot extends Widget<TagNode> {
 class _Connection {
   final String url;
   final WebSocket ws;
-  final _Slot slot;
+  final SlotWidget slot;
 
   bool opened = false;
   TaggedJsonCodec codec;

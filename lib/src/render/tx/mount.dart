@@ -4,6 +4,7 @@ part of render;
 abstract class _Mount {
 
   // Dependencies
+  Map<String, Renderer> get renderers;
   _InvalidateWidgetFunc get invalidateWidget;
 
   // What was mounted
@@ -24,7 +25,7 @@ abstract class _Mount {
   /// view tree, not the depth in the DOM tree (like the path). For example,
   /// the root of a Widget's shadow tree has the same path, but its depth is
   /// incremented.
-  _View mountView(TagNode node, StringBuffer html, String path, int depth) {
+  _View mountView(TaggedNode node, StringBuffer html, String path, int depth) {
     _View view = _mountTag(node, html, path, depth);
     if (view.ref != null) {
       _mountedRefs.add(view);
@@ -32,28 +33,37 @@ abstract class _Mount {
     return view;
   }
 
-  _View _mountTag(TagNode node, StringBuffer out, String path, int depth) {
-    Tag tag = node.tag;
-    if (tag is _TextTag) {
-      _TextView view = new _TextView(path, depth, node[#value]);
+  _View _mountTag(TaggedNode node, StringBuffer out, String path, int depth) {
+    Renderer r = renderers[node.tag];
+    _View view;
+    if (r != null) {
+      view = renderers[node.tag]._makeView(node, path, depth);
+    } else if (node is ElementNode && node.eltTag is ElementTag) {
+      view = new _EltView(node, path, depth);
+    } else {
+      throw "can't determine renderer for node: {node.runtimeType}";
+    }
+
+    if (view is _TextView) {
       // need to surround with a span to support incremental updates to a child
-      out.write("<span data-path=${view.path}>${HTML_ESCAPE.convert(node[#value])}</span>");
+      _TextView v = view;
+      out.write("<span data-path=${v.path}>${HTML_ESCAPE.convert(v.node.value)}</span>");
       return view;
 
-    } else if (tag is TemplateTag) {
-      _TemplateView view = new _TemplateView(node, path, depth);
-      TagNode shadow = node.applyProps(tag.render);
-      view.shadow = mountView(shadow, out, path, depth + 1);
+    } else if (view is _TemplateView) {
+      _TemplateView v = view;
+      TaggedNode shadow = v.renderer.render(node);
+      v.shadow = mountView(shadow, out, path, depth + 1);
       return view;
 
-    } else if (tag is WidgetTag) {
-      var widget = tag.make();
-      var view = new _WidgetView(node, path, depth);
+    } else if (view is _WidgetView) {
+      _WidgetView v = view;
+      var widget = v.renderer.createWidget();
       var c = widget.mount(node, () => invalidateWidget(view));
-      view.controller = c;
+      v.controller = c;
 
-      TagNode newShadow = widget.render();
-      view.shadow = mountView(newShadow, out, view.path, view.depth + 1);
+      TaggedNode newShadow = widget.render();
+      v.shadow = mountView(newShadow, out, view.path, view.depth + 1);
 
       if (c.didMount.hasListener) {
         _mountedWidgets.add(c.didMount);
@@ -61,13 +71,12 @@ abstract class _Mount {
 
       return view;
 
-    } else if (tag is ElementTag) {
-      _EltView view = new _EltView(node, path, depth);
+    } else if (view is _EltView) {
       _mountElt(view, out);
       return view;
 
     } else {
-      throw "can't mount node for unknown tag type: ${tag.runtimeType}";
+      throw "can't mount node for unknown tag type: ${view.runtimeType}";
     }
   }
 
@@ -75,12 +84,12 @@ abstract class _Mount {
     _writeStartTag(out, elt);
 
     if (elt.tagName == "textarea") {
-      String val = elt.node[#defaultValue];
+      String val = elt.node["defaultValue"];
       if (val != null) {
         out.write(HTML_ESCAPE.convert(val));
       }
     } else {
-      mountInner(elt, out, elt.node[#inner], elt.node[#innerHtml]);
+      mountInner(elt, out, elt.node["inner"], elt.node["innerHtml"]);
     }
 
     out.write("</${elt.tagName}>");
@@ -92,8 +101,8 @@ abstract class _Mount {
 
   void _writeStartTag(StringBuffer out, _EltView elt) {
     out.write("<${elt.tagName} data-path=\"${elt.path}\"");
-    for (Symbol key in elt.node.propKeys) {
-      var type = elt.tag.getPropType(key);
+    for (String key in elt.node.keys) {
+      var type = elt.eltTag.getPropType(key);
       var val = elt.node[key];
       if (type is HandlerType) {
         addHandler(type, elt.path, val);
@@ -104,7 +113,7 @@ abstract class _Mount {
       }
     }
     if (elt.tagName == "input") {
-      String val = elt.node[#defaultValue];
+      String val = elt.node["defaultValue"];
       if (val != null) {
         String escaped = HTML_ESCAPE.convert(val);
         out.write(" value=\"${escaped}\"");
@@ -123,14 +132,14 @@ abstract class _Mount {
     } else if (inner is String) {
       out.write(HTML_ESCAPE.convert(inner));
       elt._childText = inner;
-    } else if (inner is TagNode) {
+    } else if (inner is TaggedNode) {
       elt._children = _mountChildren(out, elt.path, elt.depth, [inner]);
     } else if (inner is Iterable) {
-      List<TagNode> children = [];
+      List<TaggedNode> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(new TagNode(const _TextTag(), {#value: item}));
-        } else if (item is TagNode) {
+          children.add(new _TextNode(item));
+        } else if (item is TaggedNode) {
           children.add(item);
         } else {
           throw "bad item in inner: ${item}";
@@ -141,7 +150,7 @@ abstract class _Mount {
   }
 
   List<_View> _mountChildren(StringBuffer out, String parentPath, int parentDepth,
-      List<TagNode> children) {
+      List<ElementNode> children) {
     if (children.isEmpty) {
       return null;
     }
@@ -155,8 +164,8 @@ abstract class _Mount {
   }
 }
 
-String _makeDomVal(Symbol key, val) {
-  if (key == #clazz) {
+String _makeDomVal(String key, val) {
+  if (key == "class") {
     if (val is String) {
       return val;
     } else if (val is List) {

@@ -3,11 +3,18 @@ import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
 final $ = new HtmlTagSet();
-final SecondsElapsed = new WidgetTag(make: () => new _SecondsElapsed());
 
-main() => root("#container").mount(SecondsElapsed());
+class SecondsElapsed extends TaggedNode {
+  get tag => "SecondsElapsed";
+  const SecondsElapsed();
+}
 
-class _SecondsElapsed extends Widget<int> {
+main() =>
+    root("#container")
+      ..addWidget("SecondsElapsed", () => new _SecondsElapsed())
+      ..mount(const SecondsElapsed());
+
+class _SecondsElapsed extends Widget<SecondsElapsed, int> {
   Timer timer;
 
   _SecondsElapsed() {
@@ -16,7 +23,7 @@ class _SecondsElapsed extends Widget<int> {
     willUnmount.listen((_) => timer.cancel());
   }
 
-  setProps(TagNode node) {}
+  setProps(_) {}
 
   @override
   int createFirstState() => 0;
@@ -27,5 +34,5 @@ class _SecondsElapsed extends Widget<int> {
     nextState = seconds + 1;
   }
 
-  TagNode render() => $.Div(inner: "Seconds elapsed: ${seconds}");
+  ElementNode render() => $.Div(inner: "Seconds elapsed: ${seconds}");
 }

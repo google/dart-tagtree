@@ -11,9 +11,8 @@ import "package:tagtree/server.dart";
 
 import "web/shared.dart";
 
-final TextFile = new RemoteTag(TextFileType);
-
-final $ = new HtmlTagSet()..addTag(null, TextFile);
+final $ = new HtmlTagSet()
+  ..addTag("TextFile", (propsMap) => new TextFile.fromMap(propsMap));
 
 main(List<String> args) {
   if (args.length == 0) {
@@ -77,13 +76,13 @@ class TailSession extends Session<Tail> {
   Tail createFirstState() => watcher.currentValue;
 
   @override
-  TagNode render() {
+  ElementNode render() {
     if (state == null) {
       return $.Div(inner: "Loading...");
     }
     return $.Div(inner: [
         $.H1(inner: "The last ${state.lines.length} lines of ${state.file.path}"),
-        TextFile(lines: state.lines)
+        new TextFile(lines: state.lines)
         ]);
   }
 }
@@ -180,3 +179,4 @@ sendNotFound(HttpRequest request) {
       ..write('Not found')
       ..close();
 }
+

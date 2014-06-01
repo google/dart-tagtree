@@ -74,10 +74,10 @@ class TagType {
   }
 
   /// Verifies that a node's properties have the correct keys.
-  bool checkPropKeys(TagNode node) {
-    var bySym = propsBySymbol;
-    for (Symbol key in node.propKeys) {
-      if (!bySym.containsKey(key)) {
+  bool checkPropKeys(ElementNode node) {
+    var byName = propsByName;
+    for (String key in node.keys) {
+      if (!byName.containsKey(key)) {
         throw "property not supported: ${key}";
       }
     }
@@ -114,7 +114,7 @@ class TagType {
   static final _propsByName = new Expando<Map<String, PropType>>();
 }
 
-/// A PropType defines what may be stored in one property of a [Tag]
+/// A PropType defines what may be stored in one property of a [_ElementTag]
 /// and how it may be serialized.
 class PropType {
   /// The name of this property as a Dart symbol.
@@ -146,7 +146,7 @@ class MixedContentType extends PropType {
 
   @override
   bool checkValue(inner) {
-    assert(inner == null || inner is String || inner is TagNode || inner is Iterable);
+    assert(inner == null || inner is String || inner is ElementNode || inner is Iterable);
     return true;
   }
 }

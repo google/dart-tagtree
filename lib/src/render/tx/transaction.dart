@@ -7,12 +7,14 @@ class _Transaction extends _Update {
   final _HandlerMap handlers;
 
   // What to do
-  final TagNode nextTagTree;
+  final TaggedNode nextTagTree;
   final List<_WidgetView> _widgetsToUpdate;
 
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree,
       Iterable<_WidgetView> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
+
+  Map<String, Renderer> get renderers => root._renderers;
 
   _InvalidateWidgetFunc get invalidateWidget => root._invalidateWidget;
 
@@ -50,7 +52,7 @@ class _Transaction extends _Update {
   }
 
   /// Renders a tag tree and returns the new view tree.
-  _View _replaceTree(String path, _View current, TagNode next) {
+  _View _replaceTree(String path, _View current, TaggedNode next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
       _View view = mountView(next, html, path, 0);
