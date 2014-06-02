@@ -3,8 +3,10 @@ import 'package:tagtree/browser.dart';
 
 final $ = new HtmlTagSet();
 
-class Hello extends TaggedNode {
+class Hello extends View {
+  @override
   get tag => "Hello";
+
   final String message;
   const Hello({this.message});
 }
@@ -14,5 +16,5 @@ main() =>
         ..addTemplate("Hello", renderHello)
         ..mount(const Hello(message: "world"));
 
-renderHello(Hello node) =>
-    $.Div(inner: "Hello, ${node.message}");
+renderHello(Hello view) =>
+    $.Div(inner: "Hello, ${view.message}");

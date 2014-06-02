@@ -6,16 +6,16 @@ part of widget;
 /// It can be any type, but you must override the [cloneState] method if
 /// it's not a bool, num, or String.
 ///
-/// Each widget has an associated [TaggedNode] that was rendered to create
+/// Each widget has an associated [View] that was rendered to create
 /// the widget. The widget must copy its props from this node whenever it
 /// changes, by implementing [setProps].
 ///
 /// A Widget may access the DOM by rendering an element tag with its "ref"
 /// property set. The DOM will be available during callbacks
-/// for [didMount], [didUpdate], and [willUnmount] events.
-abstract class Widget<N extends TaggedNode,S> extends StateMixin<S> {
+/// for [didMount], [didRender], and [willUnmount] events.
+abstract class Widget<N extends View,S> extends StateMixin<S> {
   final _didMount = new StreamController.broadcast();
-  final _didUpdate = new StreamController.broadcast();
+  final _didRender = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
   var _invalidate; // non-null when mounted
 
@@ -43,12 +43,12 @@ abstract class Widget<N extends TaggedNode,S> extends StateMixin<S> {
   /// If shouldRender returns false, rendering will be skipped.
   /// Subclasses may override this method to improve performance.
   /// Called automatically in the animation frame after [setProps] or [invalidate].
-  bool shouldRender(TaggedNode oldNode, S oldState) => true;
+  bool shouldRender(View oldView, S oldState) => true;
 
   /// Constructs the tag tree to be rendered in place of this Widget.
   /// Called automatically for first animation frame containing
   /// the widget, and in any animation frame where [shouldRender] returned true.
-  ElementNode render();
+  View render();
 
   /// Returns true when the widget is visible.
   /// That is, isMounted changes to true when mount() is automatically
@@ -63,8 +63,8 @@ abstract class Widget<N extends TaggedNode,S> extends StateMixin<S> {
   Stream get didMount => _didMount.stream;
 
   /// A stream that receives an event at the end of the animation frame when the
-  /// widget was updated. The widget's DOM has been updated.
-  Stream get didUpdate => _didUpdate.stream;
+  /// widget was re-rendered. The widget's DOM has been updated.
+  Stream get didRender => _didRender.stream;
 
   /// A stream that receives an event during the animation frame when the widget
   /// is being unmounted. The widget's DOM hasn't been removed yet.
@@ -78,7 +78,7 @@ class WidgetController {
   WidgetController(this.widget);
 
   StreamController get didMount => widget._didMount;
-  StreamController get didUpdate => widget._didUpdate;
+  StreamController get didRender => widget._didRender;
   StreamController get willUnmount => widget._willUnmount;
 
   void unmount() {

@@ -3,8 +3,10 @@ import 'package:tagtree/browser.dart';
 
 final $ = new HtmlTagSet();
 
-class ReversableText extends TaggedNode {
+class ReversableText extends View {
+  @override
   get tag => "ReversableText";
+
   final String label;
   const ReversableText({this.label});
 }
@@ -15,29 +17,31 @@ main() =>
       ..mount(const ReversableText(label: "Click me!"));
 
 class _ReversableText extends Widget<ReversableText, bool> {
-  String label;
+  ReversableText view;
 
-  setProps(ReversableText node) {
-    this.label = node.label;
+  @override
+  setProps(ReversableText view) {
+    this.view = view;
   }
 
   @override
   bool createFirstState() => false;
 
-  bool get reversed => state;
-  String get text => reversed ? _reverse(label) : label;
+  bool get isReversed => state;
+  String get text => isReversed ? _reverse(view.label) : view.label;
 
   onClick(e) {
-    nextState = !reversed;
+    nextState = !isReversed;
   }
 
-  ElementNode render() => $.Div(clazz: "sample_text", onClick: onClick, inner: text);
+  @override
+  View render() => $.Div(clazz: "sample_text", onClick: onClick, inner: text);
 }
 
 String _reverse(String text) {
-  var buffer = new StringBuffer();
+  var out = new StringBuffer();
   for (int i = text.length - 1; i >= 0; i--) {
-    buffer.write(text[i]);
+    out.write(text[i]);
   }
-  return buffer.toString();
+  return out.toString();
 }

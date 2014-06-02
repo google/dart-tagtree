@@ -9,37 +9,37 @@ abstract class _Unmount {
   /// Frees resources associated with this View and all its descendants
   /// and marks them as unmounted. (Calls releaseElement but doesn't actually
   /// change the DOM.)
-  void unmount(_View v, {bool willReplace: false}) {
-    if (v is _TextView) {
-      releaseElement(v.path, v.node.ref, willReplace: willReplace);
-    } else if (v is _EltView) {
-      unmountInner(v);
-      releaseElement(v.path, v.node.ref, willReplace: willReplace);
-    } else if (v is _TemplateView) {
-      unmount(v.shadow);
-      v.shadow = null;
-    } else if (v is _WidgetView) {
-      _unmountWidget(v, willReplace);
+  void unmount(_Node node, {bool willReplace: false}) {
+    if (node is _TextNode) {
+      releaseElement(node.path, node.view.ref, willReplace: willReplace);
+    } else if (node is _ElementNode) {
+      unmountInner(node);
+      releaseElement(node.path, node.view.ref, willReplace: willReplace);
+    } else if (node is _TemplateNode) {
+      unmount(node.shadow);
+      node.shadow = null;
+    } else if (node is _WidgetNode) {
+      _unmountWidget(node, willReplace);
     } else {
-      throw "unable to unmount ${v.runtimeType}";
+      throw "unable to unmount ${node.runtimeType}";
     }
-    v._unmount();
+    node._unmount();
   }
 
-  void _unmountWidget(_WidgetView view, bool willReplace) {
-    if (view.shadow == null) {
+  void _unmountWidget(_WidgetNode node, bool willReplace) {
+    if (node.shadow == null) {
       throw "not mounted: ${this.runtimeType}";
     }
-    if (view.controller.willUnmount.hasListener) {
-      view.controller.willUnmount.add(true);
+    if (node.controller.willUnmount.hasListener) {
+      node.controller.willUnmount.add(true);
     }
-    unmount(view.shadow, willReplace: willReplace);
-    view.shadow = null;
+    unmount(node.shadow, willReplace: willReplace);
+    node.shadow = null;
   }
 
-  void unmountInner(_EltView elt) {
+  void unmountInner(_ElementNode elt) {
     if (elt._children != null) {
-      for (_View child in elt._children) {
+      for (_Node child in elt._children) {
         unmount(child);
       }
       elt._children = null;

@@ -39,7 +39,7 @@ class ButtonSession extends Session<int> {
     nextState = clicks + 1;
   }
 
-  ElementNode render() {
+  View render() {
     return $.Div(inner: [
                  $.Div(inner: "Clicks: ${clicks}"),
                  $.Button(onClick: remote(onClick), inner: "Click to log a message"),

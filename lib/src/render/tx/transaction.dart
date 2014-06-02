@@ -7,14 +7,14 @@ class _Transaction extends _Update {
   final _HandlerMap handlers;
 
   // What to do
-  final TaggedNode nextTagTree;
-  final List<_WidgetView> _widgetsToUpdate;
+  final View nextTagTree;
+  final List<_WidgetNode> _widgetsToUpdate;
 
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree,
-      Iterable<_WidgetView> widgetsToUpdate)
+      Iterable<_WidgetNode> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
-  _MakeViewFunc get makeView => root._makeView;
+  _MakeNodeFunc get makeNode => root._makeNode;
 
   _InvalidateWidgetFunc get invalidateWidget => root._invalidateWidget;
 
@@ -26,7 +26,7 @@ class _Transaction extends _Update {
     // Sort ancestors ahead of children.
     _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (_WidgetView v in _widgetsToUpdate) {
+    for (_WidgetNode v in _widgetsToUpdate) {
       updateWidget(v);
     }
 
@@ -34,11 +34,11 @@ class _Transaction extends _Update {
   }
 
   void _finish() {
-    for (_View v in _mountedRefs) {
-      dom.mountRef(v.path, v.node.ref);
+    for (_Node v in _mountedRefs) {
+      dom.mountRef(v.path, v.view.ref);
     }
 
-    for (_EltView form in _mountedForms) {
+    for (_ElementNode form in _mountedForms) {
       dom.mountForm(form.path);
     }
 
@@ -46,16 +46,16 @@ class _Transaction extends _Update {
       s.add(true);
     }
 
-    for (EventSink s in _updatedWidgets) {
+    for (EventSink s in _renderedWidgets) {
       s.add(true);
     }
   }
 
   /// Renders a tag tree and returns the new view tree.
-  _View _replaceTree(String path, _View current, TaggedNode next) {
+  _Node _replaceTree(String path, _Node current, View next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
-      _View view = mountView(next, html, path, 0);
+      _Node view = mountView(next, html, path, 0);
       dom.mount(html.toString());
       return view;
     } else {

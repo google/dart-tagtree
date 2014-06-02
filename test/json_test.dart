@@ -7,7 +7,7 @@ final codec = makeCodec($);
 
 main() {
   test('serialize', () {
-    ElementNode tree = $.Div(clazz: "something", inner: [
+    View tree = $.Div(clazz: "something", inner: [
         $.H1(inner: "Hello!"),
         $.Span(innerHtml: "<h1>this</h1>")
         ]);
@@ -20,9 +20,9 @@ main() {
         ']'
     '}]';
     expect(encoded, equals(expected));
-    ElementNode decoded = codec.decode(encoded);
+    View decoded = codec.decode(encoded);
     expect(decoded.tag, equals("div"));
-    Props p = decoded.asProps;
+    Props p = decoded.props;
     expect(p["class"], equals("something"));
     expect(p["inner"], isList);
     expect(codec.encode(decoded), equals(expected));

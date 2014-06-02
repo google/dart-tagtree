@@ -14,8 +14,10 @@ import 'package:tagtree/browser.dart';
 
 final $ = new HtmlTagSet();
 
-class Sunflower extends TaggedNode {
+class Sunflower extends View {
+  @override
   get tag => "Sunflower";
+
   final int startSeeds;
   final int seedRadius;
   const Sunflower({this.startSeeds, this.seedRadius});
@@ -29,19 +31,20 @@ main() =>
 class _Sunflower extends Widget<Sunflower, int> {
   final _canvas = new Ref<CanvasElement>();
 
-  Sunflower node;
+  Sunflower _view;
 
   _Sunflower() {
     didMount.listen((_) => draw());
-    didUpdate.listen((_) => draw());
-  }
-
-  setProps(Sunflower node) {
-    this.node = node;
+    didRender.listen((_) => draw());
   }
 
   @override
-  int createFirstState() => node.startSeeds;
+  setProps(Sunflower view) {
+    this._view = view;
+  }
+
+  @override
+  int createFirstState() => _view.startSeeds;
 
   int get seeds => state;
   int get maxD => 300;
@@ -53,7 +56,7 @@ class _Sunflower extends Widget<Sunflower, int> {
   }
 
   @override
-  ElementNode render() {
+  View render() {
     return $.Div(inner: [
 
         $.Div(id: "container", inner: [
@@ -76,12 +79,12 @@ class _Sunflower extends Widget<Sunflower, int> {
   /// Draw the complete figure for the current number of seeds.
   void draw() {
     CanvasRenderingContext2D context = _canvas.elt.context2D;
-    num scaleFactor = node.seedRadius * 2;
+    num scaleFactor = _view.seedRadius * 2;
     context.clearRect(0, 0, maxD, maxD);
     for (var i = 0; i < seeds; i++) {
       final num theta = i * TAU / PHI;
       final num r = sqrt(i) * scaleFactor;
-      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), node.seedRadius);
+      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), _view.seedRadius);
     }
   }
 

@@ -2,8 +2,8 @@ part of core;
 
 typedef void OnEventFunc(HandlerCall call);
 
-/// Creates a codec for tag trees and handler calls.
-/// Any decoded Handlers will be replaced with a [HandlerFunc] that calls
+/// Creates a codec for sending a receiving Views and HandlerCalls.
+/// Each decoded Handler will be replaced with a [HandlerFunc] that calls
 /// onEvent.
 TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   if (onEvent == null) {
@@ -15,7 +15,7 @@ TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   var rules = <JsonRule>[];
 
   for (String tag in tags.tags) {
-      rules.add(new TaggedNodeRule(tag, tags.getMaker(tag)));
+      rules.add(new ViewRule(tag, tags.getMaker(tag)));
   }
 
   rules.add(new _HandlerIdRule(onEvent));
@@ -27,19 +27,24 @@ TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   return new TaggedJsonCodec(rules, [const JsonableFinder()]);
 }
 
-class TaggedNodeRule extends JsonRule<TaggedNode> {
-  final NodeMaker maker;
+class ViewRule extends JsonRule<View> {
+  final ViewMakerFunc maker;
 
-  TaggedNodeRule(String tag, this.maker) : super(tag);
-
-  @override
-  bool appliesTo(TaggedNode instance) => instance is TaggedNode && instance.tag == tagName;
+  ViewRule(String tag, this.maker) : super(tag);
 
   @override
-  encode(TaggedNode instance) => instance.propsMap;
+  bool appliesTo(View instance) => instance is View && instance.tag == tagName;
 
   @override
-  TaggedNode decode(Map<String, dynamic> propsMap) => maker(propsMap);
+  encode(View view) {
+    assert(view.checked()); // don't send malformed Views over the network.
+    var map = view.props.propsMap;
+    assert(map != null);
+    return map;
+  }
+
+  @override
+  View decode(Map<String, dynamic> propsMap) => maker(propsMap);
 }
 
 class _HandlerIdRule extends JsonRule<HandlerId> {

@@ -2,10 +2,22 @@ library shared;
 
 import "package:tagtree/core.dart";
 
-class TextFile extends TaggedNode {
-  String get tag => "TextFile";
+class TextFile extends View {
+  @override
+  get tag => "TextFile";
+
   final List<String> lines;
   const TextFile({this.lines});
-  TextFile.fromMap(Map<String, dynamic> m) : this(lines: m["lines"]);
-  get propsMap => {"lines": lines};
+
+  TextFile.fromMap(Map<String, dynamic> m) :
+    this(lines: m["lines"]);
+
+  @override
+  checked() {
+    assert(lines != null);
+    return true;
+  }
+
+  @override
+  get propsImpl => {"lines": lines};
 }

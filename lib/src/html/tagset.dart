@@ -4,7 +4,7 @@ part of html;
 class HtmlTagSet extends TagSet with HtmlTags {
   HtmlTagSet() {
     for (ElementType type in _htmlTags) {
-      addElement(type);
+      defineElement(type);
     }
   }
 
@@ -16,71 +16,71 @@ class HtmlTagSet extends TagSet with HtmlTags {
 /// TODO: implement more elements and attributes.
 abstract class HtmlTags {
 
-  ElementNode Div({id, clazz, ref,
+  View Div({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  ElementNode Span({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-
-  ElementNode Header({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  ElementNode Footer({id, clazz, ref,
+  View Span({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  ElementNode H1({id, clazz, ref,
+  View Header({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  ElementNode H2({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  ElementNode H3({id, clazz, ref,
+  View Footer({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  ElementNode P({id, clazz, ref,
+  View H1({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  ElementNode Pre({id, clazz, ref,
+  View H2({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-
-  ElementNode Ul({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  ElementNode Li({id, clazz, ref,
+  View H3({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  ElementNode Table({id, clazz, ref,
+  View P({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-  ElementNode Tr({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
-  ElementNode Td({id, clazz, ref,
+  View Pre({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 
-  ElementNode Img({id, clazz, ref,
+  View Ul({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  View Li({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+
+  View Table({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  View Tr({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+  View Td({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner, innerHtml});
+
+  View Img({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height, src});
-  ElementNode Canvas({id, clazz, ref,
+  View Canvas({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height});
 
-  ElementNode Form({id, clazz, ref,
+  View Form({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
     inner, innerHtml});
-  ElementNode Input({id, clazz, ref,
+  View Input({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue, type, min, max});
-  ElementNode TextArea({id, clazz, ref,
+  View TextArea({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue});
-  ElementNode Button({id, clazz, ref,
+  View Button({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
 }

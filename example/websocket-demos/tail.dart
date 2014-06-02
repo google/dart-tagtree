@@ -12,7 +12,7 @@ import "package:tagtree/server.dart";
 import "web/shared.dart";
 
 final $ = new HtmlTagSet()
-  ..addTag("TextFile", (propsMap) => new TextFile.fromMap(propsMap));
+  ..defineTag("TextFile", (propsMap) => new TextFile.fromMap(propsMap));
 
 main(List<String> args) {
   if (args.length == 0) {
@@ -76,7 +76,7 @@ class TailSession extends Session<Tail> {
   Tail createFirstState() => watcher.currentValue;
 
   @override
-  ElementNode render() {
+  View render() {
     if (state == null) {
       return $.Div(inner: "Loading...");
     }

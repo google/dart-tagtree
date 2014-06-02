@@ -1,10 +1,12 @@
 part of core;
 
-typedef TaggedNode NodeMaker(Map<String, dynamic> propsMap);
+typedef View ViewMakerFunc(Map<String, dynamic> propsMap);
 
-/// A TagSet defines a set of tags that may be sent over the network.
+/// A TagSet creates views from tags and properties.
+/// It defines a set of View classes and HandlerTypes that may be sent
+/// over the network.
 class TagSet {
-  final _nodeMakers = <String, NodeMaker>{};
+  final _viewMaker = <String, ViewMakerFunc>{};
 
   final _methodToTag = <Symbol, String>{};
   final _paramToPropKey = <Symbol, Map<Symbol, String>>{};
@@ -12,31 +14,33 @@ class TagSet {
   final _elementTypes = <String, ElementType>{};
   final _handlerTypes = <String, HandlerType>{};
 
-  void addElement(ElementType type) {
+  /// Defines the tag and method for creating an HTML element.
+  void defineElement(ElementType type) {
     _elementTypes[type.tag] = type;
-    addTag(type.tag, type.makeNode, handlerTypes: type.handlerTypes);
-    addMethod(type.method, type.tag, type.namedParams);
+    defineTag(type.tag, type.makeView, handlerTypes: type.handlerTypes);
+    defineMethod(type.method, type.namedParams, type.tag);
   }
 
-  /// Makes a tag available for serialization and deserialization.
-  /// If any handlers
-  void addTag(String tag, NodeMaker maker, {Iterable<HandlerType> handlerTypes: const []}) {
-    _nodeMakers[tag] = maker;
+  /// Defines a tag so that its corresponding View can be created using [makeView].
+  void defineTag(String tag, ViewMakerFunc maker, {Iterable<HandlerType> handlerTypes: const []}) {
+    _viewMaker[tag] = maker;
     for (HandlerType t in handlerTypes) {
       _handlerTypes[t.name] = t;
     }
   }
 
-  void addMethod(Symbol method, String tag, Map<Symbol, String> namedParams) {
+  /// Defines a method so that it will create the View with the given tag.
+  /// (The tag must already be defined.)
+  void defineMethod(Symbol method, Map<Symbol, String> namedParams, String tagToCreate) {
    assert(method != null);
-   assert(tag != null);
    assert(namedParams != null);
-   assert(_nodeMakers[tag] != null);
-    _methodToTag[method] = tag;
+   assert(tagToCreate != null);
+   assert(_viewMaker[tagToCreate] != null);
+    _methodToTag[method] = tagToCreate;
     _paramToPropKey[method] = namedParams;
   }
 
-  Iterable<String> get tags => _nodeMakers.keys;
+  Iterable<String> get tags => _viewMaker.keys;
 
   /// Returns the types of all the element tags included in this set.
   Iterable<ElementType> get elementTypes => _elementTypes.values;
@@ -44,10 +48,10 @@ class TagSet {
   /// Returns the types of all the handlers used by tags in this set.
   Iterable<HandlerType> get handlerTypes => _handlerTypes.values;
 
-  NodeMaker getMaker(String tag) => _nodeMakers[tag];
+  ViewMakerFunc getMaker(String tag) => _viewMaker[tag];
 
-  TaggedNode makeNode(String tag, Map<String, dynamic> propsMap) =>
-      _nodeMakers[tag](propsMap);
+  View makeView(String tag, Map<String, dynamic> propsMap) =>
+      _viewMaker[tag](propsMap);
 
   /// Tags may also be created by calling a method with the same name.
   noSuchMethod(Invocation inv) {
@@ -62,7 +66,7 @@ class TagSet {
         for (Symbol name in inv.namedArguments.keys) {
           propsMap[toKey[name]] = inv.namedArguments[name];
         }
-        return makeNode(tag, propsMap);
+        return makeView(tag, propsMap);
       }
     }
     return super.noSuchMethod(inv);

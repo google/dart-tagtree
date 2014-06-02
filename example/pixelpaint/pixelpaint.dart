@@ -3,24 +3,30 @@ import 'package:tagtree/core.dart';
 
 final $ = new HtmlTagSet();
 
-class PixelPaint extends TaggedNode {
+class PixelPaint extends View {
+  @override
   get tag => "PixelPaint";
+
   final int width;
   final int height;
   final List<String> palette;
   const PixelPaint({this.width, this.height, this.palette});
 }
 
-class GridView extends TaggedNode {
+class GridView extends View {
+  @override
   get tag => "GridView";
+
   final Grid grid;
   final Map<int, String> palette;
   final PixelHandler onPaint;
   const GridView({this.grid, this.palette, this.onPaint});
 }
 
-class RowView extends TaggedNode {
+class RowView extends View {
+  @override
   get tag => "RowView";
+
   final int y;
   final Row row;
   final Map<int, String> palette;
@@ -40,19 +46,22 @@ main() => root("#container", $)
 
 /// Updates the model and re-renders whenever the user paints a pixel.
 class _PixelPaint extends Widget<PixelPaint, Grid> {
-  PixelPaint node;
+  PixelPaint view;
 
-  setProps(PixelPaint node) {
-    this.node = node;
+  @override
+  setProps(PixelPaint view) {
+    this.view = view;
   }
 
   @override
-  Grid createFirstState() => new Grid(node.width, node.height);
+  Grid createFirstState() => new Grid(view.width, view.height);
 
   void onPaint(int x, int y) => nextState.set(x, y, 1);
 
-  TaggedNode render() => new GridView(grid: state, palette: node.palette.asMap(), onPaint: onPaint);
+  @override
+  View render() => new GridView(grid: state, palette: view.palette.asMap(), onPaint: onPaint);
 
+  @override
   Grid cloneState(Grid prev) => new Grid.from(prev);
 }
 
@@ -63,10 +72,11 @@ typedef PixelHandler(int x, int y);
 /// (The DOM's event API makes it tricky to reliably determine when the mouse is down.
 /// This implementation usually works but could be improved.)
 class _GridView extends Widget<GridView, bool> {
-  GridView node;
+  GridView view;
 
-  setProps(GridView node) {
-    this.node = node;
+  @override
+  setProps(GridView view) {
+    this.view = view;
   }
 
   @override
@@ -76,13 +86,13 @@ class _GridView extends Widget<GridView, bool> {
   set mouseDown(bool next) => nextState = next;
 
   void onMouseDown(int x, int y) {
-    node.onPaint(x, y);
+    view.onPaint(x, y);
     mouseDown = true;
   }
 
   void onMouseOver(int x, int y) {
     if (mouseDown) {
-      node.onPaint(x, y);
+      view.onPaint(x, y);
     }
   }
 
@@ -91,10 +101,10 @@ class _GridView extends Widget<GridView, bool> {
   }
 
   @override
-  TaggedNode render() {
+  View render() {
     var rows = [];
-    for (int y = 0; y < node.grid.height; y++) {
-      rows.add(new RowView(y: y, row: node.grid.rows[y], palette: node.palette,
+    for (int y = 0; y < view.grid.height; y++) {
+      rows.add(new RowView(y: y, row: view.grid.rows[y], palette: view.palette,
                            onMouseDown: onMouseDown, onMouseOver: onMouseOver,
                            onMouseUp: onMouseUp));
     }
@@ -104,7 +114,7 @@ class _GridView extends Widget<GridView, bool> {
   }
 }
 
-renderRowView(RowView rv) {
+View renderRowView(RowView rv) {
   var cells = [];
   for (int x = 0; x < rv.row.width; x++) {
     int pixel = rv.row[x];

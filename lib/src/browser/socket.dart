@@ -4,14 +4,23 @@ part of browser;
 /// The server responds with a stream of tag trees that will be displayed in the slot.
 /// [src] is the URL of the websocket to open and [tagSet] contains the tags that
 /// may sent over the network.
-class Slot extends TaggedNode {
+class Slot extends View {
+  @override
   String get tag => "Slot";
+
   final String src;
   final TagSet tagSet;
   const Slot({this.src, this.tagSet});
+
+  @override
+  bool checked() {
+    assert(src != null);
+    assert(tagSet != null);
+    return true;
+  }
 }
 
-class SlotWidget extends Widget<Slot, TaggedNode> {
+class SlotWidget extends Widget<Slot, View> {
   String src;
   HtmlTagSet $;
   _Connection conn;
@@ -36,12 +45,12 @@ class SlotWidget extends Widget<Slot, TaggedNode> {
   }
 
   @override
-  ElementNode createFirstState() => $.Div(inner: "Loading...");
+  View createFirstState() => $.Div(inner: "Loading...");
 
   @override
-  ElementNode render() => state;
+  View render() => state;
 
-  void showServerAnimationFrame(ElementNode tagTree) {
+  void showServerAnimationFrame(View tagTree) {
     nextState = tagTree;
   }
 

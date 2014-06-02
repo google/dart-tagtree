@@ -3,13 +3,17 @@ import 'package:tagtree/browser.dart';
 
 final $ = new HtmlTagSet();
 
-class TodoApp extends TaggedNode {
+class TodoApp extends View {
+  @override
   get tag => "TodoApp";
+
   const TodoApp();
 }
 
-class TodoList extends TaggedNode {
+class TodoList extends View {
+  @override
   get tag => "TodoList";
+
   final List<String> items;
   const TodoList({this.items});
 }
@@ -29,6 +33,7 @@ class _TodoState {
 
 class _TodoApp extends Widget<TodoApp, _TodoState> {
 
+  @override
   void setProps(_) {}
 
   @override
@@ -44,7 +49,8 @@ class _TodoApp extends Widget<TodoApp, _TodoState> {
       ..text = "";
   }
 
-  TaggedNode render() =>
+  @override
+  View render() =>
     $.Div(inner: [
       $.H3(inner: "TODO"),
       new TodoList(items: state.items),
@@ -54,10 +60,11 @@ class _TodoApp extends Widget<TodoApp, _TodoState> {
       ])
     ]);
 
+  @override
   _TodoState cloneState(_TodoState prev) => new _TodoState(prev.text, prev.items);
 }
 
-_renderTodoList(TodoList node) {
+View _renderTodoList(TodoList node) {
   createItem(itemText) => $.Li(inner: itemText);
   return $.Ul(inner: node.items.map(createItem));
 }

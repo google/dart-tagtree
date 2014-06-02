@@ -1,56 +1,76 @@
 part of core;
 
-/// A TaggedNode is a node in an abstract syntax tree that will be rendered to HTML.
-/// A tree of TaggedNodes ("tag tree") is somwhat like a tree of HTML elements with
-/// the addition of special nodes for templates and widgets.
+/// A View is a node in a tree that will be rendered to HTML.
 ///
-/// Nodes have no built-in behavior. To render a tag tree to HTML, there must be a
-/// rule for each tag determining how it will be rendered.
-abstract class TaggedNode implements Jsonable {
+/// Each View has a [tag] that plays a role similar to an HTML tag.
+/// A tree of views (a "tag tree") is somewhat like a tree of HTML elements.
+/// However, some views are rendered by expanding a template or by creating
+/// a Widget.
+///
+/// Unlike a tree of DOM Elements, a tag tree is an immutable data structure
+/// with no state, lifecycle, or browser dependencies. Since Views have
+/// structure but no behavior, tag trees can be freely shared and sent over
+/// the network. They can also be constants. However, once rendered, some
+/// Views turn into Widgets, which contain mutable state and can react to
+/// events.
+///
+/// You can implement a custom view by subclassing View to define its tag and
+/// properties, and separately providing a template or Widget for its behavior.
+abstract class View implements Jsonable {
 
-  /// The constructor of each TaggedNode should be const.
+  /// The default constructor of each View should be const.
   /// It should take a named parameter for each property.
-  const TaggedNode();
+  const View();
 
-  /// The unique key for any rules determining this tag's behavior.
-  /// The tag is also used in the node's JSON encoding.
+  /// Asserts that a View's properties are valid.
+  /// (Not done in the constructor so that it can be const.)
+  /// Subclasses should implement this method if they have any constraints.
+  /// When Dart is running in checked mode, this method will automatically be
+  /// called before a View is rendered or sent over the network.
+  bool checked() => true;
+
+  /// The tag serves as a unique key for the node's type.
+  /// It's used to look up the rule for rendering a node to HTML,
+  /// and also as the name of the node when sending it as JSON.
   String get tag;
 
-  @override
-  String get jsonTag => tag;
-
-  /// Constructs a property map containing every field.
-  /// A property may contain JSON data (extended to include
-  /// other TagNodes) or a [HandlerFunc].
-  ///
-  /// A node's children may be stored in any prop. By convention,
-  /// they are usually stored in the "inner" prop.
-  Map<String, dynamic> get propsMap {
-    throw "propsMap isn't implemented for ${tag}";
-  }
-
-  /// Returns an object that should be populated with the rendered
-  /// version of this node.
-  get ref => null;
-
-  Props get asProps {
+  /// Returns the tag and properties of the node, in the form suitable
+  /// for reflective access and for sending it across the network.)
+  Props get props {
     var p = _propsCache[this];
     if (p == null) {
-      p = new Props(this);
+      p = new Props(tag, propsImpl);
       _propsCache[p] = p;
     }
     return p;
   }
 
+  /// Constructs the property map needed for [props] to work.
+  ///
+  /// A property may contain JSON data (including other Jsonable nodes)
+  /// or a [HandlerFunc].
+  ///
+  /// A node's children may be stored in any prop. By convention,
+  /// they are usually stored in its "inner" prop.
+  Map<String, dynamic> get propsImpl => throw "propsMap isn't implemented for ${tag}";
+
+  @override
+  String get jsonTag => tag;
+
+  /// If non-null, the DOM element corresponding to this node will be placed
+  /// in the ref when it's first rendered.
+  /// (Only works client-side; see browser.Ref).
+  get ref => null;
+
   static final _propsCache = new Expando<Props>();
 }
 
-/// An alternate representation of a TagNode
-/// (Used to send it over the network.)
+/// An alternate representation of a [View].
 class Props {
   final String tag;
   final Map<String, dynamic> propsMap;
-  Props(TaggedNode node) : tag = node.tag, propsMap = node.propsMap;
+
+  const Props(this.tag, this.propsMap);
 
   /// Returns the key of each prop.
   Iterable<String> get keys => propsMap.keys;

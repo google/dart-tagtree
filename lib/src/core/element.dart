@@ -1,23 +1,27 @@
 part of core;
 
-/// A node that renders as an HTML element.
-class ElementNode extends TaggedNode {
-  final ElementType type;
-  final Map<String, dynamic> propsMap;
+/// A view that renders to a single HTML element.
+class _ElementView implements View {
+  @override
+  final Props props;
+  const _ElementView(this.props);
 
-  ElementNode(this.type, this.propsMap) {
-    assert(type.checkNode(this));
-  }
+  @override
+  bool checked() => true; // already done in ElementType.makeNode.
 
-  String get tag => type.tag;
+  @override
+  get tag => props.tag;
 
-  /// Returns the key of each prop.
-  Iterable<String> get keys => propsMap.keys;
+  @override
+  get jsonTag => props.tag;
 
-  /// Returns the value of a property.
-  operator[](String key) => propsMap[key];
+  @override
+  get propsImpl => props.propsMap;
 
-  get ref => propsMap["ref"];
+  @override
+  get ref => props["ref"];
+
+  static final _checked = new Expando<bool>();
 }
 
 class ElementType {
@@ -50,12 +54,17 @@ class ElementType {
     return true;
   }
 
-  /// Creates a node with this element type.
-  ElementNode makeNode(Map<String, dynamic> props) => new ElementNode(this, props);
+  /// Creates a view corresponding to this element.
+  View makeView(Map<String, dynamic> propMap) {
+    assert(propMap != null);
+    Props p = new Props(tag, propMap);
+    checkProps(p);
+    return new _ElementView(p);
+  }
 
   /// Returns a description of each property of this element.
   /// (The ElementType will be checked the first time this is called.)
-  List<PropType> get props {
+  List<PropType> get propTypes {
     var out = _props[this];
     if (out == null) {
       assert(checked());
@@ -73,7 +82,7 @@ class ElementType {
     var out = _propsByName[this];
     if (out == null) {
       out = <String, PropType>{};
-      for (var p in props) {
+      for (var p in propTypes) {
         out[p.name] = p;
       }
       _propsByName[this] = out;
@@ -82,30 +91,31 @@ class ElementType {
   }
 
   /// Returns a description of each property that stores a handler.
-  Iterable<HandlerType> get handlerTypes => props.where((t) => t is HandlerType);
+  Iterable<HandlerType> get handlerTypes => propTypes.where((t) => t is HandlerType);
 
   /// Returns a mapping from each named parameter in a method call to the property key.
   Map<Symbol, String> get namedParams {
     var out = <Symbol, String>{};
-    for (var propType in props) {
+    for (var propType in propTypes) {
       out[propType.sym] = propType.name;
     }
     return out;
   }
 
-  /// Checks that a node is well-formed.
+  /// Checks that an Element node's properties are well-formed.
   /// Called automatically on new nodes when Dart is running in checked mode.
-  bool checkNode(ElementNode node) {
-    _checkPropKeys(node);
-    assert(node["inner"] == null || node["innerHtml"] == null);
-    assert(node["value"] == null || node["defaultValue"] == null);
+  bool checkProps(Props props) {
+    _checkPropKeys(props);
+    assert(props["inner"] == null || props["innerHtml"] == null);
+    assert(props["value"] == null || props["defaultValue"] == null);
     return true;
   }
 
   /// Verifies that a node's properties have the correct keys.
-  bool _checkPropKeys(ElementNode node) {
+  bool _checkPropKeys(Props props) {
+    assert(props != null);
     var byName = propsByName;
-    for (String key in node.keys) {
+    for (String key in props.keys) {
       if (!byName.containsKey(key)) {
         throw "property not supported: ${key}";
       }
@@ -149,7 +159,7 @@ class MixedContentType extends PropType {
 
   @override
   bool checkValue(inner) {
-    assert(inner == null || inner is String || inner is ElementNode || inner is Iterable);
+    assert(inner == null || inner is String || inner is View || inner is Iterable);
     return true;
   }
 }
