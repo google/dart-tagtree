@@ -4,13 +4,13 @@ class TaggedJsonCodec extends Codec<dynamic, String> {
   Converter<dynamic, String> encoder;
   Converter<String, dynamic> decoder;
 
-  TaggedJsonCodec(Iterable<JsonRule> rules, Iterable<TagFinder> getters) {
+  TaggedJsonCodec(Iterable<JsonRule> rules, Iterable<TagFinder> tagFinders) {
     var tagToRule = <String, JsonRule>{};
     for (var r in rules) {
       assert(!tagToRule.containsKey(r.tagName));
       tagToRule[r.tagName] = r;
     }
-    encoder = new TaggedJsonEncoder(tagToRule, getters);
+    encoder = new TaggedJsonEncoder(tagToRule, tagFinders);
     decoder = new TaggedJsonDecoder(tagToRule);
   }
 }

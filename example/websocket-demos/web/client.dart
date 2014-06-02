@@ -6,7 +6,7 @@ final $ = new HtmlTagSet()
   ..addTag("TextFile", (m) => new TextFile.fromMap(m));
 
 main() =>
-    root("#view")
+    root("#view", $)
         ..addTemplate("TextFile", renderTextFile)
         ..addWidget("Slot", () => new SlotWidget())
         ..mount(new Slot(src: "ws://localhost:8080/ws", tagSet: $));

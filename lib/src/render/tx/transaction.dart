@@ -14,7 +14,7 @@ class _Transaction extends _Update {
       Iterable<_WidgetView> widgetsToUpdate)
       : _widgetsToUpdate = new List.from(widgetsToUpdate);
 
-  Map<String, Renderer> get renderers => root._renderers;
+  _MakeViewFunc get makeView => root._makeView;
 
   _InvalidateWidgetFunc get invalidateWidget => root._invalidateWidget;
 
@@ -35,7 +35,7 @@ class _Transaction extends _Update {
 
   void _finish() {
     for (_View v in _mountedRefs) {
-      dom.mountRef(v.path, v.ref);
+      dom.mountRef(v.path, v.node.ref);
     }
 
     for (_EltView form in _mountedForms) {

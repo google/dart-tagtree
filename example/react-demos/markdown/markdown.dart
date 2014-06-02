@@ -11,7 +11,7 @@ class MarkdownEditor extends TaggedNode {
 }
 
 main() =>
-    root("#container")
+    root("#container", $)
       ..addWidget("MarkdownEditor", () => new _MarkdownEditor())
       ..mount(const MarkdownEditor(defaultText: "Type some *markdown* here!"));
 

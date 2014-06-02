@@ -10,7 +10,7 @@ class SecondsElapsed extends TaggedNode {
 }
 
 main() =>
-    root("#container")
+    root("#container", $)
       ..addWidget("SecondsElapsed", () => new _SecondsElapsed())
       ..mount(const SecondsElapsed());
 

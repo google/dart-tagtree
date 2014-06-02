@@ -11,10 +11,10 @@ abstract class _Unmount {
   /// change the DOM.)
   void unmount(_View v, {bool willReplace: false}) {
     if (v is _TextView) {
-      releaseElement(v.path, v.ref, willReplace: willReplace);
+      releaseElement(v.path, v.node.ref, willReplace: willReplace);
     } else if (v is _EltView) {
       unmountInner(v);
-      releaseElement(v.path, v.ref, willReplace: willReplace);
+      releaseElement(v.path, v.node.ref, willReplace: willReplace);
     } else if (v is _TemplateView) {
       unmount(v.shadow);
       v.shadow = null;

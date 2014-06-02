@@ -26,21 +26,16 @@ part of render;
 /// Tag. Therefore, they only need to be updated when their owner is rendered. However,
 /// widgets have their own state and therefore can start a render by calling
 /// Widget.invalidate().
-abstract class _View {
+abstract class _View<N extends TaggedNode> {
   /// The unique id used to find the view's HTML element.
   final String path;
 
   /// The depth of this node in the view tree (not in the DOM).
   final int depth;
 
-  final Renderer renderer;
+  N node;
 
-  /// The owner's reference to the DOM. May be null.
-  final ref;
-
-  TaggedNode node;
-
-  _View(this.path, this.depth, this.renderer, this.ref, this.node);
+  _View(this.path, this.depth, this.node);
 
   bool get mounted => node != null;
 
@@ -61,50 +56,42 @@ abstract class _View {
 ///
 /// To simulate mixed-content HTML, we render the text inside a <span>,
 /// so that it can easily be updated using its data-path attribute.
-class _TextView extends _View {
-  _TextView(String path, int depth, _TextNode node) :
-    super(path, depth, null, null, node);
-
-  _TextNode get node => super.node;
+class _TextView extends _View<_TextNode> {
+  _TextView(String path, int depth, _TextNode node) : super(path, depth, node);
 }
 
 /// A view node for a rendered HTML element.
-class _EltView extends _View {
-  final String tagName;
+class _EltView extends _View<ElementNode> {
+  final ElementType type;
   // Non-null if the element has at least one non-text child.
   List<_View> _children;
   // Non-null if the view contains just text.
   String _childText;
 
-  _EltView(ElementNode node, String path, int depth) :
-      tagName = node.eltTag.type.name,
-      super(path, depth, null, node["ref"], node) {
-  }
+  _EltView(String path, int depth, TaggedNode node, this.type) : super(path, depth, node);
 
   ElementNode get node => super.node;
-  ElementTag get eltTag => node.eltTag;
 }
 
 /// A view node for a rendered template.
-class _TemplateView extends _View {
+class _TemplateView extends _View<TaggedNode> {
+  final TemplateFunc render;
+  final ShouldRenderFunc shouldRender;
   _View shadow;
-  _TemplateView(String path, int depth, Renderer render, TaggedNode node) :
-    super(path, depth, render, null, node);
-
-  _TemplateRenderer get renderer => super.renderer;
+  _TemplateView(String path, int depth, TaggedNode node, this.render, this.shouldRender) :
+    super(path, depth, node);
 }
 
 typedef _InvalidateWidgetFunc(_WidgetView v);
 
 /// A view node for a rendered widget.
-class _WidgetView extends _View {
+class _WidgetView extends _View<TaggedNode> {
+  CreateWidgetFunc createWidget;
   WidgetController controller;
   _View shadow;
 
-  _WidgetView(String path, int depth, _WidgetRenderer render, TaggedNode node) :
-    super(path, depth, render, null, node);
-
-  _WidgetRenderer get renderer => super.renderer;
+  _WidgetView(String path, int depth, TaggedNode node, this.createWidget) :
+    super(path, depth, node);
 
   @override
   TaggedNode updateProps(TaggedNode next) {

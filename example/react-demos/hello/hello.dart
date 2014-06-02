@@ -10,7 +10,7 @@ class Hello extends TaggedNode {
 }
 
 main() =>
-    root("#container")
+    root("#container", $)
         ..addTemplate("Hello", renderHello)
         ..mount(const Hello(message: "world"));
 

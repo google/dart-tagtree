@@ -6,7 +6,7 @@ part of core;
 ///
 /// Nodes have no built-in behavior. To render a tag tree to HTML, there must be a
 /// rule for each tag determining how it will be rendered.
-abstract class TaggedNode {
+abstract class TaggedNode implements Jsonable {
 
   /// The constructor of each TaggedNode should be const.
   /// It should take a named parameter for each property.
@@ -15,6 +15,9 @@ abstract class TaggedNode {
   /// The unique key for any rules determining this tag's behavior.
   /// The tag is also used in the node's JSON encoding.
   String get tag;
+
+  @override
+  String get jsonTag => tag;
 
   /// Constructs a property map containing every field.
   /// A property may contain JSON data (extended to include
@@ -25,6 +28,10 @@ abstract class TaggedNode {
   Map<String, dynamic> get propsMap {
     throw "propsMap isn't implemented for ${tag}";
   }
+
+  /// Returns an object that should be populated with the rendered
+  /// version of this node.
+  get ref => null;
 
   Props get asProps {
     var p = _propsCache[this];
@@ -51,21 +58,3 @@ class Props {
   /// Returns the value of a property.
   operator[](String key) => propsMap[key];
 }
-
-class ElementNode extends TaggedNode {
-  final ElementTag eltTag;
-  final Map<String, dynamic> propsMap;
-
-  ElementNode(this.eltTag, this.propsMap) {
-    assert(eltTag.checkNode(this));
-  }
-
-  String get tag => eltTag.type.name;
-
-  /// Returns the key of each prop.
-  Iterable<String> get keys => propsMap.keys;
-
-  /// Returns the value of a property.
-  operator[](String key) => propsMap[key];
-}
-

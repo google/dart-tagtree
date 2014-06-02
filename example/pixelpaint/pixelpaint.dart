@@ -31,7 +31,7 @@ class RowView extends TaggedNode {
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
 }
 
-main() => root("#container")
+main() => root("#container", $)
     ..addWidget("PixelPaint", () => new _PixelPaint())
     ..addWidget("GridView", () => new _GridView())
     ..addTemplate("RowView", renderRowView,

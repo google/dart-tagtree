@@ -15,7 +15,7 @@ class TodoList extends TaggedNode {
 }
 
 main() =>
-    root("#container")
+    root("#container", $)
       ..addWidget("TodoApp", () => new _TodoApp())
       ..addTemplate("TodoList", _renderTodoList)
       ..mount(const TodoApp());

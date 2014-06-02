@@ -1,29 +1,46 @@
 part of core;
 
-/// A TagType defines the public interface for constructing and serializing nodes
-/// with a particular tag.
-class TagType {
+/// A node that renders as an HTML element.
+class ElementNode extends TaggedNode {
+  final ElementType type;
+  final Map<String, dynamic> propsMap;
 
-  /// The name of this tag as a Dart symbol.
-  /// (May be used as the name of the method to create this tag.)
-  final Symbol symbol;
+  ElementNode(this.type, this.propsMap) {
+    assert(type.checkNode(this));
+  }
 
-  /// The name of this tag for serialization.
-  /// (If it's an HTML element, this name is also used to construct the DOM node.)
-  final String name;
+  String get tag => type.tag;
+
+  /// Returns the key of each prop.
+  Iterable<String> get keys => propsMap.keys;
+
+  /// Returns the value of a property.
+  operator[](String key) => propsMap[key];
+
+  get ref => propsMap["ref"];
+}
+
+class ElementType {
+
+  /// The method in HtmlTagSet that creates this element.
+  final Symbol method;
+
+  /// The name of the HTML Element that the node will render to.
+  /// (Also used for sending the node over the network.)
+  final String tag;
 
   // The tag's properties, split into two lists.
   // (This is because there's no way to concatenate const lists in Dart.)
   final List<PropType> _props1;
   final List<PropType> _props2;
 
-  const TagType(this.symbol, this.name, this._props1, [this._props2 = const []]);
+  const ElementType(this.method, this.tag, this._props1, [this._props2 = const []]);
 
   /// Checks that the type is well-formed.
   /// (Not done in the constructor so that it can be const.)
   bool checked() {
-    assert(symbol != null);
-    assert(name != null);
+    assert(method != null);
+    assert(tag != null);
     for (var p in _props1) {
       assert(p.checked());
     }
@@ -33,8 +50,11 @@ class TagType {
     return true;
   }
 
-  /// Returns a description of each property of this tag.
-  /// (The TagType will be checked the first time this is called.)
+  /// Creates a node with this element type.
+  ElementNode makeNode(Map<String, dynamic> props) => new ElementNode(this, props);
+
+  /// Returns a description of each property of this element.
+  /// (The ElementType will be checked the first time this is called.)
   List<PropType> get props {
     var out = _props[this];
     if (out == null) {
@@ -45,18 +65,6 @@ class TagType {
         out = new List.from(_props1)..addAll(_props2);
       }
       _props[this] = out;
-    }
-    return out;
-  }
-
-  Map<Symbol, PropType> get propsBySymbol {
-    var out = _propsBySym[this];
-    if (out == null) {
-      out = <Symbol, PropType>{};
-      for (var p in props) {
-        out[p.sym] = p;
-      }
-      _propsBySym[this] = out;
     }
     return out;
   }
@@ -73,8 +81,29 @@ class TagType {
     return out;
   }
 
+  /// Returns a description of each property that stores a handler.
+  Iterable<HandlerType> get handlerTypes => props.where((t) => t is HandlerType);
+
+  /// Returns a mapping from each named parameter in a method call to the property key.
+  Map<Symbol, String> get namedParams {
+    var out = <Symbol, String>{};
+    for (var propType in props) {
+      out[propType.sym] = propType.name;
+    }
+    return out;
+  }
+
+  /// Checks that a node is well-formed.
+  /// Called automatically on new nodes when Dart is running in checked mode.
+  bool checkNode(ElementNode node) {
+    _checkPropKeys(node);
+    assert(node["inner"] == null || node["innerHtml"] == null);
+    assert(node["value"] == null || node["defaultValue"] == null);
+    return true;
+  }
+
   /// Verifies that a node's properties have the correct keys.
-  bool checkPropKeys(ElementNode node) {
+  bool _checkPropKeys(ElementNode node) {
     var byName = propsByName;
     for (String key in node.keys) {
       if (!byName.containsKey(key)) {
@@ -84,38 +113,12 @@ class TagType {
     return true;
   }
 
-  /// Converts a node's properties from symbol keys to string keys.
-  Map<String, dynamic> convertToStringKeys(Map<Symbol, dynamic> propMap) {
-    var bySym = propsBySymbol;
-    var out = {};
-    for (var key in propMap.keys) {
-      var name = bySym[key].name;
-      assert(name != null);
-      out[name] = propMap[key];
-    }
-    return out;
-  }
-
-  /// Converts a node's properties from string keys to symbol keys.
-  Map<Symbol, dynamic> convertFromStringKeys(Map<String, dynamic> jsonMap) {
-    var byName = propsByName;
-    var out = <Symbol, dynamic>{};
-    for (var name in jsonMap.keys) {
-      var key = byName[name].sym;
-      assert(key != null);
-      out[key] = jsonMap[name];
-    }
-    return out;
-  }
-
   // Lazily initialized indexes.
   static final _props = new Expando<List<PropType>>();
-  static final _propsBySym = new Expando<Map<Symbol, PropType>>();
   static final _propsByName = new Expando<Map<String, PropType>>();
 }
 
-/// A PropType defines what may be stored in one property of a [_ElementTag]
-/// and how it may be serialized.
+/// A PropType describes a property of an ElementNode.
 class PropType {
   /// The name of this property as a Dart symbol.
   /// The symbol is used as the prop's key and as the name of

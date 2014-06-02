@@ -5,9 +5,18 @@ typedef TaggedNode NodeMaker(Map<String, dynamic> propsMap);
 /// A TagSet defines a set of tags that may be sent over the network.
 class TagSet {
   final _nodeMakers = <String, NodeMaker>{};
+
   final _methodToTag = <Symbol, String>{};
   final _paramToPropKey = <Symbol, Map<Symbol, String>>{};
+
+  final _elementTypes = <String, ElementType>{};
   final _handlerTypes = <String, HandlerType>{};
+
+  void addElement(ElementType type) {
+    _elementTypes[type.tag] = type;
+    addTag(type.tag, type.makeNode, handlerTypes: type.handlerTypes);
+    addMethod(type.method, type.tag, type.namedParams);
+  }
 
   /// Makes a tag available for serialization and deserialization.
   /// If any handlers
@@ -29,7 +38,10 @@ class TagSet {
 
   Iterable<String> get tags => _nodeMakers.keys;
 
-  /// Returns the handler types supported by tags in this set.
+  /// Returns the types of all the element tags included in this set.
+  Iterable<ElementType> get elementTypes => _elementTypes.values;
+
+  /// Returns the types of all the handlers used by tags in this set.
   Iterable<HandlerType> get handlerTypes => _handlerTypes.values;
 
   NodeMaker getMaker(String tag) => _nodeMakers[tag];

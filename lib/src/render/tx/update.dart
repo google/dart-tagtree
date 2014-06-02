@@ -61,10 +61,10 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   void _renderTemplate(_TemplateView view, TaggedNode old) {
-    if (!view.renderer.shouldRender(old, view.node)) {
+    if (!view.shouldRender(old, view.node)) {
       return;
     }
-    TaggedNode newShadow = view.renderer.render(view.node);
+    TaggedNode newShadow = view.render(view.node);
     view.shadow = updateOrReplace(view.shadow, newShadow);
   }
 
@@ -97,7 +97,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates DOM attributes and event handlers of an Elt.
   void _updateDomProperties(_EltView elt, ElementNode old) {
-    ElementTag tag = elt.eltTag;
+    ElementType tag = elt.type;
     String path = elt.path;
     ElementNode newNode = elt.node;
 
@@ -107,7 +107,7 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      var type = tag.getPropType(key);
+      var type = tag.propsByName[key];
       if (type is HandlerType) {
         removeHandler(type, path);
       } else if (type is AttributeType) {
@@ -123,7 +123,7 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      var type = tag.getPropType(key);
+      var type = tag.propsByName[key];
       if (type is HandlerType) {
         setHandler(type, path, newVal);
         continue;

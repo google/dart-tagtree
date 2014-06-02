@@ -8,14 +8,14 @@ Map<String, _BrowserRoot> _pathToRoot = {};
 /// Returns the Root corresponding to the given CSS selectors, creating it if needed.
 ///
 /// The selectors must point to a single container element of type HtmlElement.
-render.Root root(String containerSelectors) {
+render.Root root(String containerSelectors, HtmlTagSet tagSet) {
   HtmlElement container = querySelectorAll(containerSelectors).single;
   var prev = _findRoot(container);
   if (prev != null) {
     return prev;
   }
 
-  var root = new _BrowserRoot(container);
+  var root = new _BrowserRoot(container, tagSet);
   _pathToRoot[root.path] = root;
   return root;
 }
@@ -38,9 +38,13 @@ class _BrowserRoot extends render.Root {
   final _ElementCache eltCache;
   final Map<String, StreamSubscription> formSubscriptions = {};
 
-  _BrowserRoot(HtmlElement container) :
+  _BrowserRoot(HtmlElement container, TagSet tags) :
     this.eltCache = new _ElementCache(container),
-    super(_rootIdCounter++);
+    super(_rootIdCounter++) {
+    for (ElementType type in tags.elementTypes) {
+      addElement(type);
+    }
+  }
 
   @override
   void installEventListeners() {

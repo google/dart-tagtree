@@ -10,7 +10,6 @@ import 'package:tagtree/json.dart';
 
 part 'src/core/handler.dart';
 part 'src/core/json.dart';
-part 'src/core/tag.dart';
-part 'src/core/tagtype.dart';
+part 'src/core/element.dart';
 part 'src/core/tagset.dart';
-part 'src/core/tagnode.dart';
+part 'src/core/node.dart';

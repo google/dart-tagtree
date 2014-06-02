@@ -22,7 +22,7 @@ class Sunflower extends TaggedNode {
 }
 
 main() =>
-    root("#sunflower")
+    root("#sunflower", $)
       ..addWidget("Sunflower", () => new _Sunflower())
       ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));
 

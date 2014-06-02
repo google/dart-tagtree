@@ -10,7 +10,7 @@ class ReversableText extends TaggedNode {
 }
 
 main() =>
-    root("#container")
+    root("#container", $)
       ..addWidget("ReversableText", () => new _ReversableText())
       ..mount(const ReversableText(label: "Click me!"));
 

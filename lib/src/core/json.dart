@@ -15,7 +15,7 @@ TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   var rules = <JsonRule>[];
 
   for (String tag in tags.tags) {
-      rules.add(new TagNodeRule(tag, tags.getMaker(tag)));
+      rules.add(new TaggedNodeRule(tag, tags.getMaker(tag)));
   }
 
   rules.add(new _HandlerIdRule(onEvent));
@@ -24,23 +24,13 @@ TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   }
   rules.add(new _HandlerCallRule());
 
-  return new TaggedJsonCodec(rules, [const JsonableFinder(), const NodeTagFinder()]);
+  return new TaggedJsonCodec(rules, [const JsonableFinder()]);
 }
 
-class NodeTagFinder implements TagFinder<TaggedNode> {
-  const NodeTagFinder();
-
-  @override
-  bool appliesToType(instance) => instance is TaggedNode;
-
-  @override
-  String getTag(TaggedNode instance) => instance.tag;
-}
-
-class TagNodeRule extends JsonRule<TaggedNode> {
+class TaggedNodeRule extends JsonRule<TaggedNode> {
   final NodeMaker maker;
 
-  TagNodeRule(String tag, this.maker) : super(tag);
+  TaggedNodeRule(String tag, this.maker) : super(tag);
 
   @override
   bool appliesTo(TaggedNode instance) => instance is TaggedNode && instance.tag == tagName;

@@ -3,18 +3,8 @@ part of html;
 /// A TagSet that includes HTML tags and events.
 class HtmlTagSet extends TagSet with HtmlTags {
   HtmlTagSet() {
-    for (ElementTag tag in htmlTags) {
-      var maker = (Map<String, dynamic> props) {
-        return new ElementNode(tag, props);
-      };
-      var handlerTypes = tag.type.props.where((t) => t is HandlerType);
-      addTag(tag.type.name, maker, handlerTypes: handlerTypes);
-
-      var namedProps = <Symbol, String>{};
-      for (var propType in tag.type.props) {
-        namedProps[propType.sym] = propType.name;
-      }
-      addMethod(tag.type.symbol, tag.type.name, namedProps);
+    for (ElementType type in _htmlTags) {
+      addElement(type);
     }
   }
 
@@ -93,13 +83,9 @@ abstract class HtmlTags {
   ElementNode Button({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner, innerHtml});
-
-  /// The definitions of all HTML tags.
-  /// (Subclasses must install them using [BaseTagMaker#defineTag].)
-  List<ElementTag> get htmlTags => _htmlTags;
 }
 
-final List<ElementTag> _htmlTags = () {
+final List<ElementType> _htmlTags = () {
 
   const leafGlobalProps = const [
     const AttributeType(#id, "id"),
@@ -139,34 +125,34 @@ final List<ElementTag> _htmlTags = () {
   const max = const AttributeType(#max, "max");
 
   const allTypes = const [
-    const TagType(#Div, "div", globalProps),
-    const TagType(#Span, "span", globalProps),
-    const TagType(#Header, "header", globalProps),
-    const TagType(#Footer, "footer", globalProps),
+    const ElementType(#Div, "div", globalProps),
+    const ElementType(#Span, "span", globalProps),
+    const ElementType(#Header, "header", globalProps),
+    const ElementType(#Footer, "footer", globalProps),
 
-    const TagType(#H1, "h1", globalProps),
-    const TagType(#H2, "h2", globalProps),
-    const TagType(#H3, "h3", globalProps),
+    const ElementType(#H1, "h1", globalProps),
+    const ElementType(#H2, "h2", globalProps),
+    const ElementType(#H3, "h3", globalProps),
 
-    const TagType(#P, "p", globalProps),
-    const TagType(#Pre, "pre", globalProps),
+    const ElementType(#P, "p", globalProps),
+    const ElementType(#Pre, "pre", globalProps),
 
-    const TagType(#Ul, "ul", globalProps),
-    const TagType(#Li, "li", globalProps),
+    const ElementType(#Ul, "ul", globalProps),
+    const ElementType(#Li, "li", globalProps),
 
-    const TagType(#Table, "table", globalProps),
-    const TagType(#Tr, "tr", globalProps),
-    const TagType(#Td, "td", globalProps),
+    const ElementType(#Table, "table", globalProps),
+    const ElementType(#Tr, "tr", globalProps),
+    const ElementType(#Td, "td", globalProps),
 
-    const TagType(#Img, "img", leafGlobalProps, const [width, height, src]),
-    const TagType(#Canvas, "canvas", leafGlobalProps, const [width, height]),
+    const ElementType(#Img, "img", leafGlobalProps, const [width, height, src]),
+    const ElementType(#Canvas, "canvas", leafGlobalProps, const [width, height]),
 
-    const TagType(#Form, "form", globalProps, const [onSubmit]),
-    const TagType(#Input, "input", leafGlobalProps,
+    const ElementType(#Form, "form", globalProps, const [onSubmit]),
+    const ElementType(#Input, "input", leafGlobalProps,
         const [onChange, value, defaultValue, type, min, max]),
-    const TagType(#TextArea, "textarea", leafGlobalProps, const [onChange, value, defaultValue]),
-    const TagType(#Button, "button", globalProps)
+    const ElementType(#TextArea, "textarea", leafGlobalProps, const [onChange, value, defaultValue]),
+    const ElementType(#Button, "button", globalProps)
   ];
 
-  return allTypes.map((t) => new ElementTag(t)).toList();
+  return allTypes;
 }();

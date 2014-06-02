@@ -4,7 +4,7 @@ part of render;
 abstract class _Mount {
 
   // Dependencies
-  Map<String, Renderer> get renderers;
+  _MakeViewFunc makeView;
   _InvalidateWidgetFunc get invalidateWidget;
 
   // What was mounted
@@ -27,43 +27,31 @@ abstract class _Mount {
   /// incremented.
   _View mountView(TaggedNode node, StringBuffer html, String path, int depth) {
     _View view = _mountTag(node, html, path, depth);
-    if (view.ref != null) {
+    if (view.node.ref != null) {
       _mountedRefs.add(view);
     }
     return view;
   }
 
   _View _mountTag(TaggedNode node, StringBuffer out, String path, int depth) {
-    Renderer r = renderers[node.tag];
-    _View view;
-    if (r != null) {
-      view = renderers[node.tag]._makeView(node, path, depth);
-    } else if (node is ElementNode && node.eltTag is ElementTag) {
-      view = new _EltView(node, path, depth);
-    } else {
-      throw "can't determine renderer for node: {node.runtimeType}";
-    }
-
+    _View view = makeView(path, depth, node);
     if (view is _TextView) {
       // need to surround with a span to support incremental updates to a child
-      _TextView v = view;
-      out.write("<span data-path=${v.path}>${HTML_ESCAPE.convert(v.node.value)}</span>");
+      out.write("<span data-path=${view.path}>${HTML_ESCAPE.convert(view.node.value)}</span>");
       return view;
 
     } else if (view is _TemplateView) {
-      _TemplateView v = view;
-      TaggedNode shadow = v.renderer.render(node);
-      v.shadow = mountView(shadow, out, path, depth + 1);
+      TaggedNode shadowNode = view.render(node);
+      view.shadow = mountView(shadowNode, out, path, depth + 1);
       return view;
 
     } else if (view is _WidgetView) {
-      _WidgetView v = view;
-      var widget = v.renderer.createWidget();
+      var widget = view.createWidget();
       var c = widget.mount(node, () => invalidateWidget(view));
-      v.controller = c;
+      view.controller = c;
 
-      TaggedNode newShadow = widget.render();
-      v.shadow = mountView(newShadow, out, view.path, view.depth + 1);
+      TaggedNode shadowNode = widget.render();
+      view.shadow = mountView(shadowNode, out, view.path, view.depth + 1);
 
       if (c.didMount.hasListener) {
         _mountedWidgets.add(c.didMount);
@@ -83,7 +71,7 @@ abstract class _Mount {
   void _mountElt(_EltView elt, StringBuffer out) {
     _writeStartTag(out, elt);
 
-    if (elt.tagName == "textarea") {
+    if (elt.node.tag == "textarea") {
       String val = elt.node["defaultValue"];
       if (val != null) {
         out.write(HTML_ESCAPE.convert(val));
@@ -92,17 +80,17 @@ abstract class _Mount {
       mountInner(elt, out, elt.node["inner"], elt.node["innerHtml"]);
     }
 
-    out.write("</${elt.tagName}>");
+    out.write("</${elt.node.tag}>");
 
-    if (elt.tagName == "form") {
+    if (elt.node.tag == "form") {
       _mountedForms.add(elt);
     }
   }
 
   void _writeStartTag(StringBuffer out, _EltView elt) {
-    out.write("<${elt.tagName} data-path=\"${elt.path}\"");
+    out.write("<${elt.node.tag} data-path=\"${elt.path}\"");
     for (String key in elt.node.keys) {
-      var type = elt.eltTag.getPropType(key);
+      var type = elt.type.propsByName[key];
       var val = elt.node[key];
       if (type is HandlerType) {
         addHandler(type, elt.path, val);
@@ -112,7 +100,7 @@ abstract class _Mount {
         out.write(" ${type.name}=\"${escaped}\"");
       }
     }
-    if (elt.tagName == "input") {
+    if (elt.node.tag == "input") {
       String val = elt.node["defaultValue"];
       if (val != null) {
         String escaped = HTML_ESCAPE.convert(val);
