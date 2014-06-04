@@ -19,10 +19,13 @@ class TodoList extends View {
 }
 
 main() =>
-    root("#container", $)
-      ..addWidget("TodoApp", () => new _TodoApp())
-      ..addTemplate("TodoList", _renderTodoList)
+    root("#container")
+      ..theme = theme
       ..mount(const TodoApp());
+
+final theme = new Theme($)
+    ..addWidget("TodoApp", () => new _TodoApp())
+    ..addTemplate("TodoList", _renderTodoList);
 
 class _TodoState {
   String text;

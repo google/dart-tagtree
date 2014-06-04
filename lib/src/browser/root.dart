@@ -8,19 +8,19 @@ Map<String, _BrowserRoot> _pathToRoot = {};
 /// Returns the Root corresponding to the given CSS selectors, creating it if needed.
 ///
 /// The selectors must point to a single container element of type HtmlElement.
-render.Root root(String containerSelectors, HtmlTagSet tagSet) {
+render.RenderRoot root(String containerSelectors) {
   HtmlElement container = querySelectorAll(containerSelectors).single;
   var prev = _findRoot(container);
   if (prev != null) {
     return prev;
   }
 
-  var root = new _BrowserRoot(container, tagSet);
+  var root = new _BrowserRoot(container);
   _pathToRoot[root.path] = root;
   return root;
 }
 
-render.Root _findRoot(HtmlElement container) {
+render.RenderRoot _findRoot(HtmlElement container) {
   var first = container.firstChild;
   if (first == null) {
     return null;
@@ -34,17 +34,13 @@ render.Root _findRoot(HtmlElement container) {
   return null;
 }
 
-class _BrowserRoot extends render.Root {
+class _BrowserRoot extends render.RenderRoot {
   final _ElementCache eltCache;
   final Map<String, StreamSubscription> formSubscriptions = {};
 
-  _BrowserRoot(HtmlElement container, TagSet tags) :
+  _BrowserRoot(HtmlElement container) :
     this.eltCache = new _ElementCache(container),
-    super(_rootIdCounter++) {
-    for (ElementType type in tags.elementTypes) {
-      addElement(type);
-    }
-  }
+    super(_rootIdCounter++);
 
   @override
   void installEventListeners() {
@@ -58,7 +54,7 @@ class _BrowserRoot extends render.Root {
     });
   }
 
-  void _listenForEvents(render.Root root, HtmlElement container) {
+  void _listenForEvents(render.RenderRoot root, HtmlElement container) {
 
     handle(Event e, HandlerType type) {
       String path = _getTargetPath(e.target);

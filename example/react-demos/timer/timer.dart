@@ -12,16 +12,18 @@ class SecondsElapsed extends View {
 }
 
 main() =>
-    root("#container", $)
-      ..addWidget("SecondsElapsed", () => new _SecondsElapsed())
+    root("#container")
+      ..theme = theme
       ..mount(const SecondsElapsed());
+
+final theme = new Theme($)
+    ..addWidget("SecondsElapsed", () => new _SecondsElapsed());
 
 class _SecondsElapsed extends Widget<SecondsElapsed, int> {
   Timer timer;
 
   _SecondsElapsed() {
     timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());
-
     willUnmount.listen((_) => timer.cancel());
   }
 

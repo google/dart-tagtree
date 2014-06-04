@@ -1,9 +1,10 @@
 /// Implements stateful tags.
-library widget;
+library theme;
 
 import 'dart:async' show Stream, StreamController, StreamSink;
 
 import 'package:tagtree/core.dart';
 
-part 'src/widget/state.dart';
-part 'src/widget/widget.dart';
+part 'src/theme/state.dart';
+part 'src/theme/theme.dart';
+part 'src/theme/widget.dart';

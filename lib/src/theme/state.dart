@@ -1,4 +1,4 @@
-part of widget;
+part of theme;
 
 /// StateMixin implements automatic dirty tracking for an object that
 /// implements a state machine.

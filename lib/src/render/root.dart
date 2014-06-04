@@ -1,21 +1,13 @@
 part of render;
 
-/// A function that expands a template node to its replacement.
-typedef View TemplateFunc(View node);
-
-/// A function that returns true when a template needs to be re-rendered.
-typedef bool ShouldRenderFunc(View before, View after);
-
 bool _alwaysRender(before, after) => true;
-
-typedef Widget CreateWidgetFunc();
 
 typedef _Node _MakeNodeFunc(String path, int depth, View node);
 
-/// A Root is a place on an HTML page where a tag tree may be rendered.
-abstract class Root {
+/// A RenderRoot is a place on an HTML page where a tag tree may be rendered.
+abstract class RenderRoot {
   final int id;
-  final _nodeMakers = <String, _MakeNodeFunc>{};
+  Theme theme = new Theme();
   final _handlers = new _HandlerMap();
   _Node _renderedTree;
 
@@ -23,30 +15,7 @@ abstract class Root {
   View _nextTagTree;
   final Set<_WidgetNode> _widgetsToUpdate = new Set();
 
-  Root(this.id) {
-    _nodeMakers["__TextView"] = (path, depth, node) => new _TextNode(path, depth, node);
-  }
-
-  addElements(TagSet tags) {
-    for (ElementType type in tags.elementTypes) {
-      addElement(type);
-    }
-  }
-
-  addElement(ElementType type) {
-      _nodeMakers[type.tag] = (path, depth, node) =>
-          new _ElementNode(path, depth, node, type);
-  }
-
-  addTemplate(String name, TemplateFunc render, {ShouldRenderFunc shouldRender: _alwaysRender}) {
-      _nodeMakers[name] = (path, depth, node) =>
-          new _TemplateNode(path, depth, node, render, shouldRender);
-  }
-
-  addWidget(String name, CreateWidgetFunc createWidget) {
-      _nodeMakers[name] = (path, depth, node) =>
-          new _WidgetNode(path, depth, node, createWidget);
-  }
+  RenderRoot(this.id);
 
   /// A subclass hook called after DOM elements are mounted and we are ready
   /// to start listenering for events.
@@ -72,11 +41,25 @@ abstract class Root {
 
   _Node _makeNode(String path, int depth, View node) {
     assert(node.checked());
-    _MakeNodeFunc make = _nodeMakers[node.tag];
-    if (make == null) {
-      throw "no implementation found for ${node.tag}";
+
+    if (node is _TextView) {
+      return new _TextNode(path, depth, node);
     }
-    return make(path, depth, node);
+
+    TagDef def = theme.tagDefs[node.tag];
+    if (def == null) {
+      throw "tag not defined in theme: ${node.tag}";
+    }
+
+    if (def is ElementDef) {
+      return new _ElementNode(path, depth, node, def.type);
+    } else if (def is TemplateDef) {
+      return new _TemplateNode(path, depth, node, def.render, def.shouldRender);
+    } else if (def is WidgetDef) {
+      return new _WidgetNode(path, depth, node, def.create);
+    }
+
+    throw "unknown TagDef type: ${def.runtimeType}";
   }
 
   /// Schedules a widget to be updated just before rendering the next frame.

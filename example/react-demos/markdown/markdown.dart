@@ -13,9 +13,13 @@ class MarkdownEditor extends View {
 }
 
 main() =>
-    root("#container", $)
-      ..addWidget("MarkdownEditor", () => new _MarkdownEditor())
+    root("#container")
+      ..theme = theme
       ..mount(const MarkdownEditor(defaultText: "Type some *markdown* here!"));
+
+final theme = new Theme()
+  ..addElements($)
+  ..addWidget("MarkdownEditor", () => new _MarkdownEditor());
 
 class _MarkdownEditor extends Widget<MarkdownEditor, String> {
   MarkdownEditor view;

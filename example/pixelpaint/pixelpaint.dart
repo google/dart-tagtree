@@ -37,12 +37,15 @@ class RowView extends View {
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
 }
 
-main() => root("#container", $)
+main() => root("#container")
+    ..theme = theme
+    ..mount(const PixelPaint(width: 50, height: 50, palette: const ["black", "white"]));
+
+final theme = new Theme($)
     ..addWidget("PixelPaint", () => new _PixelPaint())
     ..addWidget("GridView", () => new _GridView())
     ..addTemplate("RowView", renderRowView,
-        shouldRender: (RowView before, RowView after) => !before.row.equals(after.row))
-    ..mount(const PixelPaint(width: 50, height: 50, palette: const ["black", "white"]));
+        shouldRender: (RowView before, RowView after) => !before.row.equals(after.row));
 
 /// Updates the model and re-renders whenever the user paints a pixel.
 class _PixelPaint extends Widget<PixelPaint, Grid> {

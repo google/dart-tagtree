@@ -12,9 +12,12 @@ class ReversableText extends View {
 }
 
 main() =>
-    root("#container", $)
-      ..addWidget("ReversableText", () => new _ReversableText())
+    root("#container")
+      ..theme = theme
       ..mount(const ReversableText(label: "Click me!"));
+
+final theme = new Theme($)
+    ..addWidget("ReversableText", () => new _ReversableText());
 
 class _ReversableText extends Widget<ReversableText, bool> {
   ReversableText view;

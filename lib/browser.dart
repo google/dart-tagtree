@@ -11,9 +11,9 @@ import 'package:tagtree/core.dart';
 import 'package:tagtree/html.dart';
 import 'package:tagtree/json.dart' show TaggedJsonCodec;
 import 'package:tagtree/render.dart' as render;
-import 'package:tagtree/widget.dart';
+import 'package:tagtree/theme.dart';
 
-export 'package:tagtree/widget.dart';
+export 'package:tagtree/theme.dart';
 export 'package:tagtree/html.dart';
 
 part 'src/browser/dom.dart';

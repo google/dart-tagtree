@@ -24,9 +24,12 @@ class Sunflower extends View {
 }
 
 main() =>
-    root("#sunflower", $)
-      ..addWidget("Sunflower", () => new _Sunflower())
+    root("#sunflower")
+      ..theme = theme
       ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));
+
+final theme = new Theme($)
+    ..addWidget("Sunflower", () => new _Sunflower());
 
 class _Sunflower extends Widget<Sunflower, int> {
   final _canvas = new Ref<CanvasElement>();

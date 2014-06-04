@@ -11,10 +11,15 @@ class Hello extends View {
   const Hello({this.message});
 }
 
-main() =>
-    root("#container", $)
-        ..addTemplate("Hello", renderHello)
-        ..mount(const Hello(message: "world"));
+final theme = new Theme()
+  ..addElements($)
+  ..addTemplate("Hello", renderHello);
 
 renderHello(Hello view) =>
     $.Div(inner: "Hello, ${view.message}");
+
+main() =>
+    root("#container")
+        ..theme = theme
+        ..mount(const Hello(message: "world"));
+

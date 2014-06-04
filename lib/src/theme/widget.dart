@@ -1,4 +1,4 @@
-part of widget;
+part of theme;
 
 /// A Widget implements a tag that can change after being rendered.
 ///
@@ -13,7 +13,7 @@ part of widget;
 /// A Widget may access the DOM by rendering an element tag with its "ref"
 /// property set. The DOM will be available during callbacks
 /// for [didMount], [didRender], and [willUnmount] events.
-abstract class Widget<N extends View,S> extends StateMixin<S> {
+abstract class Widget<V extends View,S> extends StateMixin<S> {
   final _didMount = new StreamController.broadcast();
   final _didRender = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
@@ -21,8 +21,8 @@ abstract class Widget<N extends View,S> extends StateMixin<S> {
 
   /// Initializes the widget.
   /// Called automatically when the associated node is first rendered.
-  WidgetController mount(N node, invalidate()) {
-    setProps(node);
+  WidgetController mount(V view, invalidate()) {
+    setProps(view);
     initState(); // depends on props
     _invalidate = invalidate;
     return new WidgetController(this);
@@ -32,7 +32,7 @@ abstract class Widget<N extends View,S> extends StateMixin<S> {
   /// Subclasses must implement.
   /// Called automatically before [createFirstState]
   /// and whenever the associated widget tag is rendered.
-  void setProps(N node);
+  void setProps(V node);
 
   /// Asks for the widget to be rendered again.
   /// Called automatically after the widget's state changes.

@@ -2,20 +2,20 @@ part of browser;
 
 /// The Slot tag sends a TagNode to a server over a websocket.
 /// The server responds with a stream of tag trees that will be displayed in the slot.
-/// [src] is the URL of the websocket to open and [tagSet] contains the tags that
+/// [src] is the URL of the websocket to open and [export] contains the tags that
 /// may sent over the network.
 class Slot extends View {
   @override
   String get tag => "Slot";
 
   final String src;
-  final TagSet tagSet;
-  const Slot({this.src, this.tagSet});
+  final TagSet export;
+  const Slot({this.src, this.export});
 
   @override
   bool checked() {
     assert(src != null);
-    assert(tagSet != null);
+    assert(export != null);
     return true;
   }
 }
@@ -27,8 +27,8 @@ class SlotWidget extends Widget<Slot, View> {
 
   @override
   void setProps(Slot node) {
-    if ($ != node.tagSet) {
-      $ = node.tagSet;
+    if ($ != node.export) {
+      $ = node.export;
       if (conn != null) {
         conn.onTagSetChange($);
       }

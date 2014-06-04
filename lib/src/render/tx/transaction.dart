@@ -2,7 +2,7 @@ part of render;
 
 /// A Transaction renders one animation frame for one Root.
 class _Transaction extends _Update {
-  final Root root;
+  final RenderRoot root;
   final DomUpdater dom;
   final _HandlerMap handlers;
 
