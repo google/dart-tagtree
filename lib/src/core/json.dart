@@ -2,10 +2,7 @@ part of core;
 
 typedef void OnEventFunc(HandlerCall call);
 
-/// Creates a codec for sending a receiving Views and HandlerCalls.
-/// Each decoded Handler will be replaced with a [HandlerFunc] that calls
-/// onEvent.
-TaggedJsonCodec makeCodec(TagSet tags, {OnEventFunc onEvent}) {
+TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   if (onEvent == null) {
     onEvent = (HandlerCall e) {
       print("ignored event to remote handler: ${e}");
@@ -74,7 +71,7 @@ class _HandlerIdRule extends JsonRule<HandlerId> {
 class _HandlerEventRule extends JsonRule<HandlerEvent> {
   final HandlerType _type;
 
-  _HandlerEventRule(HandlerType type) : _type = type, super(type.name);
+  _HandlerEventRule(HandlerType type) : _type = type, super(type.propKey);
 
   @override
   bool appliesTo(instance) => (instance is HandlerEvent);

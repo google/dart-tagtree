@@ -6,17 +6,17 @@ class _HandlerMap {
   final _handlers = <Symbol, Map<String, HandlerFunc>> {};
 
   HandlerFunc getHandler(HandlerType type, String path) {
-    _handlers.putIfAbsent(type.sym, () => {});
-    return _handlers[type.sym][path];
+    _handlers.putIfAbsent(type.namedParam, () => {});
+    return _handlers[type.namedParam][path];
   }
 
   void setHandler(HandlerType type, String path, HandlerFunc handler) {
-    _handlers.putIfAbsent(type.sym, () => {});
-    _handlers[type.sym][path] = handler;
+    _handlers.putIfAbsent(type.namedParam, () => {});
+    _handlers[type.namedParam][path] = handler;
   }
 
   void removeHandler(HandlerType type, String path) {
-    _handlers[type.sym].remove(path);
+    _handlers[type.namedParam].remove(path);
   }
 
   void removeHandlersForPath(String path) {
@@ -37,7 +37,7 @@ bool _inViewEvent = false;
 void _dispatch(HandlerEvent e, _HandlerMap handlers) {
   if (_inViewEvent) {
     // React does this too; see EVENT_SUPPRESSION
-    print("ignored ${e.type.name} received while processing another event");
+    print("ignored ${e.type.propKey} received while processing another event");
     return;
   }
   _inViewEvent = true;
@@ -45,13 +45,13 @@ void _dispatch(HandlerEvent e, _HandlerMap handlers) {
     if (e.elementPath != null) {
       HandlerFunc h = handlers.getHandler(e.type, e.elementPath);
       if (h != null) {
-        debugLog("\n### ${e.type.name}");
+        debugLog("\n### ${e.type.propKey}");
         h(e);
       } else {
-        debugLog("\n (${e.type.name})");
+        debugLog("\n (${e.type.propKey})");
       }
     } else {
-      debugLog("\n (${e.type.name})");
+      debugLog("\n (${e.type.propKey})");
     }
   } finally {
     _inViewEvent = false;

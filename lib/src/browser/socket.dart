@@ -99,8 +99,8 @@ class _Connection {
     onTagSetChange(tagSet);
   }
 
-  void onTagSetChange(TagSet tagSet) {
-    codec = makeCodec(tagSet, onEvent: sendEventToServer);
+  void onTagSetChange(TagSet tags) {
+    codec = tags.makeCodec(onEvent: sendEventToServer);
   }
 
   void sendEventToServer(HandlerCall call) {

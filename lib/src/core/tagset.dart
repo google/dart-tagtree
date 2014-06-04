@@ -18,14 +18,14 @@ class TagSet {
   void defineElement(ElementType type) {
     _elementTypes[type.tag] = type;
     defineTag(type.tag, type.makeView, handlerTypes: type.handlerTypes);
-    defineMethod(type.method, type.namedParams, type.tag);
+    defineMethod(type.method, type.namedParamToKey, type.tag);
   }
 
   /// Defines a tag so that its corresponding View can be created using [makeView].
   void defineTag(String tag, ViewMakerFunc maker, {Iterable<HandlerType> handlerTypes: const []}) {
     _viewMaker[tag] = maker;
     for (HandlerType t in handlerTypes) {
-      _handlerTypes[t.name] = t;
+      _handlerTypes[t.propKey] = t;
     }
   }
 
@@ -52,6 +52,13 @@ class TagSet {
 
   View makeView(String tag, Map<String, dynamic> propsMap) =>
       _viewMaker[tag](propsMap);
+
+  /// Creates a codec for sending and receiving [View]s and
+  /// [HandlerCall]s. Whenever a Handler is received,
+  /// it will be replaced with a [HandlerFunc] that calls
+  /// the given onEvent function.
+  TaggedJsonCodec makeCodec({OnEventFunc onEvent}) =>
+      _makeCodec(this, onEvent: onEvent);
 
   /// Tags may also be created by calling a method with the same name.
   noSuchMethod(Invocation inv) {

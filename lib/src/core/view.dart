@@ -5,7 +5,7 @@ part of core;
 /// Each View has a [tag] that plays a role similar to an HTML tag.
 /// A tree of views (a "tag tree") is somewhat like a tree of HTML elements.
 /// However, some views are rendered by expanding a template or by creating
-/// a Widget.
+/// a Widget (based on a Theme).
 ///
 /// Unlike a tree of DOM Elements, a tag tree is an immutable data structure
 /// with no state, lifecycle, or browser dependencies. Since Views have
@@ -52,7 +52,7 @@ abstract class View implements Jsonable {
   ///
   /// A node's children may be stored in any prop. By convention,
   /// they are usually stored in its "inner" prop.
-  Map<String, dynamic> get propsImpl => throw "propsMap isn't implemented for ${tag}";
+  Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${tag}";
 
   @override
   String get jsonTag => tag;
@@ -66,15 +66,17 @@ abstract class View implements Jsonable {
 }
 
 /// An alternate representation of a [View].
-class Props {
+class Props extends UnmodifiableMapBase<String, dynamic> {
   final String tag;
   final Map<String, dynamic> propsMap;
 
-  const Props(this.tag, this.propsMap);
+  Props(this.tag, this.propsMap);
 
-  /// Returns the key of each prop.
+  /// Returns the key of each property.
+  @override
   Iterable<String> get keys => propsMap.keys;
 
   /// Returns the value of a property.
+  @override
   operator[](String key) => propsMap[key];
 }

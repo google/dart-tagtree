@@ -117,7 +117,6 @@ final List<ElementType> _htmlTags = () {
   const src = const AttributeType(#src, "src");
   const width = const AttributeType(#width, "width");
   const height = const AttributeType(#height, "height");
-
   const type = const AttributeType(#type, "type");
   const value = const AttributeType(#value, "value");
   const defaultValue = const PropType(#defaultValue, "defaultValue");

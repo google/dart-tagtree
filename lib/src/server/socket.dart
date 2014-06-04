@@ -12,8 +12,8 @@ class WebSocketRoot {
   _Frame _handleFrame, _nextFrame;
   bool renderScheduled = false;
 
-  WebSocketRoot(this._socket, core.TagSet maker) :
-      _codec = core.makeCodec(maker);
+  WebSocketRoot(this._socket, core.TagSet tags) :
+      _codec = tags.makeCodec();
 
   /// Starts running a Session on this WebSocket.
   void mount(Session s) {

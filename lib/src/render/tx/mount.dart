@@ -94,7 +94,7 @@ abstract class _Mount {
         continue;
       } else if (type is AttributeType) {
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
-        out.write(" ${type.name}=\"${escaped}\"");
+        out.write(" ${type.propKey}=\"${escaped}\"");
       }
     }
     if (elt.view.tag == "input") {

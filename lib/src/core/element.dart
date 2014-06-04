@@ -1,13 +1,16 @@
 part of core;
 
-/// A view that renders to a single HTML element.
-class _ElementView implements View {
+/// A view that TagTree will render to a single HTML element.
+/// Constructed via [ElementType.makeView].
+class ElementView implements View {
   @override
   final Props props;
-  const _ElementView(this.props);
+  final ElementType type;
+
+  const ElementView._raw(this.props, this.type);
 
   @override
-  bool checked() => true; // already done in ElementType.makeNode.
+  bool checked() => true; // already done in ElementType.makeView.
 
   @override
   get tag => props.tag;
@@ -24,23 +27,28 @@ class _ElementView implements View {
   static final _checked = new Expando<bool>();
 }
 
+/// The structure of an HTML element, as represented by an [ElementView].
 class ElementType {
 
-  /// The method in HtmlTagSet that creates this element.
+  /// The name of the [TagSet] method that will create this element.
+  /// (See [namedParamToKey] for the named parameters it will have.)
   final Symbol method;
 
-  /// The name of the HTML Element that the node will render to.
-  /// (Also used for sending the node over the network.)
+  /// The name of the HTML element that TagTree will render.
+  /// It's also the ElementView's tag.
   final String tag;
 
-  // The tag's properties, split into two lists.
-  // (This is because there's no way to concatenate const lists in Dart.)
   final List<PropType> _props1;
   final List<PropType> _props2;
 
+  /// Defines a new element type.
+  /// As a convenience, the element's property types may be passed in as two lists
+  /// and they will automatically be concatenated.
+  /// (This is because there's no way to concatenate const lists in Dart.)
   const ElementType(this.method, this.tag, this._props1, [this._props2 = const []]);
 
-  /// Checks that the type is well-formed.
+  /// Checks that the element definition is well-formed.
+  /// Called automatically when [props] is accessed.
   /// (Not done in the constructor so that it can be const.)
   bool checked() {
     assert(method != null);
@@ -54,16 +62,16 @@ class ElementType {
     return true;
   }
 
-  /// Creates a view corresponding to this element.
+  /// Creates a view that will render as this HTML element.
+  /// The map must only contain properties listed in [propTypes].
   View makeView(Map<String, dynamic> propMap) {
-    assert(propMap != null);
-    Props p = new Props(tag, propMap);
-    checkProps(p);
-    return new _ElementView(p);
+    assert(checkProps(propMap));
+    return new ElementView._raw(new Props(tag, propMap), this);
   }
 
-  /// Returns a description of each property of this element.
-  /// (The ElementType will be checked the first time this is called.)
+  /// A description of each property that may be passed to [makeView].
+  /// This includes regular HTML attributes, handler properties,
+  /// and special properties used to hold the element's children.
   List<PropType> get propTypes {
     var out = _props[this];
     if (out == null) {
@@ -78,48 +86,48 @@ class ElementType {
     return out;
   }
 
+  /// The same properties as [propTypes], but as a map.
   Map<String, PropType> get propsByName {
     var out = _propsByName[this];
     if (out == null) {
       out = <String, PropType>{};
       for (var p in propTypes) {
-        out[p.name] = p;
+        out[p.propKey] = p;
       }
       _propsByName[this] = out;
     }
     return out;
   }
 
-  /// Returns a description of each property that stores a handler.
+  /// The description of each property that stores a handler.
   Iterable<HandlerType> get handlerTypes => propTypes.where((t) => t is HandlerType);
 
-  /// Returns a mapping from each named parameter in a method call to the property key.
-  Map<Symbol, String> get namedParams {
+  /// A map from a named parameter to the property key to use with [makeView].
+  /// There is one entry for each property.
+  Map<Symbol, String> get namedParamToKey {
     var out = <Symbol, String>{};
     for (var propType in propTypes) {
-      out[propType.sym] = propType.name;
+      out[propType.namedParam] = propType.propKey;
     }
     return out;
   }
 
-  /// Checks that an Element node's properties are well-formed.
-  /// Called automatically on new nodes when Dart is running in checked mode.
-  bool checkProps(Props props) {
-    _checkPropKeys(props);
-    assert(props["inner"] == null || props["innerHtml"] == null);
-    assert(props["value"] == null || props["defaultValue"] == null);
-    return true;
-  }
-
-  /// Verifies that a node's properties have the correct keys.
-  bool _checkPropKeys(Props props) {
+  /// Checks that a new ElementView only has the properties that it's allowed.
+  /// (Called automatically on view creation when Dart is running in checked mode.)
+  bool checkProps(Map<String, dynamic> props) {
     assert(props != null);
+
+    // Checks that each key and value is allowed.
     var byName = propsByName;
     for (String key in props.keys) {
       if (!byName.containsKey(key)) {
         throw "property not supported: ${key}";
       }
+      byName[key].checkValue(props[key]);
     }
+
+    assert(props["inner"] == null || props["innerHtml"] == null);
+    assert(props["value"] == null || props["defaultValue"] == null);
     return true;
   }
 
@@ -128,22 +136,20 @@ class ElementType {
   static final _propsByName = new Expando<Map<String, PropType>>();
 }
 
-/// A PropType describes a property of an ElementNode.
+/// A description of one property of an [ElementView].
 class PropType {
-  /// The name of this property as a Dart symbol.
-  /// The symbol is used as the prop's key and as the name of
-  /// its parameter in a function call.
-  final Symbol sym;
+  /// The named parameter that holds this property in a method
+  /// call that creates an ElementView. (Used in a [TagSet].)
+  final Symbol namedParam;
 
-  /// The name of this property in JSON.
-  /// (May be null if not serializable.)
-  final String name;
+  /// The property key to use with [ElementType#makeView].
+  final String propKey;
 
-  const PropType(this.sym, this.name);
+  const PropType(this.namedParam, this.propKey);
 
   bool checked() {
-    assert(sym != null);
-    assert(name != null);
+    assert(namedParam != null);
+    assert(propKey != null);
     return true;
   }
 
@@ -169,7 +175,8 @@ class AttributeType extends PropType {
   const AttributeType(Symbol sym, String name) : super(sym, name);
 
   @override
-  bool checkValue(String value) {
+  bool checkValue(value) {
+    assert(value is String || value is num); // automatically converted
     return true;
   }
 }

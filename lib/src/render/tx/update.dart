@@ -113,7 +113,7 @@ abstract class _Update extends _Mount with _Unmount {
       if (type is HandlerType) {
         removeHandler(type, path);
       } else if (type is AttributeType) {
-        dom.removeAttribute(path, type.name);
+        dom.removeAttribute(path, type.propKey);
       }
     }
 
@@ -131,7 +131,7 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       } else if (type is AttributeType) {
         String val = _makeDomVal(key, newVal);
-        dom.setAttribute(path, type.name, val);
+        dom.setAttribute(path, type.propKey, val);
       }
     }
   }

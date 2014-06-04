@@ -3,7 +3,7 @@ import 'package:tagtree/html.dart';
 import 'package:unittest/unittest.dart';
 
 final $ = new HtmlTagSet();
-final codec = makeCodec($);
+final codec = $.makeCodec();
 
 main() {
   test('serialize', () {

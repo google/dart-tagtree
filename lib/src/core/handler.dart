@@ -17,7 +17,7 @@ class HandlerEvent implements Jsonable {
   }
 
   @override
-  String get jsonTag => type.name;
+  String get jsonTag => type.propKey;
 }
 
 /// A HandlerFunc receives events from the render library (in the browser).
