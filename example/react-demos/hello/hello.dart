@@ -12,8 +12,8 @@ class Hello extends View {
 }
 
 final theme = new Theme()
-  ..addElements($)
-  ..addTemplate("Hello", renderHello);
+  ..defineElements($)
+  ..defineTemplate("Hello", renderHello);
 
 renderHello(Hello view) =>
     $.Div(inner: "Hello, ${view.message}");

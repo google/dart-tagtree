@@ -1,5 +1,6 @@
 /**
- * The core data structures used in TagTree, both on clients and servers.
+ * The core data structures used in TagTree.
+ * (This library should work anywhere Dart will run, both in browsers and on servers.)
  *
  * Tag trees are built out of [View] nodes. A View's fields can often be
  * inspected by converting it to a [Props] object. Some fields may hold

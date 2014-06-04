@@ -42,9 +42,9 @@ main() => root("#container")
     ..mount(const PixelPaint(width: 50, height: 50, palette: const ["black", "white"]));
 
 final theme = new Theme($)
-    ..addWidget("PixelPaint", () => new _PixelPaint())
-    ..addWidget("GridView", () => new _GridView())
-    ..addTemplate("RowView", renderRowView,
+    ..defineWidget("PixelPaint", () => new _PixelPaint())
+    ..defineWidget("GridView", () => new _GridView())
+    ..defineTemplate("RowView", renderRowView,
         shouldRender: (RowView before, RowView after) => !before.row.equals(after.row));
 
 /// Updates the model and re-renders whenever the user paints a pixel.

@@ -24,8 +24,8 @@ main() =>
       ..mount(const TodoApp());
 
 final theme = new Theme($)
-    ..addWidget("TodoApp", () => new _TodoApp())
-    ..addTemplate("TodoList", _renderTodoList);
+    ..defineWidget("TodoApp", () => new _TodoApp())
+    ..defineTemplate("TodoList", _renderTodoList);
 
 class _TodoState {
   String text;

@@ -11,9 +11,9 @@ main() =>
         ..mount(new Slot(src: "ws://localhost:8080/ws", export: $));
 
 final theme = new Theme()
-  ..addElements($)
-  ..addTemplate("TextFile", renderTextFile)
-  ..addWidget("Slot", () => new SlotWidget());
+  ..defineElements($)
+  ..defineTemplate("TextFile", renderTextFile)
+  ..defineWidget("Slot", () => new SlotWidget());
 
 renderTextFile(TextFile view) =>
     $.Pre(inner: view.lines.join("\n"));

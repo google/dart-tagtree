@@ -1,11 +1,17 @@
-/// Renders a tag tree to the DOM.
-///
-/// This library implements the algorithm for efficiently updating the DOM
-/// whenever a tag tree changes. It doesn't have a direct dependency
-/// on dart:html and so can run on either client or server, for testing.
-///
-/// To use it, you must subclass Root and provide an implementation of DomUpdater.
-/// See the browser library for a complete implementation.
+/**
+ * Renders tag trees to HTML.
+ * (Most programs shouldn't need to use this library directly.)
+ *
+ * This library implements an algorithm for efficiently updating the DOM
+ * whenever a new tag tree is rendered.
+ *
+ * To use it, you must subclass [RenderRoot] and provide an implementation of
+ * [DomUpdater]. A standard implementation built on dart:html is in the
+ * tagtree/browser library.
+ *
+ * Since this library doesn't have a direct dependency on dart:html, it can
+ * be tested without a browser.
+ */
 library render;
 
 import 'package:tagtree/core.dart';

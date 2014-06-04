@@ -8,30 +8,34 @@ typedef bool ShouldRenderFunc(View before, View after);
 
 typedef Widget CreateWidgetFunc();
 
+/// A module that contains tag implementations.
 class Theme {
   final tagDefs = <String, TagDef>{};
 
   Theme([TagSet tags]) {
     if (tags != null) {
-      addElements(tags);
+      defineElements(tags);
     }
   }
 
-  void addElements(TagSet tags) {
+  void defineElements(TagSet tags) {
     for (var elt in tags.elementTypes) {
-      addElement(elt);
+      defineElement(elt);
     }
   }
 
-  void addElement(ElementType type) {
+  /// Redefines a tag so it renders as a single HTML element.
+  void defineElement(ElementType type) {
     tagDefs[type.tag] = new ElementDef(type);
   }
 
-  void addTemplate(String tag, TemplateFunc render, {ShouldRenderFunc shouldRender: _always}) {
+  /// Redefines a tag so it renders by expanding a template.
+  void defineTemplate(String tag, TemplateFunc render, {ShouldRenderFunc shouldRender: _always}) {
     tagDefs[tag] = new TemplateDef(render, shouldRender);
   }
 
-  void addWidget(String tag, CreateWidgetFunc createWidget) {
+  /// Redefines a tag so it renders by either starting or reconfiguring a Widget.
+  void defineWidget(String tag, CreateWidgetFunc createWidget) {
     tagDefs[tag] = new WidgetDef(createWidget);
   }
 }

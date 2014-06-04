@@ -17,7 +17,7 @@ main() =>
       ..mount(const SecondsElapsed());
 
 final theme = new Theme($)
-    ..addWidget("SecondsElapsed", () => new _SecondsElapsed());
+    ..defineWidget("SecondsElapsed", () => new _SecondsElapsed());
 
 class _SecondsElapsed extends Widget<SecondsElapsed, int> {
   Timer timer;

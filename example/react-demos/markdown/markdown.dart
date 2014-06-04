@@ -18,8 +18,8 @@ main() =>
       ..mount(const MarkdownEditor(defaultText: "Type some *markdown* here!"));
 
 final theme = new Theme()
-  ..addElements($)
-  ..addWidget("MarkdownEditor", () => new _MarkdownEditor());
+  ..defineElements($)
+  ..defineWidget("MarkdownEditor", () => new _MarkdownEditor());
 
 class _MarkdownEditor extends Widget<MarkdownEditor, String> {
   MarkdownEditor view;

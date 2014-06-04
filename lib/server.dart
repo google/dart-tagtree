@@ -1,6 +1,11 @@
 /**
- * Allows a server written in Dart to render a stream of tag trees over a web socket
- * and receive events.
+ * A library that allows a server-side object to display its user interface in a web page.
+ * (This is the only TagTree library that can't run in a browser.)
+ *
+ * A [Session] is a server-side object that has a TagTree-based user interface.
+ * A [WebSocketRoot] runs a Session with its input and output connected to a WebSocket.
+ * It can then send tag trees over the socket and recieve events in response.
+ * (The web page should use a Slot and SlotWidget for its end of the connection.)
  */
 library server;
 

@@ -17,7 +17,7 @@ main() =>
       ..mount(const ReversableText(label: "Click me!"));
 
 final theme = new Theme($)
-    ..addWidget("ReversableText", () => new _ReversableText());
+    ..defineWidget("ReversableText", () => new _ReversableText());
 
 class _ReversableText extends Widget<ReversableText, bool> {
   ReversableText view;

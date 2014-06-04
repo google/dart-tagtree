@@ -1,13 +1,14 @@
 /**
  * Renders tag trees to a web page in a browser.
- * This is the only tagtree library that requires dart:html.
+ * (This is the only tagtree library that requires dart:html and cannot run on the server.)
  *
  * The [root] method returns a [RenderRoot] for installing tag trees under a given HTML element.
  *
  * The [Ref] class can be used to get a reference to the HTML element where a View was rendered.
  *
  * A [Slot] and its implementation, [SlotWidget], can be used to display a stream of tag trees
- * loaded from a WebSocket.
+ * loaded from a WebSocket and send events. (The server should use a WebSocketRoot and a Session
+ * for its end of the connection.)
  */
 library browser;
 

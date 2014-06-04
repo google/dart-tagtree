@@ -29,7 +29,7 @@ main() =>
       ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));
 
 final theme = new Theme($)
-    ..addWidget("Sunflower", () => new _Sunflower());
+    ..defineWidget("Sunflower", () => new _Sunflower());
 
 class _Sunflower extends Widget<Sunflower, int> {
   final _canvas = new Ref<CanvasElement>();
