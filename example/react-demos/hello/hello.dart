@@ -1,22 +1,15 @@
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-final $ = new HtmlTagSet();
-
-class Hello extends View {
-  final String message;
-  const Hello({this.message});
+class HelloMessage extends View {
+  final String name;
+  const HelloMessage({this.name});
 }
 
-final theme = new Theme()
-  ..defineElements($)
-  ..defineTemplate(Hello, renderHello);
-
-renderHello(Hello view) =>
-    $.Div(inner: "Hello, ${view.message}");
+renderHello(HelloMessage props) => $.Div(inner: "Hello ${props.name}");
 
 main() =>
-    root("#container")
-        ..theme = theme
-        ..mount(const Hello(message: "world"));
+    getRoot("#container")
+        ..theme.defineTemplate(HelloMessage, renderHello)
+        ..mount(const HelloMessage(name: "World"));
 

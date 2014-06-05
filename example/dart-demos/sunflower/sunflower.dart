@@ -12,8 +12,6 @@ import 'dart:math';
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-final $ = new HtmlTagSet();
-
 class Sunflower extends View {
   final int startSeeds;
   final int seedRadius;
@@ -21,7 +19,7 @@ class Sunflower extends View {
 }
 
 main() =>
-    root("#sunflower")
+    getRoot("#sunflower")
       ..theme = theme
       ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));
 
@@ -31,20 +29,13 @@ final theme = new Theme($)
 class _Sunflower extends Widget<Sunflower, int> {
   final _canvas = new Ref<CanvasElement>();
 
-  Sunflower _view;
-
   _Sunflower() {
     didMount.listen((_) => draw());
     didRender.listen((_) => draw());
   }
 
   @override
-  setProps(Sunflower view) {
-    this._view = view;
-  }
-
-  @override
-  int createFirstState() => _view.startSeeds;
+  int createFirstState() => view.startSeeds;
 
   int get seeds => state;
   int get maxD => 300;
@@ -79,12 +70,12 @@ class _Sunflower extends Widget<Sunflower, int> {
   /// Draw the complete figure for the current number of seeds.
   void draw() {
     CanvasRenderingContext2D context = _canvas.elt.context2D;
-    num scaleFactor = _view.seedRadius * 2;
+    num scaleFactor = view.seedRadius * 2;
     context.clearRect(0, 0, maxD, maxD);
     for (var i = 0; i < seeds; i++) {
       final num theta = i * TAU / PHI;
       final num r = sqrt(i) * scaleFactor;
-      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), _view.seedRadius);
+      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), view.seedRadius);
     }
   }
 

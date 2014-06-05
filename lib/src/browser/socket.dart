@@ -23,7 +23,7 @@ class SlotWidget extends Widget<Slot, View> {
   _Connection conn;
 
   @override
-  void setProps(Slot node) {
+  void setView(Slot node) {
     if ($ != node.export) {
       $ = node.export;
       if (conn != null) {

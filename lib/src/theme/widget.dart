@@ -8,12 +8,14 @@ part of theme;
 ///
 /// Each widget has an associated [View] that was rendered to create
 /// the widget. The widget must copy its props from this node whenever it
-/// changes, by implementing [setProps].
+/// changes, by implementing [setView].
 ///
 /// A Widget may access the DOM by rendering an element tag with its "ref"
 /// property set. The DOM will be available during callbacks
 /// for [didMount], [didRender], and [willUnmount] events.
 abstract class Widget<V extends View,S> extends StateMixin<S> {
+  V view;
+
   final _didMount = new StreamController.broadcast();
   final _didRender = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
@@ -22,17 +24,18 @@ abstract class Widget<V extends View,S> extends StateMixin<S> {
   /// Initializes the widget.
   /// Called automatically when the associated node is first rendered.
   WidgetController mount(V view, invalidate()) {
-    setProps(view);
+    setView(view);
     initState(); // depends on props
     _invalidate = invalidate;
     return new WidgetController(this);
   }
 
-  /// Copies the assocated node's props into the widget.
-  /// Subclasses must implement.
+  /// Copies the assocated view into the widget.
   /// Called automatically before [createFirstState]
   /// and whenever the associated widget tag is rendered.
-  void setProps(V node);
+  void setView(V view) {
+    this.view = view;
+  }
 
   /// Asks for the widget to be rendered again.
   /// Called automatically after the widget's state changes.
@@ -42,7 +45,7 @@ abstract class Widget<V extends View,S> extends StateMixin<S> {
 
   /// If shouldRender returns false, rendering will be skipped.
   /// Subclasses may override this method to improve performance.
-  /// Called automatically in the animation frame after [setProps] or [invalidate].
+  /// Called automatically in the animation frame after [setView] or [invalidate].
   bool shouldRender(View oldView, S oldState) => true;
 
   /// Constructs the tag tree to be rendered in place of this Widget.

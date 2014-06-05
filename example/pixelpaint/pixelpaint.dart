@@ -1,8 +1,6 @@
 import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
-final $ = new HtmlTagSet();
-
 class PixelPaint extends View {
   final int width;
   final int height;
@@ -28,7 +26,7 @@ class RowView extends View {
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
 }
 
-main() => root("#container")
+main() => getRoot("#container")
     ..theme = theme
     ..mount(const PixelPaint(width: 50, height: 50, palette: const ["black", "white"]));
 
@@ -40,12 +38,6 @@ final theme = new Theme($)
 
 /// Updates the model and re-renders whenever the user paints a pixel.
 class _PixelPaint extends Widget<PixelPaint, Grid> {
-  PixelPaint view;
-
-  @override
-  setProps(PixelPaint view) {
-    this.view = view;
-  }
 
   @override
   Grid createFirstState() => new Grid(view.width, view.height);
@@ -66,12 +58,6 @@ typedef PixelHandler(int x, int y);
 /// (The DOM's event API makes it tricky to reliably determine when the mouse is down.
 /// This implementation usually works but could be improved.)
 class _GridView extends Widget<GridView, bool> {
-  GridView view;
-
-  @override
-  setProps(GridView view) {
-    this.view = view;
-  }
 
   @override
   bool createFirstState() => false; // assume mouse is up

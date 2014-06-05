@@ -101,7 +101,7 @@ class _WidgetNode extends _Node<View> {
     View old = view;
     if (next != null) {
       super.updateProps(next);
-      controller.widget.setProps(next);
+      controller.widget.setView(next);
     }
     return old;
   }

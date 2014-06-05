@@ -1,5 +1,7 @@
 part of browser;
 
+final $ = new HtmlTagSet();
+
 int _rootIdCounter = 0;
 
 /// Maps a data-path attribute to the root for that path.
@@ -8,7 +10,7 @@ Map<String, _BrowserRoot> _pathToRoot = {};
 /// Returns the Root corresponding to the given CSS selectors, creating it if needed.
 ///
 /// The selectors must point to a single container element of type HtmlElement.
-render.RenderRoot root(String containerSelectors) {
+render.RenderRoot getRoot(String containerSelectors) {
   HtmlElement container = querySelectorAll(containerSelectors).single;
   var prev = _findRoot(container);
   if (prev != null) {
@@ -40,7 +42,9 @@ class _BrowserRoot extends render.RenderRoot {
 
   _BrowserRoot(HtmlElement container) :
     this.eltCache = new _ElementCache(container),
-    super(_rootIdCounter++);
+    super(_rootIdCounter++) {
+    theme.defineElements($);
+  }
 
   @override
   void installEventListeners() {

@@ -1,53 +1,43 @@
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-final $ = new HtmlTagSet();
-
-class TodoApp extends View {
-  const TodoApp();
-}
-
 class TodoList extends View {
   final List<String> items;
   const TodoList({this.items});
 }
 
-main() =>
-    root("#container")
-      ..theme = theme
-      ..mount(const TodoApp());
+_renderTodoList(TodoList props) {
+  createItem(itemText) => $.Li(inner: itemText);
+  return $.Ul(inner: props.items.map(createItem));
+}
 
-final theme = new Theme($)
-    ..defineWidget(TodoApp, () => new _TodoApp())
-    ..defineTemplate(TodoList, _renderTodoList);
+class TodoApp extends View {
+  const TodoApp();
+}
 
 class _TodoState {
-  String text;
   List<String> items;
-
-  _TodoState(this.text, this.items);
+  String text;
+  _TodoState(this.items, this.text);
 }
 
 class _TodoApp extends Widget<TodoApp, _TodoState> {
 
   @override
-  void setProps(_) {}
+  createFirstState() => new _TodoState([], '');
 
-  @override
-  _TodoState createFirstState() => new _TodoState('', []);
-
-  void onChange(HandlerEvent e) {
+  onChange(HandlerEvent e) {
     nextState.text = e.value;
   }
 
-  void handleSubmit(HandlerEvent e) {
+  handleSubmit(HandlerEvent e) {
     nextState
       ..items = (new List.from(state.items)..add(state.text))
       ..text = "";
   }
 
   @override
-  View render() =>
+  render() =>
     $.Div(inner: [
       $.H3(inner: "TODO"),
       new TodoList(items: state.items),
@@ -58,10 +48,11 @@ class _TodoApp extends Widget<TodoApp, _TodoState> {
     ]);
 
   @override
-  _TodoState cloneState(_TodoState prev) => new _TodoState(prev.text, prev.items);
+  cloneState(_TodoState prev) => new _TodoState(prev.items, prev.text);
 }
 
-View _renderTodoList(TodoList node) {
-  createItem(itemText) => $.Li(inner: itemText);
-  return $.Ul(inner: node.items.map(createItem));
-}
+main() =>
+    getRoot("#container")
+      ..theme.defineWidget(TodoApp, () => new _TodoApp())
+      ..theme.defineTemplate(TodoList, _renderTodoList)
+      ..mount(const TodoApp());
