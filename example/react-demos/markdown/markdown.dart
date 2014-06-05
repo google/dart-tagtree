@@ -5,9 +5,6 @@ import 'package:tagtree/core.dart';
 final $ = new HtmlTagSet();
 
 class MarkdownEditor extends View {
-  @override
-  get tag => "MarkdownEditor";
-
   final String defaultText;
   const MarkdownEditor({this.defaultText});
 }
@@ -19,7 +16,7 @@ main() =>
 
 final theme = new Theme()
   ..defineElements($)
-  ..defineWidget("MarkdownEditor", () => new _MarkdownEditor());
+  ..defineWidget(MarkdownEditor, () => new _MarkdownEditor());
 
 class _MarkdownEditor extends Widget<MarkdownEditor, String> {
   MarkdownEditor view;

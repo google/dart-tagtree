@@ -10,7 +10,7 @@ typedef Widget CreateWidgetFunc();
 
 /// A module that contains tag implementations.
 class Theme {
-  final tagDefs = <String, TagDef>{};
+  final tagDefs = <dynamic, TagDef>{};
 
   Theme([TagSet tags]) {
     if (tags != null) {
@@ -30,12 +30,12 @@ class Theme {
   }
 
   /// Redefines a tag so it renders by expanding a template.
-  void defineTemplate(String tag, TemplateFunc render, {ShouldRenderFunc shouldRender: _always}) {
+  void defineTemplate(tag, TemplateFunc render, {ShouldRenderFunc shouldRender: _always}) {
     tagDefs[tag] = new TemplateDef(render, shouldRender);
   }
 
   /// Redefines a tag so it renders by either starting or reconfiguring a Widget.
-  void defineWidget(String tag, CreateWidgetFunc createWidget) {
+  void defineWidget(tag, CreateWidgetFunc createWidget) {
     tagDefs[tag] = new WidgetDef(createWidget);
   }
 }

@@ -29,10 +29,11 @@ abstract class View implements Jsonable {
   /// called before a View is rendered or sent over the network.
   bool checked() => true;
 
-  /// The tag serves as a unique key for the node's type.
-  /// It's used to look up the rule for rendering a node to HTML,
-  /// and also as the name of the node when sending it as JSON.
-  String get tag;
+  /// The tag serves as a unique key for finding its implementation
+  /// on a theme. It may be any type. If it's a string, it will be
+  /// used for the [jsonTag].
+  /// By default it's the same as [runtimeType].
+  get tag => runtimeType;
 
   /// Returns the tag and properties of the node, in the form suitable
   /// for reflective access and for sending it across the network.)
@@ -55,7 +56,7 @@ abstract class View implements Jsonable {
   Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${tag}";
 
   @override
-  String get jsonTag => tag;
+  String get jsonTag => (tag is String) ? tag : null;
 
   /// If non-null, the DOM element corresponding to this node will be placed
   /// in the ref when it's first rendered.

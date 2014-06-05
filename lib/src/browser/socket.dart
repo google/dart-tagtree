@@ -5,9 +5,6 @@ part of browser;
 /// [src] is the URL of the websocket to open and [export] contains the tags that
 /// may sent over the network.
 class Slot extends View {
-  @override
-  String get tag => "Slot";
-
   final String src;
   final TagSet export;
   const Slot({this.src, this.export});

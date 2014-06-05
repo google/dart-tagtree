@@ -4,9 +4,6 @@ import 'package:tagtree/core.dart';
 final $ = new HtmlTagSet();
 
 class PixelPaint extends View {
-  @override
-  get tag => "PixelPaint";
-
   final int width;
   final int height;
   final List<String> palette;
@@ -14,9 +11,6 @@ class PixelPaint extends View {
 }
 
 class GridView extends View {
-  @override
-  get tag => "GridView";
-
   final Grid grid;
   final Map<int, String> palette;
   final PixelHandler onPaint;
@@ -24,9 +18,6 @@ class GridView extends View {
 }
 
 class RowView extends View {
-  @override
-  get tag => "RowView";
-
   final int y;
   final Row row;
   final Map<int, String> palette;
@@ -42,9 +33,9 @@ main() => root("#container")
     ..mount(const PixelPaint(width: 50, height: 50, palette: const ["black", "white"]));
 
 final theme = new Theme($)
-    ..defineWidget("PixelPaint", () => new _PixelPaint())
-    ..defineWidget("GridView", () => new _GridView())
-    ..defineTemplate("RowView", renderRowView,
+    ..defineWidget(PixelPaint, () => new _PixelPaint())
+    ..defineWidget(GridView, () => new _GridView())
+    ..defineTemplate(RowView, renderRowView,
         shouldRender: (RowView before, RowView after) => !before.row.equals(after.row));
 
 /// Updates the model and re-renders whenever the user paints a pixel.

@@ -4,9 +4,6 @@ import 'package:tagtree/browser.dart';
 final $ = new HtmlTagSet();
 
 class ReversableText extends View {
-  @override
-  get tag => "ReversableText";
-
   final String label;
   const ReversableText({this.label});
 }
@@ -17,7 +14,7 @@ main() =>
       ..mount(const ReversableText(label: "Click me!"));
 
 final theme = new Theme($)
-    ..defineWidget("ReversableText", () => new _ReversableText());
+    ..defineWidget(ReversableText, () => new _ReversableText());
 
 class _ReversableText extends Widget<ReversableText, bool> {
   ReversableText view;

@@ -5,9 +5,6 @@ import 'package:tagtree/browser.dart';
 final $ = new HtmlTagSet();
 
 class SecondsElapsed extends View {
-  @override
-  get tag => "SecondsElapsed";
-
   const SecondsElapsed();
 }
 
@@ -17,7 +14,7 @@ main() =>
       ..mount(const SecondsElapsed());
 
 final theme = new Theme($)
-    ..defineWidget("SecondsElapsed", () => new _SecondsElapsed());
+    ..defineWidget(SecondsElapsed, () => new _SecondsElapsed());
 
 class _SecondsElapsed extends Widget<SecondsElapsed, int> {
   Timer timer;

@@ -4,16 +4,10 @@ import 'package:tagtree/browser.dart';
 final $ = new HtmlTagSet();
 
 class TodoApp extends View {
-  @override
-  get tag => "TodoApp";
-
   const TodoApp();
 }
 
 class TodoList extends View {
-  @override
-  get tag => "TodoList";
-
   final List<String> items;
   const TodoList({this.items});
 }
@@ -24,8 +18,8 @@ main() =>
       ..mount(const TodoApp());
 
 final theme = new Theme($)
-    ..defineWidget("TodoApp", () => new _TodoApp())
-    ..defineTemplate("TodoList", _renderTodoList);
+    ..defineWidget(TodoApp, () => new _TodoApp())
+    ..defineTemplate(TodoList, _renderTodoList);
 
 class _TodoState {
   String text;

@@ -15,9 +15,6 @@ import 'package:tagtree/browser.dart';
 final $ = new HtmlTagSet();
 
 class Sunflower extends View {
-  @override
-  get tag => "Sunflower";
-
   final int startSeeds;
   final int seedRadius;
   const Sunflower({this.startSeeds, this.seedRadius});
@@ -29,7 +26,7 @@ main() =>
       ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));
 
 final theme = new Theme($)
-    ..defineWidget("Sunflower", () => new _Sunflower());
+    ..defineWidget(Sunflower, () => new _Sunflower());
 
 class _Sunflower extends Widget<Sunflower, int> {
   final _canvas = new Ref<CanvasElement>();
