@@ -74,7 +74,7 @@ abstract class _Mount {
         out.write(HTML_ESCAPE.convert(val));
       }
     } else {
-      expandInner(elt, out, elt.props["inner"], elt.props["innerHtml"]);
+      expandInner(elt, out, elt.props["inner"]);
     }
 
     out.write("</${elt.view.tag}>");
@@ -107,16 +107,16 @@ abstract class _Mount {
     out.write(">");
   }
 
-  void expandInner(_ElementNode elt, StringBuffer out, inner, String innerHtml) {
-
+  void expandInner(_ElementNode elt, StringBuffer out, inner) {
     if (inner == null) {
-      if (innerHtml != null) {
-        // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)
-        out.write(innerHtml);
-      }
+      // no children
     } else if (inner is String) {
       out.write(HTML_ESCAPE.convert(inner));
       elt._childText = inner;
+    } else if (inner is RawHtml) {
+      // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)
+      out.write(inner.html);
+      elt._childHtml = inner;
     } else if (inner is View) {
       elt._children = _mountChildren(out, elt.path, elt.depth, [inner]);
     } else if (inner is Iterable) {

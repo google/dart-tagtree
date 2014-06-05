@@ -20,6 +20,7 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
     rules.add(new _HandlerEventRule(type));
   }
   rules.add(new _HandlerCallRule());
+  rules.add(new _RawHtmlRule());
 
   return new TaggedJsonCodec(rules, [const JsonableFinder()]);
 }
@@ -93,7 +94,7 @@ class _HandlerCallRule extends JsonRule<HandlerCall> {
   _HandlerCallRule() : super("call");
 
   @override
-  bool appliesTo(Jsonable instance) => (instance is HandlerCall);
+  bool appliesTo(instance) => (instance is HandlerCall);
 
   @override
   encode(HandlerCall call) => [call.id.frameId, call.id.id, call.event];
@@ -108,3 +109,21 @@ class _HandlerCallRule extends JsonRule<HandlerCall> {
   }
 }
 
+class _RawHtmlRule extends JsonRule<RawHtml> {
+  _RawHtmlRule() : super("rawHtml");
+
+  @override
+  bool appliesTo(instance) => (instance is RawHtml);
+
+  @override
+  encode(RawHtml rh) => rh.html;
+
+  @override
+  RawHtml decode(val) {
+    if (val is String) {
+      return new RawHtml(val);
+    } else {
+      throw "can't decode RawHtml: ${val.runtimeType}";
+    }
+  }
+}

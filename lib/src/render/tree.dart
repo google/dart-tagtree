@@ -69,8 +69,10 @@ class _ElementNode extends _Node<View> {
   final ElementType type;
   // Non-null if the element has at least one non-text child.
   List<_Node> _children;
-  // Non-null if the view contains just text.
+  // Non-null if the element contains plain text.
   String _childText;
+  // Non-null if the element contains HTML.
+  RawHtml _childHtml;
 
   _ElementNode(String path, int depth, View node, this.type) : super(path, depth, node);
 }

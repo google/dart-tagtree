@@ -27,6 +27,16 @@ class ElementView implements View {
   static final _checked = new Expando<bool>();
 }
 
+/// Represents raw (unsanitized) HTML.
+/// It can be used as the value of an element's "inner" property.
+/// It will be passed through Dart's sanitizer when rendered.
+class RawHtml implements Jsonable {
+  final String html;
+  const RawHtml(this.html);
+  @override
+  String get jsonTag => "rawHtml";
+}
+
 /// The structure of an HTML element, as represented by an [ElementView].
 class ElementType {
 
@@ -126,7 +136,6 @@ class ElementType {
       byName[key].checkValue(props[key]);
     }
 
-    assert(props["inner"] == null || props["innerHtml"] == null);
     assert(props["value"] == null || props["defaultValue"] == null);
     return true;
   }
@@ -165,7 +174,8 @@ class MixedContentType extends PropType {
 
   @override
   bool checkValue(inner) {
-    assert(inner == null || inner is String || inner is View || inner is Iterable);
+    assert(inner == null || inner is String || inner is RawHtml ||
+        inner is View || inner is Iterable);
     return true;
   }
 }

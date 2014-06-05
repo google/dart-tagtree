@@ -17,52 +17,38 @@ class HtmlTagSet extends TagSet with HtmlTags {
 abstract class HtmlTags {
 
   View Div({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
   View Span({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
   View Header({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
   View Footer({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
   View H1({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
   View H2({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
   View H3({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
   View P({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
   View Pre({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
   View Ul({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
   View Li({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
   View Table({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
   View Tr({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
   View Td({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
   View Img({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
@@ -73,7 +59,7 @@ abstract class HtmlTags {
 
   View Form({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
-    inner, innerHtml});
+    inner});
   View Input({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue, type, min, max});
@@ -82,7 +68,7 @@ abstract class HtmlTags {
     value, defaultValue});
   View Button({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
-    inner, innerHtml});
+    inner});
 }
 
 final List<ElementType> _htmlTags = () {
@@ -107,12 +93,8 @@ final List<ElementType> _htmlTags = () {
     onMouseUp,
     onMouseOut,
     const PropType(#ref, "ref"),
-    const PropType(#inner, "inner"),
-    const PropType(#innerHtml, "innerHtml")
+    const MixedContentType(#inner, "inner"),
   ];
-
-  const inner = const MixedContentType(#inner, "inner");
-  const innerHtml = const PropType(#innerHtml, "innerHtml");
 
   const src = const AttributeType(#src, "src");
   const width = const AttributeType(#width, "width");

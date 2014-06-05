@@ -23,7 +23,7 @@ class _MarkdownEditor extends Widget<MarkdownEditor, String> {
       $.H3(inner: "Input"),
       $.TextArea(onChange: handleChange, defaultValue: value),
       $.H3(inner: "Output"),
-      $.Div(clazz: "Content", innerHtml: markdownToHtml(value)),
+      $.Div(clazz: "Content", inner: new RawHtml(markdownToHtml(value))),
     ]);
 }
 

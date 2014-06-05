@@ -45,5 +45,6 @@ abstract class _Unmount {
       elt._children = null;
     }
     elt._childText = null;
+    elt._childHtml = null;
   }
 }
