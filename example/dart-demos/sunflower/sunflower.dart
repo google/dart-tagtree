@@ -12,37 +12,31 @@ import 'dart:math';
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
+const startSeeds = 500;
+const seedRadius = 2;
+
 class Sunflower extends View {
   final int startSeeds;
   final int seedRadius;
   const Sunflower({this.startSeeds, this.seedRadius});
 }
 
-main() =>
-    getRoot("#sunflower")
-      ..theme = theme
-      ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));
-
-final theme = new Theme($)
-    ..defineWidget(Sunflower, () => new _Sunflower());
-
 class _Sunflower extends Widget<Sunflower, int> {
-  final _canvas = new Ref<CanvasElement>();
+  final canvas = new Ref<CanvasElement>();
 
   _Sunflower() {
-    didMount.listen((_) => draw());
-    didRender.listen((_) => draw());
+    // Redraw the canvas whenever we render a frame.
+    didRender.listen((_) => draw(canvas.elt.context2D));
   }
 
+  // The slider controls the number of seeds.
+
   @override
-  int createFirstState() => view.startSeeds;
+  createFirstState() => props.startSeeds;
 
-  int get seeds => state;
-  int get maxD => 300;
-  int get centerX => maxD ~/ 2;
-  int get centerY => maxD ~/ 2;
+  get seeds => state;
 
-  void onChange(HandlerEvent e) {
+  void onSliderChange(HandlerEvent e) {
     nextState = int.parse(e.value);
   }
 
@@ -51,9 +45,9 @@ class _Sunflower extends Widget<Sunflower, int> {
     return $.Div(inner: [
 
         $.Div(id: "container", inner: [
-            $.Canvas(width: maxD, height: maxD, clazz: "center", ref: _canvas),
+            $.Canvas(width: maxD, height: maxD, clazz: "center", ref: canvas),
             $.Form(clazz: "center", inner: [
-                $.Input(type: "range", max: 1000, value: seeds, onChange: onChange)
+                $.Input(type: "range", max: 1000, value: seeds, onChange: onSliderChange)
             ]),
             $.Img(src: "math.png", width: "350px", height: "42px", clazz: "center")
         ]),
@@ -66,16 +60,18 @@ class _Sunflower extends Widget<Sunflower, int> {
 
   static const num TAU = PI * 2;
   static final num PHI = (sqrt(5) + 1) / 2;
+  static const maxD = 300;
+  static const centerX = maxD ~/ 2;
+  static const centerY = maxD ~/ 2;
 
   /// Draw the complete figure for the current number of seeds.
-  void draw() {
-    CanvasRenderingContext2D context = _canvas.elt.context2D;
-    num scaleFactor = view.seedRadius * 2;
+  void draw(CanvasRenderingContext2D context) {
+    num scaleFactor = props.seedRadius * 2;
     context.clearRect(0, 0, maxD, maxD);
     for (var i = 0; i < seeds; i++) {
       final num theta = i * TAU / PHI;
       final num r = sqrt(i) * scaleFactor;
-      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), view.seedRadius);
+      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), props.seedRadius);
     }
   }
 
@@ -91,3 +87,8 @@ class _Sunflower extends Widget<Sunflower, int> {
            ..stroke();
   }
 }
+
+main() =>
+    getRoot("#sunflower")
+      ..theme.defineWidget(Sunflower, () => new _Sunflower())
+      ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));

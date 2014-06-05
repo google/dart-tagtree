@@ -52,8 +52,8 @@ abstract class _Mount {
       View shadowTree = widget.render();
       node.shadow = mountView(shadowTree, out, node.path, node.depth + 1);
 
-      if (c.didMount.hasListener) {
-        _mountedWidgets.add(c.didMount);
+      if (c.didRender.hasListener) {
+        _mountedWidgets.add(c.didRender);
       }
 
     } else if (node is _ElementNode) {

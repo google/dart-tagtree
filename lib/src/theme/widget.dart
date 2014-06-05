@@ -12,9 +12,9 @@ part of theme;
 ///
 /// A Widget may access the DOM by rendering an element tag with its "ref"
 /// property set. The DOM will be available during callbacks
-/// for [didMount], [didRender], and [willUnmount] events.
+/// for [didRender] and [willUnmount] events.
 abstract class Widget<V extends View,S> extends StateMixin<S> {
-  V view;
+  V props;
 
   final _didMount = new StreamController.broadcast();
   final _didRender = new StreamController.broadcast();
@@ -34,7 +34,7 @@ abstract class Widget<V extends View,S> extends StateMixin<S> {
   /// Called automatically before [createFirstState]
   /// and whenever the associated widget tag is rendered.
   void setView(V view) {
-    this.view = view;
+    this.props = view;
   }
 
   /// Asks for the widget to be rendered again.
@@ -60,13 +60,8 @@ abstract class Widget<V extends View,S> extends StateMixin<S> {
   /// doesn't include the widget.
   bool get isMounted => _invalidate != null;
 
-  /// A stream that receives one event at the end of the animation frame when
-  /// the widget first appears. When the event is received, the widget's DOM can
-  /// be accessed using a ref.
-  Stream get didMount => _didMount.stream;
-
   /// A stream that receives an event at the end of the animation frame when the
-  /// widget was re-rendered. The widget's DOM has been updated.
+  /// widget was rendered. (The DOM may be accessed using a Ref.)
   Stream get didRender => _didRender.stream;
 
   /// A stream that receives an event during the animation frame when the widget
@@ -80,7 +75,6 @@ class WidgetController {
 
   WidgetController(this.widget);
 
-  StreamController get didMount => widget._didMount;
   StreamController get didRender => widget._didRender;
   StreamController get willUnmount => widget._willUnmount;
 

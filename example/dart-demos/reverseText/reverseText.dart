@@ -2,8 +2,6 @@ import 'package:tagtree/browser.dart';
 
 var text = "Click me!";
 
-main() => render();
-
 render() => getRoot("#container").mount(
     $.Div(clazz: "sample_text", onClick: onClick, inner: text)
 );
@@ -16,3 +14,5 @@ onClick(_) {
   text = buffer.toString();
   render();
 }
+
+main() => render();
