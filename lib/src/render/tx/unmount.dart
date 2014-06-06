@@ -38,13 +38,11 @@ abstract class _Unmount {
   }
 
   void unmountInner(_ElementNode elt) {
-    if (elt._children != null) {
-      for (_Node child in elt._children) {
+    if (elt.children is List) {
+      for (_Node child in elt.children) {
         unmount(child);
       }
-      elt._children = null;
     }
-    elt._childText = null;
-    elt._childHtml = null;
+    elt.children = null;
   }
 }

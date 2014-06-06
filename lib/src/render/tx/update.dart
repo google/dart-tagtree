@@ -99,7 +99,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates DOM attributes and event handlers of an Elt.
   void _updateDomProperties(_ElementNode elt, PropsMap oldProps) {
-    ElementType tag = elt.type;
+    ElementType eltType = elt.view.type;
     String path = elt.path;
     PropsMap newProps = elt.view.props;
 
@@ -109,11 +109,11 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      var type = tag.propsByName[key];
-      if (type is HandlerType) {
-        removeHandler(type, path);
-      } else if (type is AttributeType) {
-        dom.removeAttribute(path, type.propKey);
+      var propType = eltType.propsByName[key];
+      if (propType is HandlerType) {
+        removeHandler(propType, path);
+      } else if (propType is AttributeType) {
+        dom.removeAttribute(path, propType.propKey);
       }
     }
 
@@ -125,7 +125,7 @@ abstract class _Update extends _Mount with _Unmount {
         continue;
       }
 
-      var type = tag.propsByName[key];
+      var type = eltType.propsByName[key];
       if (type is HandlerType) {
         setHandler(type, path, newVal);
         continue;
@@ -146,19 +146,19 @@ abstract class _Update extends _Mount with _Unmount {
       unmountInner(elt);
       dom.setInnerText(path, "");
     } else if (newInner is String) {
-      if (newInner == elt._childText) {
+      if (newInner == elt.children) {
         return;
       }
       unmountInner(elt);
       dom.setInnerText(path, newInner);
-      elt._childText = newInner;
+      elt.children = newInner;
     } else if (newInner is RawHtml) {
-      if (newInner == elt._childHtml) {
+      if (newInner == elt.children) {
         return;
       }
       unmountInner(elt);
       dom.setInnerHtml(path, newInner.html);
-      elt._childHtml = newInner;
+      elt.children = newInner;
     } else if (newInner is View) {
       _updateChildren(elt, path, [newInner]);
     } else if (newInner is Iterable) {
@@ -181,16 +181,14 @@ abstract class _Update extends _Mount with _Unmount {
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children,  _childText, and _childHtml are updated.)
   void _updateChildren(_ElementNode elt, String path, List<View> newChildren) {
-    elt._childText = null;
-    elt._childHtml = null;
-    if (elt._children == null) {
+    if (!(elt.children is List)) {
       StringBuffer out = new StringBuffer();
-      expandInner(elt, out, newChildren);
+      elt.children = expandInner(elt, out, newChildren);
       dom.setInnerHtml(path, out.toString());
       return;
     }
 
-    int oldLength = elt._children.length;
+    int oldLength = elt.children.length;
     int newLength = newChildren.length;
     int addedChildCount = newLength - oldLength;
 
@@ -198,7 +196,7 @@ abstract class _Update extends _Mount with _Unmount {
     // update or replace each child that's in both lists
     int endBoth = addedChildCount < 0 ? newLength  : oldLength;
     for (int i = 0; i < endBoth; i++) {
-      _Node before = elt._children[i];
+      _Node before = elt.children[i];
       View after = newChildren[i];
       assert(before != null);
       assert(after != null);
@@ -217,7 +215,7 @@ abstract class _Update extends _Mount with _Unmount {
         updatedChildren.add(child);
       }
     }
-    elt._children = updatedChildren;
+    elt.children = updatedChildren;
   }
 
   _Node _mountNewChild(_ElementNode parent, View child, int childIndex) {

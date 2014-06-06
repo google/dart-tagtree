@@ -66,15 +66,9 @@ class _TextNode extends _Node<_TextView> {
 
 /// A node for a rendered HTML element.
 class _ElementNode extends _Node<ElementView> {
-  final ElementType type;
-  // Non-null if the element has at least one non-text child.
-  List<_Node> _children;
-  // Non-null if the element contains plain text.
-  String _childText;
-  // Non-null if the element contains HTML.
-  RawHtml _childHtml;
-
-  _ElementNode(String path, int depth, View node, this.type) : super(path, depth, node);
+  // May be a List<_Node>, String, or RawHtml.
+  var children;
+  _ElementNode(String path, int depth, View node) : super(path, depth, node);
 }
 
 /// A node for a expanded template.

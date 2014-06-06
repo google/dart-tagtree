@@ -52,7 +52,7 @@ abstract class RenderRoot {
     }
 
     if (def is ElementBinding) {
-      return new _ElementNode(path, depth, node, def.type);
+      return new _ElementNode(path, depth, node);
     } else if (def is TemplateBinding) {
       return new _TemplateNode(path, depth, node, def.render, def.shouldRender);
     } else if (def is WidgetBinding) {

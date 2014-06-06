@@ -73,8 +73,9 @@ abstract class _Mount {
       if (val != null) {
         out.write(HTML_ESCAPE.convert(val));
       }
+      // TODO: other cases?
     } else {
-      expandInner(elt, out, elt.view.inner);
+      elt.children = expandInner(elt, out, elt.view.inner);
     }
 
     out.write("</${elt.view.htmlTag}>");
@@ -86,15 +87,16 @@ abstract class _Mount {
 
   void _writeStartTag(StringBuffer out, _ElementNode elt) {
     out.write("<${elt.view.htmlTag} data-path=\"${elt.path}\"");
-    for (String key in elt.props.keys) {
-      var type = elt.type.propsByName[key];
+    ElementType eltType = elt.view.type;
+    for (String key in elt.view.props.keys) {
+      var propType = eltType.propsByName[key];
       var val = elt.props[key];
-      if (type is HandlerType) {
-        addHandler(type, elt.path, val);
+      if (propType is HandlerType) {
+        addHandler(propType, elt.path, val);
         continue;
-      } else if (type is AttributeType) {
+      } else if (propType is AttributeType) {
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));
-        out.write(" ${type.propKey}=\"${escaped}\"");
+        out.write(" ${propType.propKey}=\"${escaped}\"");
       }
     }
     if (elt.view.htmlTag == "input") {
@@ -107,18 +109,19 @@ abstract class _Mount {
     out.write(">");
   }
 
-  void expandInner(_ElementNode elt, StringBuffer out, inner) {
+  /// Returns the new children
+  dynamic expandInner(_ElementNode elt, StringBuffer out, inner) {
     if (inner == null) {
-      // no children
+      return null;
     } else if (inner is String) {
       out.write(HTML_ESCAPE.convert(inner));
-      elt._childText = inner;
+      return inner;
     } else if (inner is RawHtml) {
       // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)
       out.write(inner.html);
-      elt._childHtml = inner;
+      return inner;
     } else if (inner is View) {
-      elt._children = _mountChildren(out, elt.path, elt.depth, [inner]);
+      return _mountChildren(out, elt.path, elt.depth, [inner]);
     } else if (inner is Iterable) {
       List<View> children = [];
       for (var item in inner) {
@@ -130,8 +133,9 @@ abstract class _Mount {
           throw "bad item in inner: ${item}";
         }
       }
-      elt._children = _mountChildren(out, elt.path, elt.depth, children);
+      return _mountChildren(out, elt.path, elt.depth, children);
     }
+    throw "unexpected type for an element's inner field: ${inner.runtimeType}";
   }
 
   List<_Node> _mountChildren(StringBuffer out, String parentPath, int parentDepth,

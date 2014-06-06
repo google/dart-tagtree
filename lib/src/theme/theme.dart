@@ -28,7 +28,7 @@ class Theme {
 
   /// Redefines a tag so it renders as a single HTML element.
   void defineElement(ElementType type) {
-    tagDefs[type] = new ElementBinding(type);
+    tagDefs[type] = const ElementBinding();
   }
 
   /// Redefines a tag so it renders by expanding a template.
@@ -47,8 +47,7 @@ abstract class Binding {
 }
 
 class ElementBinding extends Binding {
-  final ElementType type;
-  const ElementBinding(this.type);
+  const ElementBinding();
 }
 
 class TemplateBinding extends Binding {
