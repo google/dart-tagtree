@@ -100,23 +100,25 @@ class RowView extends View {
   final PixelHandler onMouseDown;
   final PixelHandler onMouseOver;
   final Function onMouseUp;
+
   const RowView({this.y, this.row, this.palette,
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
-}
 
-/// Avoid redrawing a row that hasn't changed. (The key to good performance!)
-shouldRenderRow(RowView before, RowView after) => !before.row.equals(after.row);
-
-renderRow(RowView rv) {
-  var cells = [];
-  for (int x = 0; x < rv.row.width; x++) {
-    int pixel = rv.row[x];
-    cells.add($.Td(clazz: rv.palette[pixel],
-        onMouseDown: (_) => rv.onMouseDown(x, rv.y),
-        onMouseOver: (_) => rv.onMouseOver(x, rv.y),
-        onMouseUp: (_) => rv.onMouseUp()));
-  }
-  return $.Tr(inner: cells);
+  static final template = new Template(RowView,
+      (RowView rv) {
+        var cells = [];
+        for (int x = 0; x < rv.row.width; x++) {
+          int pixel = rv.row[x];
+          cells.add($.Td(clazz: rv.palette[pixel],
+              onMouseDown: (_) => rv.onMouseDown(x, rv.y),
+              onMouseOver: (_) => rv.onMouseOver(x, rv.y),
+              onMouseUp: (_) => rv.onMouseUp()));
+        }
+        return $.Tr(inner: cells);
+    },
+    /// Avoid redrawing a row that hasn't changed. (The key to good performance!)
+    shouldRender: (RowView before, RowView after) => !before.row.equals(after.row)
+  );
 }
 
 //
@@ -195,9 +197,9 @@ class Row {
 //
 
 final theme = new Theme($)
-    ..defineWidget(PixelPaintApp, () => new _PixelPaint())
-    ..defineWidget(GridView, () => new _GridView())
-    ..defineTemplate(RowView, renderRow, shouldRender: shouldRenderRow);
+    ..define(PixelPaintApp, () => new _PixelPaint())
+    ..define(GridView, () => new _GridView())
+    ..add(RowView.template);
 
 main() => getRoot("#container")
     ..theme = theme

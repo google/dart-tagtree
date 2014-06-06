@@ -4,11 +4,11 @@ import 'package:tagtree/browser.dart';
 class TodoList extends View {
   final List<String> items;
   const TodoList({this.items});
-}
 
-_renderTodoList(TodoList props) {
-  createItem(itemText) => $.Li(inner: itemText);
-  return $.Ul(inner: props.items.map(createItem));
+  static final template = new Template(TodoList, (TodoList props) {
+    createItem(itemText) => $.Li(inner: itemText);
+    return $.Ul(inner: props.items.map(createItem));
+  });
 }
 
 class TodoApp extends View {
@@ -53,6 +53,6 @@ class _TodoApp extends Widget<TodoApp, _TodoState> {
 
 main() =>
     getRoot("#container")
-      ..theme.defineWidget(TodoApp, () => new _TodoApp())
-      ..theme.defineTemplate(TodoList, _renderTodoList)
+      ..theme.define(TodoApp, () => new _TodoApp())
+      ..theme.add(TodoList.template)
       ..mount(const TodoApp());

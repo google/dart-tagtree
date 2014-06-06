@@ -10,6 +10,9 @@
  * An [ElementView] is a View that renders to an HTML element. Its structure is
  * defined by an [ElementType].
  *
+ * A [Viewer] implements a [View]. The [ElementType] and [Template] viewers are
+ * included in core. Viewers for multiple kinds of views are collected into a [Theme].
+ *
  * A [TagSet] can create the corresponding View for each of a set of tags.
  * The [TagSet.makeCodec] function returns a codec that can convert trees
  * to and from JSON strings.
@@ -23,4 +26,5 @@ part 'src/core/handler.dart';
 part 'src/core/json.dart';
 part 'src/core/element.dart';
 part 'src/core/tagset.dart';
+part 'src/core/theme.dart';
 part 'src/core/view.dart';

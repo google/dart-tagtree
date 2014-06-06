@@ -29,9 +29,9 @@ abstract class View implements Jsonable {
   /// called before a View is rendered or sent over the network.
   bool checked() => true;
 
-  /// The type serves as the key for finding a view's implementation
-  /// in a theme. It may be any type that works as a Map key.
-  /// By default it's the same as [runtimeType].
+  /// The key that will be used to bind this view to a [Viewer].
+  /// It may be any type that works as a Map key.
+  /// By default it's the [runtimeType].
   get type => runtimeType;
 
   /// Returns the tag and properties of the node, in the form suitable

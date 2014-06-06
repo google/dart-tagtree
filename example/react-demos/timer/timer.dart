@@ -25,5 +25,5 @@ class _SecondsElapsed extends Widget<SecondsElapsed, int> {
 
 main() =>
     getRoot("#container")
-      ..theme.defineWidget(SecondsElapsed, () => new _SecondsElapsed())
+      ..theme.define(SecondsElapsed, () => new _SecondsElapsed())
       ..mount(const SecondsElapsed());

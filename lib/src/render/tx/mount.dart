@@ -45,7 +45,7 @@ abstract class _Mount {
       node.shadow = mountView(shadowTree, out, path, depth + 1);
 
     } else if (node is _WidgetNode) {
-      var widget = node.createWidget();
+      var widget = node.widget;
       var c = widget.mount(node.view, () => invalidateWidget(node));
       node.controller = c;
 

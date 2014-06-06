@@ -43,7 +43,7 @@ class _BrowserRoot extends render.RenderRoot {
   _BrowserRoot(HtmlElement container) :
     this.eltCache = new _ElementCache(container),
     super(_rootIdCounter++) {
-    theme.defineElements($);
+    theme.addTags($);
   }
 
   @override

@@ -29,5 +29,5 @@ class _MarkdownEditor extends Widget<MarkdownEditor, String> {
 
 main() =>
     getRoot("#container")
-      ..theme.defineWidget(MarkdownEditor, () => new _MarkdownEditor())
+      ..theme.define(MarkdownEditor, () => new _MarkdownEditor())
       ..mount(const MarkdownEditor());

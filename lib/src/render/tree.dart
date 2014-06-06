@@ -61,14 +61,14 @@ abstract class _Node<V extends View> {
 /// To simulate mixed-content HTML, we render the text inside a <span>,
 /// so that it can easily be updated using its data-path attribute.
 class _TextNode extends _Node<_TextView> {
-  _TextNode(String path, int depth, _TextView node) : super(path, depth, node);
+  _TextNode(String path, int depth, _TextView view) : super(path, depth, view);
 }
 
 /// A node for a rendered HTML element.
 class _ElementNode extends _Node<ElementView> {
   // May be a List<_Node>, String, or RawHtml.
   var children;
-  _ElementNode(String path, int depth, View node) : super(path, depth, node);
+  _ElementNode(String path, int depth, View view) : super(path, depth, view);
 }
 
 /// A node for a expanded template.
@@ -76,20 +76,20 @@ class _TemplateNode extends _Node<View> {
   final TemplateFunc render;
   final ShouldRenderFunc shouldRender;
   _Node shadow;
-  _TemplateNode(String path, int depth, View node, this.render, this.shouldRender) :
-    super(path, depth, node);
+  _TemplateNode(String path, int depth, View view, this.render, this.shouldRender) :
+    super(path, depth, view);
 }
 
 typedef _InvalidateWidgetFunc(_WidgetNode v);
 
 /// A node for a running widget.
 class _WidgetNode extends _Node<View> {
-  CreateWidgetFunc createWidget;
+  Widget widget;
   WidgetController controller;
   _Node shadow;
 
-  _WidgetNode(String path, int depth, View node, this.createWidget) :
-    super(path, depth, node);
+  _WidgetNode(String path, int depth, View view, this.widget) :
+    super(path, depth, view);
 
   @override
   View updateProps(View next) {

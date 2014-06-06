@@ -6,10 +6,12 @@ class HelloMessage extends View {
   const HelloMessage({this.name});
 }
 
-renderHello(HelloMessage props) => $.Div(inner: "Hello ${props.name}");
+final template = new Template(HelloMessage,
+    (props) => $.Div(inner: "Hello ${props.name}")
+);
 
 main() =>
     getRoot("#container")
-        ..theme.defineTemplate(HelloMessage, renderHello)
+        ..theme.add(template)
         ..mount(const HelloMessage(name: "World"));
 

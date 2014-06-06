@@ -1,4 +1,4 @@
-part of theme;
+part of widget;
 
 /// A Widget implements a tag that can change after being rendered.
 ///
@@ -13,13 +13,16 @@ part of theme;
 /// A Widget may access the DOM by rendering an element tag with its "ref"
 /// property set. The DOM will be available during callbacks
 /// for [didRender] and [willUnmount] events.
-abstract class Widget<V extends View,S> extends StateMixin<S> {
+abstract class Widget<V extends View,S> extends StateMixin<S> implements Viewer {
   V props;
 
   final _didMount = new StreamController.broadcast();
   final _didRender = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
   var _invalidate; // non-null when mounted
+
+  @override
+  get viewType => props.type;
 
   /// Initializes the widget.
   /// Called automatically when the associated node is first rendered.

@@ -39,27 +39,28 @@ abstract class RenderRoot {
   /// rendered tag tree.
   void dispatchEvent(HandlerEvent e) => _dispatch(e, _handlers);
 
-  _Node _makeNode(String path, int depth, View node) {
-    assert(node.checked());
+  _Node _makeNode(String path, int depth, View view) {
+    assert(view.checked());
 
-    if (node is _TextView) {
-      return new _TextNode(path, depth, node);
+    if (view is _TextView) {
+      return new _TextNode(path, depth, view);
     }
 
-    Binding def = theme.tagDefs[node.type];
-    if (def == null) {
-      throw "tag not defined in theme: ${node.type}";
+    ViewerFunc provider = theme.viewers[view.type];
+    if (provider == null) {
+      throw "theme has no viewer for this type: ${view.type}";
     }
 
-    if (def is ElementBinding) {
-      return new _ElementNode(path, depth, node);
-    } else if (def is TemplateBinding) {
-      return new _TemplateNode(path, depth, node, def.render, def.shouldRender);
-    } else if (def is WidgetBinding) {
-      return new _WidgetNode(path, depth, node, def.create);
+    Viewer viewer = provider();
+    if (viewer is ElementType) {
+      return new _ElementNode(path, depth, view);
+    } else if (viewer is Template) {
+      return new _TemplateNode(path, depth, view, viewer.render, viewer.shouldRender);
+    } else if (viewer is Widget) {
+      return new _WidgetNode(path, depth, view, viewer);
     }
 
-    throw "unknown TagDef type: ${def.runtimeType}";
+    throw "unknown viewer type: ${viewer.runtimeType}";
   }
 
   /// Schedules a widget to be updated just before rendering the next frame.
