@@ -6,11 +6,13 @@ typedef View TemplateFunc(View node);
 /// A function that returns true when a template needs to be re-rendered.
 typedef bool ShouldRenderFunc(View before, View after);
 
+bool _always(before, after) => true;
+
 typedef Widget CreateWidgetFunc();
 
 /// A module that contains tag implementations.
 class Theme {
-  final tagDefs = <dynamic, TagDef>{};
+  final tagDefs = <dynamic, Binding>{};
 
   Theme([TagSet tags]) {
     if (tags != null) {
@@ -26,38 +28,36 @@ class Theme {
 
   /// Redefines a tag so it renders as a single HTML element.
   void defineElement(ElementType type) {
-    tagDefs[type] = new ElementDef(type);
+    tagDefs[type] = new ElementBinding(type);
   }
 
   /// Redefines a tag so it renders by expanding a template.
   void defineTemplate(tag, TemplateFunc render, {ShouldRenderFunc shouldRender: _always}) {
-    tagDefs[tag] = new TemplateDef(render, shouldRender);
+    tagDefs[tag] = new TemplateBinding(render, shouldRender);
   }
 
   /// Redefines a tag so it renders by either starting or reconfiguring a Widget.
   void defineWidget(tag, CreateWidgetFunc createWidget) {
-    tagDefs[tag] = new WidgetDef(createWidget);
+    tagDefs[tag] = new WidgetBinding(createWidget);
   }
 }
 
-abstract class TagDef {
-  const TagDef();
+abstract class Binding {
+  const Binding();
 }
 
-bool _always(before, after) => true;
-
-class ElementDef extends TagDef {
+class ElementBinding extends Binding {
   final ElementType type;
-  const ElementDef(this.type);
+  const ElementBinding(this.type);
 }
 
-class TemplateDef extends TagDef {
+class TemplateBinding extends Binding {
   final TemplateFunc render;
   final ShouldRenderFunc shouldRender;
-  const TemplateDef(this.render, [this.shouldRender = _always]);
+  const TemplateBinding(this.render, [this.shouldRender = _always]);
 }
 
-class WidgetDef extends TagDef {
+class WidgetBinding extends Binding {
   final CreateWidgetFunc create;
-  const WidgetDef(CreateWidgetFunc this.create);
+  const WidgetBinding(CreateWidgetFunc this.create);
 }

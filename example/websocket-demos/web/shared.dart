@@ -4,7 +4,7 @@ import "package:tagtree/core.dart";
 
 class TextFile extends View {
   @override
-  get tag => "TextFile";
+  get jsonTag => "TextFile";
 
   final List<String> lines;
   const TextFile({this.lines});

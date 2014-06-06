@@ -46,16 +46,16 @@ abstract class RenderRoot {
       return new _TextNode(path, depth, node);
     }
 
-    TagDef def = theme.tagDefs[node.tag];
+    Binding def = theme.tagDefs[node.type];
     if (def == null) {
-      throw "tag not defined in theme: ${node.tag}";
+      throw "tag not defined in theme: ${node.type}";
     }
 
-    if (def is ElementDef) {
+    if (def is ElementBinding) {
       return new _ElementNode(path, depth, node, def.type);
-    } else if (def is TemplateDef) {
+    } else if (def is TemplateBinding) {
       return new _TemplateNode(path, depth, node, def.render, def.shouldRender);
-    } else if (def is WidgetDef) {
+    } else if (def is WidgetBinding) {
       return new _WidgetNode(path, depth, node, def.create);
     }
 
@@ -96,7 +96,7 @@ abstract class RenderRoot {
 }
 
 class _TextView extends View {
-  get tag => "__TextView";
+  get type => "__TextView";
   final String value;
   const _TextView(this.value);
 }

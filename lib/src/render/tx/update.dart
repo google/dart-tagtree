@@ -16,7 +16,7 @@ abstract class _Update extends _Mount with _Unmount {
   // unmounted and a new node tree will be created.
   // Either way, updates the DOM and returns the new node tree.
   _Node updateOrReplace(_Node current, View toRender) {
-    if (current.view.tag == toRender.tag) {
+    if (current.view.type == toRender.type) {
       _updateInPlace(current, toRender);
       return current;
     } else {
@@ -140,7 +140,7 @@ abstract class _Update extends _Mount with _Unmount {
   /// (Postcondition: _children and _childText are updated.)
   void _updateInner(_ElementNode elt) {
     String path = elt.path;
-    var newInner = elt.props["inner"];
+    var newInner = elt.view.inner;
 
     if (newInner == null) {
       unmountInner(elt);

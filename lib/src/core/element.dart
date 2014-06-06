@@ -12,16 +12,22 @@ class ElementView implements View {
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  ElementType get tag => props.tag;
+  ElementType get type => props.type;
 
   @override
-  get jsonTag => props.tag.htmlTag;
+  get jsonTag => props.type.htmlTag;
 
   @override
   get propsImpl => throw "not implemented"; // not needed
 
   @override
   get ref => props["ref"];
+
+  String get htmlTag => props.type.htmlTag;
+
+  /// The children of this element, or null if none.
+  /// (May be an Iterator<View>, a View, a String, or a RawHtml.)
+  get inner => props["inner"];
 }
 
 /// Represents raw (unsanitized) HTML.
@@ -71,8 +77,9 @@ class ElementType {
   /// Creates a view that will render as this HTML element.
   /// The map must only contain properties listed in [propTypes].
   View makeView(Map<String, dynamic> propMap) {
-    assert(checkProps(propMap));
-    return new ElementView._raw(new PropsMap(this, propMap));
+    View v = new ElementView._raw(new PropsMap(this, propMap));
+    assert(checkView(v));
+    return v;
   }
 
   /// A description of each property that may be passed to [makeView].
@@ -120,8 +127,9 @@ class ElementType {
 
   /// Checks that a new ElementView only has the properties that it's allowed.
   /// (Called automatically on view creation when Dart is running in checked mode.)
-  bool checkProps(Map<String, dynamic> props) {
-    assert(props != null);
+  bool checkView(View v) {
+    assert(v != null);
+    PropsMap props = v.props;
 
     // Checks that each key and value is allowed.
     var byName = propsByName;

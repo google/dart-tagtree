@@ -10,6 +10,6 @@ final exportedTags = new HtmlTagSet()
 
 main() =>
     getRoot("#view")
-        ..theme.defineTemplate("TextFile", renderTextFile)
+        ..theme.defineTemplate(TextFile, renderTextFile)
         ..theme.defineWidget(Slot, () => new SlotWidget())
         ..mount(new Slot(src: "ws://localhost:8080/ws", export: exportedTags));

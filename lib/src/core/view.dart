@@ -2,7 +2,7 @@ part of core;
 
 /// A View is a node in a tree that will be rendered to HTML.
 ///
-/// Each View has a [tag] that plays a role similar to an HTML tag.
+/// Each View has a [type] that plays a role similar to an HTML tag.
 /// A tree of views (a "tag tree") is somewhat like a tree of HTML elements.
 /// However, some views are rendered by expanding a template or by creating
 /// a Widget (based on a Theme).
@@ -29,18 +29,17 @@ abstract class View implements Jsonable {
   /// called before a View is rendered or sent over the network.
   bool checked() => true;
 
-  /// The tag serves as a unique key for finding its implementation
-  /// on a theme. It may be any type. If it's a string, it will be
-  /// used for the [jsonTag].
+  /// The type serves as the key for finding a view's implementation
+  /// in a theme. It may be any type that works as a Map key.
   /// By default it's the same as [runtimeType].
-  get tag => runtimeType;
+  get type => runtimeType;
 
   /// Returns the tag and properties of the node, in the form suitable
-  /// for reflective access and for sending it across the network.)
+  /// for reflective access and for sending it across the network.
   PropsMap get props {
     var p = _propsCache[this];
     if (p == null) {
-      p = new PropsMap(tag, propsImpl);
+      p = new PropsMap(type, propsImpl);
       _propsCache[p] = p;
     }
     return p;
@@ -51,12 +50,12 @@ abstract class View implements Jsonable {
   /// A property may contain JSON data (including other Jsonable nodes)
   /// or a [HandlerFunc].
   ///
-  /// A node's children may be stored in any prop. By convention,
-  /// they are usually stored in its "inner" prop.
-  Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${tag}";
+  /// A node's children may be stored in any field. By convention,
+  /// they are usually stored in its "inner" field.
+  Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${type}";
 
   @override
-  String get jsonTag => (tag is String) ? tag : null;
+  String get jsonTag => throw "jsonTag not implemented";
 
   /// If non-null, the DOM element corresponding to this node will be placed
   /// in the ref when it's first rendered.
@@ -68,10 +67,10 @@ abstract class View implements Jsonable {
 
 /// An alternate representation of a [View].
 class PropsMap extends UnmodifiableMapBase<String, dynamic> {
-  final tag;
+  final type;
   final Map<String, dynamic> _map;
 
-  PropsMap(this.tag, this._map);
+  PropsMap(this.type, this._map);
 
   /// Returns the key of each property.
   @override
