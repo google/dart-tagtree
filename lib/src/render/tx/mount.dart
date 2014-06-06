@@ -68,7 +68,7 @@ abstract class _Mount {
   void _expandElement(_ElementNode elt, StringBuffer out) {
     _writeStartTag(out, elt);
 
-    if (elt.view.tag == "textarea") {
+    if (elt.view.tag.htmlTag == "textarea") {
       String val = elt.props["defaultValue"];
       if (val != null) {
         out.write(HTML_ESCAPE.convert(val));
@@ -77,15 +77,15 @@ abstract class _Mount {
       expandInner(elt, out, elt.props["inner"]);
     }
 
-    out.write("</${elt.view.tag}>");
+    out.write("</${elt.view.tag.htmlTag}>");
 
-    if (elt.view.tag == "form") {
+    if (elt.view.tag.htmlTag == "form") {
       _mountedForms.add(elt);
     }
   }
 
   void _writeStartTag(StringBuffer out, _ElementNode elt) {
-    out.write("<${elt.view.tag} data-path=\"${elt.path}\"");
+    out.write("<${elt.view.tag.htmlTag} data-path=\"${elt.path}\"");
     for (String key in elt.props.keys) {
       var type = elt.type.propsByName[key];
       var val = elt.props[key];

@@ -26,7 +26,7 @@ class Theme {
 
   /// Redefines a tag so it renders as a single HTML element.
   void defineElement(ElementType type) {
-    tagDefs[type.tag] = new ElementDef(type);
+    tagDefs[type] = new ElementDef(type);
   }
 
   /// Redefines a tag so it renders by expanding a template.

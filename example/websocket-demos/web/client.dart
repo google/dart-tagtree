@@ -6,7 +6,7 @@ renderTextFile(TextFile view) =>
     $.Pre(inner: view.lines.join("\n"));
 
 final exportedTags = new HtmlTagSet()
-  ..defineTag("TextFile", (m) => new TextFile.fromMap(m));
+  ..export("TextFile", (m) => new TextFile.fromMap(m));
 
 main() =>
     getRoot("#view")

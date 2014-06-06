@@ -37,10 +37,10 @@ abstract class View implements Jsonable {
 
   /// Returns the tag and properties of the node, in the form suitable
   /// for reflective access and for sending it across the network.)
-  Props get props {
+  PropsMap get props {
     var p = _propsCache[this];
     if (p == null) {
-      p = new Props(tag, propsImpl);
+      p = new PropsMap(tag, propsImpl);
       _propsCache[p] = p;
     }
     return p;
@@ -63,21 +63,21 @@ abstract class View implements Jsonable {
   /// (Only works client-side; see browser.Ref).
   get ref => null;
 
-  static final _propsCache = new Expando<Props>();
+  static final _propsCache = new Expando<PropsMap>();
 }
 
 /// An alternate representation of a [View].
-class Props extends UnmodifiableMapBase<String, dynamic> {
-  final String tag;
-  final Map<String, dynamic> propsMap;
+class PropsMap extends UnmodifiableMapBase<String, dynamic> {
+  final tag;
+  final Map<String, dynamic> _map;
 
-  Props(this.tag, this.propsMap);
+  PropsMap(this.tag, this._map);
 
   /// Returns the key of each property.
   @override
-  Iterable<String> get keys => propsMap.keys;
+  Iterable<String> get keys => _map.keys;
 
   /// Returns the value of a property.
   @override
-  operator[](String key) => propsMap[key];
+  operator[](String key) => _map[key];
 }

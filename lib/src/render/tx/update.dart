@@ -92,16 +92,16 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  void _renderElt(_ElementNode elt, Props oldProps) {
+  void _renderElt(_ElementNode elt, PropsMap oldProps) {
     _updateDomProperties(elt, oldProps);
     _updateInner(elt);
   }
 
   /// Updates DOM attributes and event handlers of an Elt.
-  void _updateDomProperties(_ElementNode elt, Props oldProps) {
+  void _updateDomProperties(_ElementNode elt, PropsMap oldProps) {
     ElementType tag = elt.type;
     String path = elt.path;
-    Props newProps = elt.view.props;
+    PropsMap newProps = elt.view.props;
 
     // Delete any removed props
     for (String key in oldProps.keys) {

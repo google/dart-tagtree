@@ -4,27 +4,24 @@ part of core;
 /// Constructed via [ElementType.makeView].
 class ElementView implements View {
   @override
-  final Props props;
-  final ElementType type;
+  final PropsMap props;
 
-  const ElementView._raw(this.props, this.type);
+  const ElementView._raw(this.props);
 
   @override
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  get tag => props.tag;
+  ElementType get tag => props.tag;
 
   @override
-  get jsonTag => props.tag;
+  get jsonTag => props.tag.htmlTag;
 
   @override
-  get propsImpl => props.propsMap;
+  get propsImpl => throw "not implemented"; // not needed
 
   @override
   get ref => props["ref"];
-
-  static final _checked = new Expando<bool>();
 }
 
 /// Represents raw (unsanitized) HTML.
@@ -45,8 +42,7 @@ class ElementType {
   final Symbol method;
 
   /// The name of the HTML element that TagTree will render.
-  /// It's also the ElementView's tag.
-  final String tag;
+  final String htmlTag;
 
   final List<PropType> _props1;
   final List<PropType> _props2;
@@ -55,14 +51,14 @@ class ElementType {
   /// As a convenience, the element's property types may be passed in as two lists
   /// and they will automatically be concatenated.
   /// (This is because there's no way to concatenate const lists in Dart.)
-  const ElementType(this.method, this.tag, this._props1, [this._props2 = const []]);
+  const ElementType(this.method, this.htmlTag, this._props1, [this._props2 = const []]);
 
   /// Checks that the element definition is well-formed.
   /// Called automatically when [props] is accessed.
   /// (Not done in the constructor so that it can be const.)
   bool checked() {
     assert(method != null);
-    assert(tag != null);
+    assert(htmlTag != null);
     for (var p in _props1) {
       assert(p.checked());
     }
@@ -76,7 +72,7 @@ class ElementType {
   /// The map must only contain properties listed in [propTypes].
   View makeView(Map<String, dynamic> propMap) {
     assert(checkProps(propMap));
-    return new ElementView._raw(new Props(tag, propMap), this);
+    return new ElementView._raw(new PropsMap(this, propMap));
   }
 
   /// A description of each property that may be passed to [makeView].

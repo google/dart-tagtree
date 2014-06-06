@@ -3,7 +3,7 @@
  * (This library should work anywhere Dart will run, both in browsers and on servers.)
  *
  * Tag trees are built out of [View] nodes. A View's fields can often be
- * inspected by converting it to a [Props] object. Some fields may hold
+ * inspected by converting it to a [PropsMap]. Some fields may hold
  * a [HandlerFunc], which which will be called when a rendered View fires
  * a [HandlerEvent].
  *

@@ -1,14 +1,15 @@
 part of core;
 
-typedef View ViewMakerFunc(Map<String, dynamic> propsMap);
+/// A function for creating a View from its JSON properties.
+typedef View ViewDecodeFunc(Map<String, dynamic> propsMap);
 
 /// A TagSet creates views from tags and properties.
 /// It defines a set of View classes and HandlerTypes that may be sent
 /// over the network.
 class TagSet {
-  final _viewMaker = <String, ViewMakerFunc>{};
+  final _decoders = <String, ViewDecodeFunc>{};
 
-  final _methodToTag = <Symbol, String>{};
+  final _methodToJsonTag = <Symbol, String>{};
   final _paramToPropKey = <Symbol, Map<Symbol, String>>{};
 
   final _elementTypes = <String, ElementType>{};
@@ -16,14 +17,14 @@ class TagSet {
 
   /// Defines the tag and method for creating an HTML element.
   void defineElement(ElementType type) {
-    _elementTypes[type.tag] = type;
-    defineTag(type.tag, type.makeView, handlerTypes: type.handlerTypes);
-    defineMethod(type.method, type.namedParamToKey, type.tag);
+    _elementTypes[type.htmlTag] = type;
+    export(type.htmlTag, type.makeView, handlerTypes: type.handlerTypes);
+    defineMethod(type.method, type.namedParamToKey, type.htmlTag);
   }
 
-  /// Defines a tag so that its corresponding View can be created using [makeView].
-  void defineTag(String tag, ViewMakerFunc maker, {Iterable<HandlerType> handlerTypes: const []}) {
-    _viewMaker[tag] = maker;
+  /// Exports a tag so that it can be transmitted as JSON.
+  void export(String jsonTag, ViewDecodeFunc decode, {Iterable<HandlerType> handlerTypes: const []}) {
+    _decoders[jsonTag] = decode;
     for (HandlerType t in handlerTypes) {
       _handlerTypes[t.propKey] = t;
     }
@@ -35,12 +36,12 @@ class TagSet {
    assert(method != null);
    assert(namedParams != null);
    assert(tagToCreate != null);
-   assert(_viewMaker[tagToCreate] != null);
-    _methodToTag[method] = tagToCreate;
+   assert(_decoders[tagToCreate] != null);
+    _methodToJsonTag[method] = tagToCreate;
     _paramToPropKey[method] = namedParams;
   }
 
-  Iterable<String> get tags => _viewMaker.keys;
+  Iterable<String> get jsonTags => _decoders.keys;
 
   /// Returns the types of all the element tags included in this set.
   Iterable<ElementType> get elementTypes => _elementTypes.values;
@@ -48,10 +49,8 @@ class TagSet {
   /// Returns the types of all the handlers used by tags in this set.
   Iterable<HandlerType> get handlerTypes => _handlerTypes.values;
 
-  ViewMakerFunc getMaker(String tag) => _viewMaker[tag];
-
-  View makeView(String tag, Map<String, dynamic> propsMap) =>
-      _viewMaker[tag](propsMap);
+  /// Returns the JSON decoder for a tag.
+  ViewDecodeFunc getDecoder(String jsonTag) => _decoders[jsonTag];
 
   /// Creates a codec for sending and receiving [View]s and
   /// [HandlerCall]s. Whenever a Handler is received,
@@ -63,7 +62,7 @@ class TagSet {
   /// Tags may also be created by calling a method with the same name.
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {
-      String tag = _methodToTag[inv.memberName];
+      String tag = _methodToJsonTag[inv.memberName];
       if (tag != null) {
         if (!inv.positionalArguments.isEmpty) {
           throw "positional arguments not supported when creating tags";
@@ -73,7 +72,7 @@ class TagSet {
         for (Symbol name in inv.namedArguments.keys) {
           propsMap[toKey[name]] = inv.namedArguments[name];
         }
-        return makeView(tag, propsMap);
+        return getDecoder(tag)(propsMap);
       }
     }
     return super.noSuchMethod(inv);

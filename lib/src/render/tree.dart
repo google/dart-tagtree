@@ -41,7 +41,7 @@ abstract class _Node<V extends View> {
   bool get mounted => view != null;
 
   /// The props that were most recently rendered.
-  Props get props => view.props;
+  PropsMap get props => view.props;
 
   View updateProps(View newView) {
     assert(view != null);
@@ -65,7 +65,7 @@ class _TextNode extends _Node<_TextView> {
 }
 
 /// A node for a rendered HTML element.
-class _ElementNode extends _Node<View> {
+class _ElementNode extends _Node<ElementView> {
   final ElementType type;
   // Non-null if the element has at least one non-text child.
   List<_Node> _children;

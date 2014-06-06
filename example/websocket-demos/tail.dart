@@ -12,7 +12,7 @@ import "package:tagtree/server.dart";
 import "web/shared.dart";
 
 final $ = new HtmlTagSet()
-  ..defineTag("TextFile", (propsMap) => new TextFile.fromMap(propsMap));
+  ..export("TextFile", (propsMap) => new TextFile.fromMap(propsMap));
 
 main(List<String> args) {
   if (args.length == 0) {
