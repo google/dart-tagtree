@@ -43,9 +43,6 @@ class RawHtml implements Jsonable {
 /// The structure of an HTML element, as represented by an [ElementView].
 class ElementType implements Viewer {
 
-  @override
-  get viewType => this;
-
   /// The name of the [TagSet] method that will create this element.
   /// (See [namedParamToKey] for the named parameters it will have.)
   final Symbol method;
@@ -80,7 +77,7 @@ class ElementType implements Viewer {
   /// Creates a view that will render as this HTML element.
   /// The map must only contain properties listed in [propTypes].
   View makeView(Map<String, dynamic> propMap) {
-    View v = new ElementView._raw(new PropsMap(this, propMap));
+    var v = new ElementView._raw(new PropsMap(this, propMap));
     assert(checkView(v));
     return v;
   }
@@ -130,7 +127,7 @@ class ElementType implements Viewer {
 
   /// Checks that a new ElementView only has the properties that it's allowed.
   /// (Called automatically on view creation when Dart is running in checked mode.)
-  bool checkView(View v) {
+  bool checkView(ElementView v) {
     assert(v != null);
     PropsMap props = v.props;
 
@@ -138,7 +135,7 @@ class ElementType implements Viewer {
     var byName = propsByName;
     for (String key in props.keys) {
       if (!byName.containsKey(key)) {
-        throw "property not supported: ${key}";
+        throw "property not supported: ${key} in ${v.htmlTag}";
       }
       byName[key].checkValue(props[key]);
     }

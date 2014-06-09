@@ -36,7 +36,10 @@ abstract class _Node<V extends View> {
   /// The view that was most recently rendered into this node.
   V view;
 
-  _Node(this.path, this.depth, this.view);
+  // The theme that was used to render this node, or null if it doesn't depend on a theme.
+  Theme theme;
+
+  _Node(this.path, this.depth, this.view, this.theme);
 
   bool get mounted => view != null;
 
@@ -61,14 +64,14 @@ abstract class _Node<V extends View> {
 /// To simulate mixed-content HTML, we render the text inside a <span>,
 /// so that it can easily be updated using its data-path attribute.
 class _TextNode extends _Node<_TextView> {
-  _TextNode(String path, int depth, _TextView view) : super(path, depth, view);
+  _TextNode(String path, int depth, _TextView view, Theme theme) : super(path, depth, view, theme);
 }
 
 /// A node for a rendered HTML element.
 class _ElementNode extends _Node<ElementView> {
   // May be a List<_Node>, String, or RawHtml.
   var children;
-  _ElementNode(String path, int depth, View view) : super(path, depth, view);
+  _ElementNode(String path, int depth, View view, Theme theme) : super(path, depth, view, theme);
 }
 
 /// A node for a expanded template.
@@ -76,8 +79,8 @@ class _TemplateNode extends _Node<View> {
   final TemplateFunc render;
   final ShouldRenderFunc shouldRender;
   _Node shadow;
-  _TemplateNode(String path, int depth, View view, this.render, this.shouldRender) :
-    super(path, depth, view);
+  _TemplateNode(String path, int depth, View view, Theme theme, this.render, this.shouldRender) :
+    super(path, depth, view, theme);
 }
 
 typedef _InvalidateWidgetFunc(_WidgetNode v);
@@ -88,8 +91,8 @@ class _WidgetNode extends _Node<View> {
   WidgetController controller;
   _Node shadow;
 
-  _WidgetNode(String path, int depth, View view, this.widget) :
-    super(path, depth, view);
+  _WidgetNode(String path, int depth, View view, Theme theme, this.widget) :
+    super(path, depth, view, theme);
 
   @override
   View updateProps(View next) {

@@ -1,48 +1,41 @@
 part of core;
 
-typedef Viewer ViewerFunc();
+typedef Viewer ConstructViewerFunc();
 
-/// A Theme is a set of [Viewer]s.
+/// A Theme constructs the appropriate [Viewer] for each [View].
 class Theme {
   /// A map from a type to a Viewer or MakeViewerFunc
-  final viewers = <dynamic, ViewerFunc>{};
+  final viewers = <dynamic, ConstructViewerFunc>{};
 
   Theme([TagSet tags]) {
     if (tags != null) {
-      addTags(tags);
+      defineElements(tags);
     }
   }
 
-  void addTags(TagSet tags) {
+  /// Sets the function that will create the Viewer for a View.
+  /// (If the View already had a definition, it will be replaced.)
+  void define(type, ConstructViewerFunc constructor) {
+    viewers[type] = constructor;
+  }
+
+  /// Defines all element tags in a TagSet to render to themselves.
+  void defineElements(TagSet tags) {
     for (var elt in tags.elementTypes) {
-      add(elt);
+      define(elt, () => elt);
     }
-  }
-
-  /// Adds a Viewer to the theme. If there was previously a viewer for
-  /// the same view type, it is replaced.
-  void add(Viewer viewer) {
-    define(viewer.viewType, () => viewer);
-  }
-
-  /// Adds a function that will provide the Viewer when needed.
-  void define(type, ViewerFunc maker) {
-    viewers[type] = maker;
   }
 }
 
-/// An implementation of all Views of a given type.
 abstract class Viewer {
-  /// The viewer matches a view if [View.type] matches this key.
-  final viewType;
-  const Viewer(this.viewType);
+  const Viewer();
 }
 
 /// A Template renders a view by substituting another View.
 class Template extends Viewer {
   final TemplateFunc render;
   final ShouldRenderFunc shouldRender;
-  const Template(type, this.render, {this.shouldRender: _always}) : super(type);
+  const Template(this.render, {this.shouldRender: _always});
 }
 
 /// A function that expands a template node to its replacement.

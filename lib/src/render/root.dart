@@ -7,12 +7,13 @@ typedef _Node _MakeNodeFunc(String path, int depth, View node);
 /// A RenderRoot is a place on an HTML page where a tag tree may be rendered.
 abstract class RenderRoot {
   final int id;
-  Theme theme = new Theme();
   final _handlers = new _HandlerMap();
   _Node _renderedTree;
+  Theme _renderedTheme;
 
   bool _frameRequested = false;
   View _nextTagTree;
+  Theme _nextTheme;
   final Set<_WidgetNode> _widgetsToUpdate = new Set();
 
   RenderRoot(this.id);
@@ -30,8 +31,9 @@ abstract class RenderRoot {
   /// Sets the tag tree to be rendered on the next animation frame.
   /// (If called more than once between two frames, only the last call will
   /// have any effect.)
-  void mount(View nextTagTree) {
+  void mount(View nextTagTree, Theme nextTheme) {
     _nextTagTree = nextTagTree;
+    _nextTheme = nextTheme;
     _requestAnimationFrame();
   }
 
@@ -39,25 +41,25 @@ abstract class RenderRoot {
   /// rendered tag tree.
   void dispatchEvent(HandlerEvent e) => _dispatch(e, _handlers);
 
-  _Node _makeNode(String path, int depth, View view) {
+  _Node _makeNode(String path, int depth, View view, Theme theme) {
     assert(view.checked());
 
     if (view is _TextView) {
-      return new _TextNode(path, depth, view);
+      return new _TextNode(path, depth, view, theme);
     }
 
-    ViewerFunc provider = theme.viewers[view.type];
+    ConstructViewerFunc provider = theme.viewers[view.type];
     if (provider == null) {
       throw "theme has no viewer for this type: ${view.type}";
     }
 
     Viewer viewer = provider();
     if (viewer is ElementType) {
-      return new _ElementNode(path, depth, view);
+      return new _ElementNode(path, depth, view, theme);
     } else if (viewer is Template) {
-      return new _TemplateNode(path, depth, view, viewer.render, viewer.shouldRender);
+      return new _TemplateNode(path, depth, view, theme, viewer.render, viewer.shouldRender);
     } else if (viewer is Widget) {
-      return new _WidgetNode(path, depth, view, viewer);
+      return new _WidgetNode(path, depth, view, theme, viewer);
     }
 
     throw "unknown viewer type: ${viewer.runtimeType}";
@@ -79,10 +81,12 @@ abstract class RenderRoot {
   }
 
   void _render(DomUpdater dom) {
-    _Transaction tx = new _Transaction(this, dom, _handlers, _nextTagTree, _widgetsToUpdate);
+    _Transaction tx =
+        new _Transaction(this, dom, _handlers, _nextTagTree, _nextTheme, _widgetsToUpdate);
 
     _frameRequested = false;
     _nextTagTree = null;
+    _nextTheme = null;
     _widgetsToUpdate.clear();
 
     bool wasEmpty = _renderedTree == null;

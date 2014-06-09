@@ -50,6 +50,9 @@ abstract class HtmlTags {
   View Td({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
+  View A({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner,
+    href});
   View Img({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height, src});
@@ -60,14 +63,23 @@ abstract class HtmlTags {
   View Form({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
     inner});
+  View FieldSet({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner});
+  View Legend({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    inner});
+  View Label({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, forr,
+    inner});
   View Input({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
-    value, defaultValue, type, min, max});
+    value, defaultValue, placeholder, type, min, max});
   View TextArea({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue});
   View Button({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, type,
     inner});
 }
 
@@ -76,32 +88,35 @@ final List<ElementType> _htmlTags = () {
   const leafGlobalProps = const [
     const AttributeType(#id, "id"),
     const AttributeType(#clazz, "class"),
+    const PropType(#ref, "ref"),
     onClick,
     onMouseDown,
     onMouseOver,
     onMouseUp,
     onMouseOut,
-    const PropType(#ref, "ref"),
   ];
 
   const globalProps = const [
     const AttributeType(#id, "id"),
     const AttributeType(#clazz, "class"),
+    const PropType(#ref, "ref"),
     onClick,
     onMouseDown,
     onMouseOver,
     onMouseUp,
     onMouseOut,
-    const PropType(#ref, "ref"),
     const MixedContentType(#inner, "inner"),
   ];
 
+  const href = const AttributeType(#href, "href");
   const src = const AttributeType(#src, "src");
   const width = const AttributeType(#width, "width");
   const height = const AttributeType(#height, "height");
   const type = const AttributeType(#type, "type");
   const value = const AttributeType(#value, "value");
   const defaultValue = const PropType(#defaultValue, "defaultValue");
+  const placeholder = const AttributeType(#placeholder, "placeholder");
+  const forr = const AttributeType(#forr, "for");
   const min = const AttributeType(#min, "min");
   const max = const AttributeType(#max, "max");
 
@@ -125,14 +140,18 @@ final List<ElementType> _htmlTags = () {
     const ElementType(#Tr, "tr", globalProps),
     const ElementType(#Td, "td", globalProps),
 
+    const ElementType(#A, "a", globalProps, const [href]),
     const ElementType(#Img, "img", leafGlobalProps, const [width, height, src]),
     const ElementType(#Canvas, "canvas", leafGlobalProps, const [width, height]),
 
     const ElementType(#Form, "form", globalProps, const [onSubmit]),
+    const ElementType(#FieldSet, "fieldset", globalProps),
+    const ElementType(#Legend, "legend", globalProps),
+    const ElementType(#Label, "label", globalProps, const [forr]),
     const ElementType(#Input, "input", leafGlobalProps,
-        const [onChange, value, defaultValue, type, min, max]),
+        const [onChange, value, defaultValue, placeholder, type, min, max]),
     const ElementType(#TextArea, "textarea", leafGlobalProps, const [onChange, value, defaultValue]),
-    const ElementType(#Button, "button", globalProps)
+    const ElementType(#Button, "button", globalProps, const [type])
   ];
 
   return allTypes;

@@ -103,23 +103,22 @@ class RowView extends View {
 
   const RowView({this.y, this.row, this.palette,
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
-
-  static final template = new Template(RowView,
-      (RowView rv) {
-        var cells = [];
-        for (int x = 0; x < rv.row.width; x++) {
-          int pixel = rv.row[x];
-          cells.add($.Td(clazz: rv.palette[pixel],
-              onMouseDown: (_) => rv.onMouseDown(x, rv.y),
-              onMouseOver: (_) => rv.onMouseOver(x, rv.y),
-              onMouseUp: (_) => rv.onMouseUp()));
-        }
-        return $.Tr(inner: cells);
-    },
-    /// Avoid redrawing a row that hasn't changed. (The key to good performance!)
-    shouldRender: (RowView before, RowView after) => !before.row.equals(after.row)
-  );
 }
+
+final rowViewTemplate = new Template((RowView rv) {
+    var cells = [];
+    for (int x = 0; x < rv.row.width; x++) {
+      int pixel = rv.row[x];
+      cells.add($.Td(clazz: rv.palette[pixel],
+          onMouseDown: (_) => rv.onMouseDown(x, rv.y),
+          onMouseOver: (_) => rv.onMouseOver(x, rv.y),
+          onMouseUp: (_) => rv.onMouseUp()));
+    }
+    return $.Tr(inner: cells);
+  },
+  /// Avoid redrawing a row that hasn't changed. (The key to good performance!)
+  shouldRender: (RowView before, RowView after) => !before.row.equals(after.row)
+);
 
 //
 // Model
@@ -196,13 +195,16 @@ class Row {
 // Put it all together.
 //
 
+final app = const PixelPaintApp(
+    width: 50,
+    height: 50,
+    palette: const ["black", "white"]);
+
 final theme = new Theme($)
     ..define(PixelPaintApp, () => new _PixelPaint())
     ..define(GridView, () => new _GridView())
-    ..add(RowView.template);
+    ..define(RowView, () => rowViewTemplate);
 
-main() => getRoot("#container")
-    ..theme = theme
-    ..mount(const PixelPaintApp(width: 50, height: 50, palette: const ["black", "white"]));
+main() => getRoot("#container").mount(app, theme);
 
 

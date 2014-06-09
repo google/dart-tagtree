@@ -70,6 +70,10 @@ class TagSet {
         var toKey = _paramToPropKey[inv.memberName];
         var propsMap = <String, dynamic>{};
         for (Symbol name in inv.namedArguments.keys) {
+          var propKey = toKey[name];
+          if (propKey == null) {
+            throw "no property found for ${name} in ${tag}";
+          }
           propsMap[toKey[name]] = inv.namedArguments[name];
         }
         return getDecoder(tag)(propsMap);

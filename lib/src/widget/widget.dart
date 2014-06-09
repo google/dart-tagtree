@@ -21,9 +21,6 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Viewer 
   final _willUnmount = new StreamController.broadcast();
   var _invalidate; // non-null when mounted
 
-  @override
-  get viewType => props.type;
-
   /// Initializes the widget.
   /// Called automatically when the associated node is first rendered.
   WidgetController mount(V view, invalidate()) {

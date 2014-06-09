@@ -15,9 +15,9 @@ abstract class _Update extends _Mount with _Unmount {
   // The node tree will either be updated in place, or it will
   // unmounted and a new node tree will be created.
   // Either way, updates the DOM and returns the new node tree.
-  _Node updateOrReplace(_Node current, View toRender) {
-    if (current.view.type == toRender.type) {
-      _updateInPlace(current, toRender);
+  _Node updateOrReplace(_Node current, View toRender, Theme nextTheme) {
+    if (current.view.type == toRender.type && current.theme == nextTheme) {
+      _updateInPlace(current, toRender, nextTheme);
       return current;
     } else {
       String path = current.path;
@@ -25,7 +25,7 @@ abstract class _Update extends _Mount with _Unmount {
       unmount(current, willReplace: true);
 
       var html = new StringBuffer();
-      _Node result = mountView(toRender, html, path, depth);
+      _Node result = mountView(toRender, nextTheme, html, path, depth);
       dom.replaceElement(path, html.toString());
       return result;
     }
@@ -40,10 +40,11 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   /// Updates a node tree in place, by expanding a View.
+  /// Assumes the node's theme didn't change.
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void _updateInPlace(_Node node, View toRender) {
+  void _updateInPlace(_Node node, View toRender, Theme nextTheme) {
     View old = node.updateProps(toRender);
 
     if (node is _TemplateNode) {
@@ -67,7 +68,7 @@ abstract class _Update extends _Mount with _Unmount {
       return;
     }
     View newShadow = node.render(node.view);
-    node.shadow = updateOrReplace(node.shadow, newShadow);
+    node.shadow = updateOrReplace(node.shadow, newShadow, node.theme);
   }
 
   void _renderWidget(_WidgetNode node, View oldView, oldState) {
@@ -77,7 +78,7 @@ abstract class _Update extends _Mount with _Unmount {
 
     var c = node.controller;
     View newShadow = c.widget.render();
-    node.shadow = updateOrReplace(node.shadow, newShadow);
+    node.shadow = updateOrReplace(node.shadow, newShadow, node.theme);
 
     // Schedule events.
     if (c.didRender.hasListener) {
@@ -200,7 +201,7 @@ abstract class _Update extends _Mount with _Unmount {
       View after = newChildren[i];
       assert(before != null);
       assert(after != null);
-      updatedChildren.add(updateOrReplace(before, after));
+      updatedChildren.add(updateOrReplace(before, after, before.theme));
     }
 
     if (addedChildCount < 0) {
@@ -220,7 +221,8 @@ abstract class _Update extends _Mount with _Unmount {
 
   _Node _mountNewChild(_ElementNode parent, View child, int childIndex) {
     var html = new StringBuffer();
-    _Node view = mountView(child, html, "${parent.path}/${childIndex}", parent.depth + 1);
+    _Node view = mountView(child, parent.theme, html,
+        "${parent.path}/${childIndex}", parent.depth + 1);
     dom.addChildElement(parent.path, html.toString());
     return view;
   }

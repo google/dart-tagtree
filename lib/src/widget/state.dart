@@ -13,7 +13,9 @@ abstract class StateMixin<S> {
   void initState() {
     assert(_state == null && _nextState == null);
     _state = createFirstState();
-    assert(_state != null);
+    if (_state == null) {
+      throw "${this}: createFirstState() shouldn't return null.";
+    }
   }
 
   /// Moves the state machine one step, clearing dirty tracking.

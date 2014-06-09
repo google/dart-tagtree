@@ -1,9 +1,11 @@
 import 'package:tagtree/browser.dart';
+import 'package:tagtree/core.dart';
 
 var text = "Click me!";
 
 render() => getRoot("#container").mount(
-    $.Div(clazz: "sample_text", onClick: onClick, inner: text)
+    $.Div(clazz: "sample_text", onClick: onClick, inner: text),
+    new Theme($)
 );
 
 onClick(_) {

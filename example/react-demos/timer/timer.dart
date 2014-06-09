@@ -2,12 +2,12 @@ import 'dart:async' show Timer;
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class SecondsElapsed extends View {
-  const SecondsElapsed();
+class TimerApp extends View {
+  const TimerApp();
 }
 
-class _SecondsElapsed extends Widget<SecondsElapsed, int> {
-  _SecondsElapsed() {
+class _TimerApp extends Widget<TimerApp, int> {
+  _TimerApp() {
     var timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());
     willUnmount.listen((_) => timer.cancel());
   }
@@ -23,7 +23,7 @@ class _SecondsElapsed extends Widget<SecondsElapsed, int> {
   render() => $.Div(inner: "Seconds elapsed: ${state}");
 }
 
-main() =>
-    getRoot("#container")
-      ..theme.define(SecondsElapsed, () => new _SecondsElapsed())
-      ..mount(const SecondsElapsed());
+final theme = new Theme($)
+  ..define(TimerApp, () => new _TimerApp());
+
+main() => getRoot("#container").mount(const TimerApp(), theme);

@@ -4,7 +4,7 @@ part of render;
 abstract class _Mount {
 
   // Dependencies
-  _MakeNodeFunc makeNode;
+  _Node makeNode(String path, int depth, View view, Theme theme);
   _InvalidateWidgetFunc get invalidateWidget;
 
   // What was mounted
@@ -26,8 +26,8 @@ abstract class _Mount {
   /// view tree, not the depth in the DOM tree (like the path). For example,
   /// the root of a Widget's shadow tree has the same path, but its depth is
   /// incremented.
-  _Node mountView(View view, StringBuffer html, String path, int depth) {
-    _Node node = makeNode(path, depth, view);
+  _Node mountView(View view, Theme theme, StringBuffer html, String path, int depth) {
+    _Node node = makeNode(path, depth, view, theme);
     _expandNode(node, html, path, depth);
     if (node.view.ref != null) {
       _mountedRefs.add(node);
@@ -42,7 +42,7 @@ abstract class _Mount {
 
     } else if (node is _TemplateNode) {
       View shadowTree = node.render(node.view);
-      node.shadow = mountView(shadowTree, out, path, depth + 1);
+      node.shadow = mountView(shadowTree, node.theme, out, path, depth + 1);
 
     } else if (node is _WidgetNode) {
       var widget = node.widget;
@@ -50,7 +50,7 @@ abstract class _Mount {
       node.controller = c;
 
       View shadowTree = widget.render();
-      node.shadow = mountView(shadowTree, out, node.path, node.depth + 1);
+      node.shadow = mountView(shadowTree, node.theme, out, node.path, node.depth + 1);
 
       if (c.didRender.hasListener) {
         _mountedWidgets.add(c.didRender);
@@ -121,7 +121,7 @@ abstract class _Mount {
       out.write(inner.html);
       return inner;
     } else if (inner is View) {
-      return _mountChildren(out, elt.path, elt.depth, [inner]);
+      return _mountChildren(out, elt.path, elt.depth, [inner], elt.theme);
     } else if (inner is Iterable) {
       List<View> children = [];
       for (var item in inner) {
@@ -133,13 +133,13 @@ abstract class _Mount {
           throw "bad item in inner: ${item}";
         }
       }
-      return _mountChildren(out, elt.path, elt.depth, children);
+      return _mountChildren(out, elt.path, elt.depth, children, elt.theme);
     }
     throw "unexpected type for an element's inner field: ${inner.runtimeType}";
   }
 
   List<_Node> _mountChildren(StringBuffer out, String parentPath, int parentDepth,
-      List<View> children) {
+      List<View> children, Theme theme) {
     if (children.isEmpty) {
       return null;
     }
@@ -147,7 +147,7 @@ abstract class _Mount {
     int childDepth = parentDepth + 1;
     var result = <_Node>[];
     for (int i = 0; i < children.length; i++) {
-      result.add(mountView(children[i], out, "${parentPath}/${i}", childDepth));
+      result.add(mountView(children[i], theme, out, "${parentPath}/${i}", childDepth));
     }
     return result;
   }

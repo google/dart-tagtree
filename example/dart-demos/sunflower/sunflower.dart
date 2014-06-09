@@ -88,7 +88,9 @@ class _Sunflower extends Widget<Sunflower, int> {
   }
 }
 
+final theme = new Theme($)
+  ..define(Sunflower, () => new _Sunflower());
+
 main() =>
     getRoot("#sunflower")
-      ..theme.define(Sunflower, () => new _Sunflower())
-      ..mount(const Sunflower(startSeeds: 500, seedRadius: 2));
+      ..mount(const Sunflower(startSeeds: 500, seedRadius: 2), theme);
