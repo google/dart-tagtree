@@ -9,14 +9,18 @@ class Page extends View {
     this.content: const []});
 }
 
-final pageTemplate = new Template((Page p) {
-  var items = [];
-  if (p.menu != null) {
-    items.add(p.menu);
+class _Page extends Template {
+  const _Page();
+  @override
+  render(Page p) {
+    var items = [];
+    if (p.menu != null) {
+      items.add(p.menu);
+    }
+    items.add($.Div(clazz: "content", inner: p.content));
+    return $.Div(clazz: "main", inner: items);
   }
-  items.add($.Div(clazz: "content", inner: p.content));
-  return $.Div(clazz: "main", inner: items);
-});
+}
 
 typedef void MenuClickFunc(String item);
 
@@ -60,6 +64,8 @@ class _Menu extends Widget<Menu, String> {
 
     return $.Div(clazz: "pure-menu pure-menu-open pure-menu-horizontal", inner: items);
   }
+
+  static create() => new _Menu();
 }
 
 class LoginView extends View {
@@ -68,7 +74,12 @@ class LoginView extends View {
   const LoginView({this.email: "", this.rememberMe: false});
 }
 
-makeLoginTemplate(String formClasses) => new Template((LoginView v) =>
+class _LoginView extends Template {
+  final String formClasses;
+  const _LoginView(this.formClasses);
+
+  @override
+  render(LoginView v) =>
     $.Form(clazz: formClasses, inner:
       $.FieldSet(inner: [
         $.Input(type: "email", placeholder: "Email", defaultValue: v.email), " ",
@@ -81,15 +92,16 @@ makeLoginTemplate(String formClasses) => new Template((LoginView v) =>
         ]), " ",
         $.Button(type: "submit", clazz: "pure-button pure-button-primary", inner: "Sign in")
       ])
-    )
-);
+    );
+}
 
 Theme makeTheme(String name, String loginClasses) {
-    var loginTemplate = makeLoginTemplate(loginClasses);
-    return new Theme($)
-      ..define(Page, () => pageTemplate)
-      ..define(Menu, () => new _Menu())
-      ..define(LoginView, () => loginTemplate);
+    var _loginView = new _LoginView(loginClasses);
+    return $.elements.extend({
+        Page: const _Page(),
+        Menu: _Menu.create,
+        LoginView: _loginView
+    });
 }
 
 final themes = {

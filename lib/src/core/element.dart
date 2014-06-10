@@ -12,7 +12,7 @@ class ElementView implements View {
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  ElementType get type => props.type;
+  ElementType get tag => props.type;
 
   @override
   get jsonTag => props.type.htmlTag;

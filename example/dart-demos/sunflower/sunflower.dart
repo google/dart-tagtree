@@ -12,19 +12,16 @@ import 'dart:math';
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-const startSeeds = 500;
-const seedRadius = 2;
-
-class Sunflower extends View {
+class SunflowerApp extends View {
   final int startSeeds;
   final int seedRadius;
-  const Sunflower({this.startSeeds, this.seedRadius});
+  const SunflowerApp({this.startSeeds, this.seedRadius});
 }
 
-class _Sunflower extends Widget<Sunflower, int> {
+class _SunflowerApp extends Widget<SunflowerApp, int> {
   final canvas = new Ref<CanvasElement>();
 
-  _Sunflower() {
+  _SunflowerApp() {
     // Redraw the canvas whenever we render a frame.
     didRender.listen((_) => draw(canvas.elt.context2D));
   }
@@ -86,11 +83,16 @@ class _Sunflower extends Widget<Sunflower, int> {
            ..closePath()
            ..stroke();
   }
+
+  static create() => new _SunflowerApp();
 }
 
-final theme = new Theme($)
-  ..define(Sunflower, () => new _Sunflower());
+const app = const SunflowerApp(startSeeds: 500, seedRadius: 2);
+
+final tags = $.elements.extend(const {
+  SunflowerApp: _SunflowerApp.create
+});
 
 main() =>
     getRoot("#sunflower")
-      ..mount(const Sunflower(startSeeds: 500, seedRadius: 2), theme);
+      .mount(app, tags);

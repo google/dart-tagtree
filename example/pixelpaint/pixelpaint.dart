@@ -1,42 +1,57 @@
 import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
-/// A simple paint widget implemented on an HTML table.
-/// Demonstrates how to get good performance using a (somewhat) functional style,
-/// with an immutable grid model at the top level of the app.
-/// (There is one view per row of pixels, but they are mostly not updated.)
+/// A sketch of a paint program implemented on top of an HTML table.
+///
+/// Demonstrates how to get decent performance using a somewhat functional style,
+/// assuming that most pixels don't actually change in a single animation frame.
+/// The paint document is modelled as an immutable [Grid]. A top-level state
+/// machine in [_PixelPaint] reacts to document updates. We avoid unnecessary
+/// renders by dividing up the Grid and [GridView] by row and only rendering a
+/// [RowView] if there is a change to the underlying [Row]. (A more sophisticated
+/// paint program would probably divide up the grid into tiles.)
 
 //
-// View (and controller)
+// Views (which are also controllers)
 //
 
-/// Embeds a paint program. (Two colors only, with fat pixels.)
+/// The configuration properties of the paint app ("props").
+/// It displays only two colors and displays fat pixels.
 class PixelPaintApp extends View {
   final int width; // in fat pixels
   final int height; // in fat pixels
   final List<String> palette; // The CSS style for each color
-  const PixelPaintApp({this.width, this.height, this.palette});
+  const PixelPaintApp({
+    this.width: 50,
+    this.height: 50,
+    this.palette: const ["black", "white"]
+  });
   bool check() => palette.length == 2;
 }
 
-/// Implements the top-level state machine.
-/// (Updates the model and renders the view when something happens.)
+/// The top-level state machine.
+/// There is state transition whenever a pixel changes, causing a re-render.
 class _PixelPaint extends Widget<PixelPaintApp, Grid> {
 
   @override
   createFirstState() => new Grid(props.width, props.height);
 
   onPaint(int x, int y) {
-    nextState = new Grid.withChangedPixel(state, x, y, 1);
+    var nextGrid = new Grid.withChangedPixel(state, x, y, 1);
+    if (nextGrid == state) {
+      return; // unchanged; don't need to render.
+    }
+    nextState = nextGrid;
   }
 
   @override
   render() => new GridView(grid: state, palette: props.palette, onPaint: onPaint);
+
+  static create() => new _PixelPaint();
 }
 
-/// One animation frame showing the paint widget's grid of pixels.
-/// Expands to a <table> tag.
-/// (The implementation has state, but it's just for event handling.)
+/// The specification of a single animation frame that displays the grid of pixels.
+/// It expands to a <table> element.
 class GridView extends View {
   final Grid grid;
   final List<String> palette;
@@ -47,11 +62,12 @@ class GridView extends View {
 /// A handler that's called when the user paints a pixel.
 typedef PixelHandler(int x, int y);
 
-/// Draws the grid and converts mouse events.
+/// Renders a stream of GridViews and converts mouse events into paint events.
+/// (This could be a template, except that we need to remember whether the mouse
+/// button is down. TODO: it might be nice if Dart or TagTree provided this.)
 class _GridView extends Widget<GridView, bool> {
 
-  // Keep track of whether the mouse is down and report paint events.
-  // (The DOM makes this tricky!)
+  // HTML5 makes keeping track of the mouse button surprisingly tricky!
   // This implementation usually works, but could be improved.
 
   @override
@@ -89,6 +105,8 @@ class _GridView extends Widget<GridView, bool> {
         onMouseOut: (_) => onMouseUp() // Try to avoid a "stuck" mouse button
     );
   }
+
+  static create() => new _GridView();
 }
 
 /// An animation frame for one row of the grid.
@@ -105,7 +123,11 @@ class RowView extends View {
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
 }
 
-final rowViewTemplate = new Template((RowView rv) {
+class _RowView extends Template {
+  const _RowView();
+
+  @override
+  render(RowView rv) {
     var cells = [];
     for (int x = 0; x < rv.row.width; x++) {
       int pixel = rv.row[x];
@@ -115,10 +137,12 @@ final rowViewTemplate = new Template((RowView rv) {
           onMouseUp: (_) => rv.onMouseUp()));
     }
     return $.Tr(inner: cells);
-  },
+  }
+
   /// Avoid redrawing a row that hasn't changed. (The key to good performance!)
-  shouldRender: (RowView before, RowView after) => !before.row.equals(after.row)
-);
+  @override
+  shouldRender(RowView before, RowView after) => !before.row.equals(after.row);
+}
 
 //
 // Model
@@ -195,16 +219,16 @@ class Row {
 // Put it all together.
 //
 
-final app = const PixelPaintApp(
-    width: 50,
-    height: 50,
-    palette: const ["black", "white"]);
+const appConfig = const PixelPaintApp();
 
-final theme = new Theme($)
-    ..define(PixelPaintApp, () => new _PixelPaint())
-    ..define(GridView, () => new _GridView())
-    ..define(RowView, () => rowViewTemplate);
+final appTags = $.elements.extend(const {
+  PixelPaintApp: _PixelPaint.create,
+  GridView: _GridView.create,
+  RowView: const _RowView()
+});
 
-main() => getRoot("#container").mount(app, theme);
+main() =>
+    getRoot("#container")
+      .mount(appConfig, appTags);
 
 

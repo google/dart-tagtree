@@ -6,10 +6,14 @@ class TodoList extends View {
   const TodoList({this.items});
 }
 
-final todoListTemplate = new Template((TodoList props) {
-  createItem(itemText) => $.Li(inner: itemText);
-  return $.Ul(inner: props.items.map(createItem));
-});
+class _TodoList extends Template {
+  const _TodoList();
+  @override
+  render(TodoList props) {
+    createItem(itemText) => $.Li(inner: itemText);
+    return $.Ul(inner: props.items.map(createItem));
+  }
+}
 
 class TodoApp extends View {
   const TodoApp();
@@ -49,11 +53,14 @@ class _TodoApp extends Widget<TodoApp, _TodoState> {
 
   @override
   cloneState(_TodoState prev) => new _TodoState(prev.items, prev.text);
+
+  static create() => new _TodoApp();
 }
 
-final theme = new Theme($)
-    ..define(TodoApp, () => new _TodoApp())
-    ..define(TodoList, () => todoListTemplate);
+final tags = $.elements.extend(const {
+  TodoApp: _TodoApp.create,
+  TodoList: const _TodoList()
+});
 
-main() => getRoot("#container").mount(const TodoApp(), theme);
+main() => getRoot("#container").mount(const TodoApp(), tags);
 

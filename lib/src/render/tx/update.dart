@@ -16,7 +16,7 @@ abstract class _Update extends _Mount with _Unmount {
   // unmounted and a new node tree will be created.
   // Either way, updates the DOM and returns the new node tree.
   _Node updateOrReplace(_Node current, View toRender, Theme nextTheme) {
-    if (current.view.type == toRender.type && current.theme == nextTheme) {
+    if (current.view.tag == toRender.tag && current.theme == nextTheme) {
       _updateInPlace(current, toRender, nextTheme);
       return current;
     } else {
@@ -64,10 +64,10 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   void _renderTemplate(_TemplateNode node, View old) {
-    if (!node.shouldRender(old, node.view)) {
+    if (!node.template.shouldRender(old, node.view)) {
       return;
     }
-    View newShadow = node.render(node.view);
+    View newShadow = node.template.render(node.view);
     node.shadow = updateOrReplace(node.shadow, newShadow, node.theme);
   }
 
@@ -100,7 +100,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates DOM attributes and event handlers of an Elt.
   void _updateDomProperties(_ElementNode elt, PropsMap oldProps) {
-    ElementType eltType = elt.view.type;
+    ElementType eltType = elt.view.tag;
     String path = elt.path;
     PropsMap newProps = elt.view.props;
 

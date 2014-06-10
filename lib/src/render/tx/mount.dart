@@ -41,7 +41,7 @@ abstract class _Mount {
       out.write("<span data-path=${node.path}>${HTML_ESCAPE.convert(node.view.value)}</span>");
 
     } else if (node is _TemplateNode) {
-      View shadowTree = node.render(node.view);
+      View shadowTree = node.template.render(node.view);
       node.shadow = mountView(shadowTree, node.theme, out, path, depth + 1);
 
     } else if (node is _WidgetNode) {
@@ -87,7 +87,7 @@ abstract class _Mount {
 
   void _writeStartTag(StringBuffer out, _ElementNode elt) {
     out.write("<${elt.view.htmlTag} data-path=\"${elt.path}\"");
-    ElementType eltType = elt.view.type;
+    ElementType eltType = elt.view.tag;
     for (String key in elt.view.props.keys) {
       var propType = eltType.propsByName[key];
       var val = elt.props[key];

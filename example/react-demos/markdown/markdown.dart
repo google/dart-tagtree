@@ -27,8 +27,7 @@ class _MarkdownEditor extends Widget<MarkdownEditor, String> {
     ]);
 }
 
-final theme = new Theme($)
-  ..define(MarkdownEditor, () => new _MarkdownEditor());
+final theme = $.elements.extend({MarkdownEditor: () => new _MarkdownEditor()});
 
 main() =>
     getRoot("#container")

@@ -43,8 +43,11 @@ class TagSet {
 
   Iterable<String> get jsonTags => _decoders.keys;
 
-  /// Returns the types of all the element tags included in this set.
-  Iterable<ElementType> get elementTypes => _elementTypes.values;
+  /// Returns a Theme that maps all the element tags to themselves.
+  Theme get elements =>
+      new Theme(new Map.fromIterables(
+          _elementTypes.values,
+          _elementTypes.values.map((t) => () => t)));
 
   /// Returns the types of all the handlers used by tags in this set.
   Iterable<HandlerType> get handlerTypes => _handlerTypes.values;

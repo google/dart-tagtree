@@ -3,16 +3,19 @@ import "package:tagtree/core.dart";
 
 import "shared.dart";
 
-final textFileTemplate = new Template((TextFile props) =>
-    $.Pre(inner: props.lines.join("\n"))
-);
+class _TextFile extends Template {
+  const _TextFile();
+  @override
+  render(TextFile props) => $.Pre(inner: props.lines.join("\n"));
+}
 
 final exportedTags = new HtmlTagSet()
   ..export("TextFile", (m) => new TextFile.fromMap(m));
 
-final theme = new Theme($)
-    ..define(TextFile, () => textFileTemplate)
-    ..define(Slot, () => new SlotWidget());
+final theme = $.elements.extend(const {
+  TextFile: const _TextFile(),
+  Slot: SlotWidget.create,
+});
 
 main() =>
     getRoot("#view")

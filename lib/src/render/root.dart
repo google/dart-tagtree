@@ -41,30 +41,6 @@ abstract class RenderRoot {
   /// rendered tag tree.
   void dispatchEvent(HandlerEvent e) => _dispatch(e, _handlers);
 
-  _Node _makeNode(String path, int depth, View view, Theme theme) {
-    assert(view.checked());
-
-    if (view is _TextView) {
-      return new _TextNode(path, depth, view, theme);
-    }
-
-    ConstructViewerFunc provider = theme.viewers[view.type];
-    if (provider == null) {
-      throw "theme has no viewer for this type: ${view.type}";
-    }
-
-    Viewer viewer = provider();
-    if (viewer is ElementType) {
-      return new _ElementNode(path, depth, view, theme);
-    } else if (viewer is Template) {
-      return new _TemplateNode(path, depth, view, theme, viewer.render, viewer.shouldRender);
-    } else if (viewer is Widget) {
-      return new _WidgetNode(path, depth, view, theme, viewer);
-    }
-
-    throw "unknown viewer type: ${viewer.runtimeType}";
-  }
-
   /// Schedules a widget to be updated just before rendering the next frame.
   /// (That is, marks the Widget as "dirty".)
   void _invalidateWidget(_WidgetNode view) {
@@ -101,7 +77,7 @@ abstract class RenderRoot {
 }
 
 class _TextView extends View {
-  get type => "__TextView";
+  get tag => "__TextView";
   final String value;
   const _TextView(this.value);
 }

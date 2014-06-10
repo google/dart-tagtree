@@ -1,12 +1,10 @@
 import 'package:tagtree/browser.dart';
-import 'package:tagtree/core.dart';
 
 var text = "Click me!";
 
 render() => getRoot("#container").mount(
     $.Div(clazz: "sample_text", onClick: onClick, inner: text),
-    new Theme($)
-);
+    $.elements);
 
 onClick(_) {
   var buffer = new StringBuffer();

@@ -55,6 +55,8 @@ class SlotWidget extends Widget<Slot, View> {
     print(message);
     nextState = $.Div(inner: message);
   }
+
+  static create() => new SlotWidget();
 }
 
 class _Connection {

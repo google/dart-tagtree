@@ -76,10 +76,9 @@ class _ElementNode extends _Node<ElementView> {
 
 /// A node for a expanded template.
 class _TemplateNode extends _Node<View> {
-  final TemplateFunc render;
-  final ShouldRenderFunc shouldRender;
+  final Template template;
   _Node shadow;
-  _TemplateNode(String path, int depth, View view, Theme theme, this.render, this.shouldRender) :
+  _TemplateNode(String path, int depth, View view, Theme theme, this.template) :
     super(path, depth, view, theme);
 }
 

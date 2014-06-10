@@ -23,7 +23,5 @@ class _TimerApp extends Widget<TimerApp, int> {
   render() => $.Div(inner: "Seconds elapsed: ${state}");
 }
 
-final theme = new Theme($)
-  ..define(TimerApp, () => new _TimerApp());
-
-main() => getRoot("#container").mount(const TimerApp(), theme);
+final tags = $.elements.extend({TimerApp: () => new _TimerApp()});
+main() => getRoot("#container").mount(const TimerApp(), tags);

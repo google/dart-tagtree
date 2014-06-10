@@ -1,21 +1,32 @@
 part of core;
 
-/// A View is a node in a tree that will be rendered to HTML.
+/// A View is the configuration of a user interface that will be rendered as HTML.
 ///
-/// Each View has a [type] that plays a role similar to an HTML tag.
-/// A tree of views (a "tag tree") is somewhat like a tree of HTML elements.
-/// However, some views are rendered by expanding a template or by creating
-/// a Widget (based on a Theme).
+/// Each View has a [tag] that will be used to find the View's implementation;
+/// see [Theme] for how this is done.
 ///
-/// Unlike a tree of DOM Elements, a tag tree is an immutable data structure
-/// with no state, lifecycle, or browser dependencies. Since Views have
-/// structure but no behavior, tag trees can be freely shared and sent over
-/// the network. They can also be constants. However, once rendered, some
-/// Views turn into Widgets, which contain mutable state and can react to
-/// events.
+/// Views have configuration properties ("props") that can normally be accessed
+/// as final fields on the View subclass. These same properties are sometimes
+/// accessible as a Map as well, via [props].
 ///
-/// You can implement a custom view by subclassing View to define its tag and
-/// properties, and separately providing a template or Widget for its behavior.
+/// A prop may store an arbitrary Dart object. By convention it should be
+/// immutable. A Viewer might use a prop's value to set an HTML attribute,
+/// substitute data into a template, report an event (if it's a [HandlerFunc]),
+/// or store a list of children (forming a "tag tree"). Declaring the type of a
+/// prop (in the usual Dart way) is optional but recommended for clarity.
+///
+/// Unlike a tree of HTML elements in the DOM, a View is an immutable data
+/// structure with no lifecycle or dependency on the browser. View subclasses
+/// should be usable on client or server and can be freely shared or sent over
+/// the network (provided that [propsImpl] is implemented and each property
+/// can be encoded as JSON).
+///
+/// Also, Views can usually be Dart constants; unless there is a good reason, they
+/// should have const constructors.
+///
+/// You can implement a custom view by subclassing View to define the tag and
+/// its props, and separately providing a [Template] or Widget for its
+/// behavior.
 abstract class View implements Jsonable {
 
   /// The default constructor of each View should be const.
@@ -32,14 +43,18 @@ abstract class View implements Jsonable {
   /// The key that will be used to bind this view to a [Viewer].
   /// It may be any type that works as a Map key.
   /// By default it's the [runtimeType].
-  get type => runtimeType;
+  get tag => runtimeType;
 
-  /// Returns the tag and properties of the node, in the form suitable
-  /// for reflective access and for sending it across the network.
+  /// Returns the contents of the view as a [PropsMap].
+  /// This form is more suitable for reflective access and serializing to
+  /// JSON.
+  ///
+  /// Not implemented by all View subclasses. If not implemented, it will throw
+  /// an exception. A subclass can implement by overriding [propsImpl].
   PropsMap get props {
     var p = _propsCache[this];
     if (p == null) {
-      p = new PropsMap(type, propsImpl);
+      p = new PropsMap(tag, propsImpl);
       _propsCache[p] = p;
     }
     return p;
@@ -52,7 +67,7 @@ abstract class View implements Jsonable {
   ///
   /// A node's children may be stored in any field. By convention,
   /// they are usually stored in its "inner" field.
-  Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${type}";
+  Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${tag}";
 
   @override
   String get jsonTag => throw "jsonTag not implemented";

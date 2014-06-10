@@ -68,21 +68,14 @@ class _Transaction extends _Update {
     if (view is _TextView) {
       return new _TextNode(path, depth, view, theme);
     }
-
-    ConstructViewerFunc provider = theme.viewers[view.type];
-    if (provider == null) {
-      throw "theme has no viewer for this type: ${view.type}";
-    }
-
-    Viewer viewer = provider();
+    Viewer viewer = theme.createViewer(view);
     if (viewer is ElementType) {
       return new _ElementNode(path, depth, view, theme);
     } else if (viewer is Template) {
-      return new _TemplateNode(path, depth, view, theme, viewer.render, viewer.shouldRender);
+      return new _TemplateNode(path, depth, view, theme, viewer);
     } else if (viewer is Widget) {
       return new _WidgetNode(path, depth, view, theme, viewer);
     }
-
     throw "unknown viewer type: ${viewer.runtimeType}";
   }
 
