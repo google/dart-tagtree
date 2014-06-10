@@ -32,6 +32,8 @@ abstract class RenderRoot {
   /// (If called more than once between two frames, only the last call will
   /// have any effect.)
   void mount(View nextTagTree, Theme nextTheme) {
+    assert(nextTagTree != null);
+    assert(nextTheme != null);
     _nextTagTree = nextTagTree;
     _nextTheme = nextTheme;
     _requestAnimationFrame();
@@ -57,6 +59,9 @@ abstract class RenderRoot {
   }
 
   void _render(DomUpdater dom) {
+    if (_nextTheme == null) {
+      _nextTheme = _renderedTheme;
+    }
     _Transaction tx =
         new _Transaction(this, dom, _handlers, _nextTagTree, _nextTheme, _widgetsToUpdate);
 

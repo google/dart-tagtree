@@ -4,6 +4,7 @@ part of render;
 abstract class _Update extends _Mount with _Unmount {
 
   // Dependencies
+  Viewer createViewer(View view, Theme theme);
   DomUpdater get dom;
 
   // What was updated
@@ -15,9 +16,10 @@ abstract class _Update extends _Mount with _Unmount {
   // The node tree will either be updated in place, or it will
   // unmounted and a new node tree will be created.
   // Either way, updates the DOM and returns the new node tree.
-  _Node updateOrReplace(_Node current, View toRender, Theme nextTheme) {
-    if (current.view.tag == toRender.tag && current.theme == nextTheme) {
-      _updateInPlace(current, toRender, nextTheme);
+  _Node updateOrReplace(_Node current, View toRender, Theme oldTheme, Theme newTheme) {
+    var nextViewer = createViewer(toRender, newTheme);
+    if (current.canUpdate(toRender, nextViewer)) {
+      _updateInPlace(current, toRender, oldTheme, newTheme, nextViewer);
       return current;
     } else {
       String path = current.path;
@@ -25,18 +27,18 @@ abstract class _Update extends _Mount with _Unmount {
       unmount(current, willReplace: true);
 
       var html = new StringBuffer();
-      _Node result = mountView(toRender, nextTheme, html, path, depth);
+      _Node result = mountView(toRender, newTheme, html, path, depth);
       dom.replaceElement(path, html.toString());
       return result;
     }
   }
 
   /// Renders a Widget without any property changes.
-  void updateWidget(_WidgetNode node) {
+  void updateWidget(_WidgetNode node, Theme oldTheme, Theme newTheme) {
     Widget w = node.controller.widget;
     var oldState = w.state;
     w.commitState();
-    _renderWidget(node, node.view, oldState);
+    _renderWidget(node, node.view, oldState, oldTheme, newTheme);
   }
 
   /// Updates a node tree in place, by expanding a View.
@@ -44,41 +46,43 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void _updateInPlace(_Node node, View toRender, Theme nextTheme) {
+  void _updateInPlace(_Node node, View toRender, Theme oldTheme, Theme newTheme,
+                      Viewer nextViewer) {
     View old = node.updateProps(toRender);
 
     if (node is _TemplateNode) {
-      _renderTemplate(node, old);
+      node.template = nextViewer;
+      _renderTemplate(node, old, oldTheme, newTheme);
     } else if (node is _WidgetNode) {
       Widget w = node.controller.widget;
       var oldState = w.state;
       w.commitState();
-      _renderWidget(node, old, oldState);
+      _renderWidget(node, old, oldState, oldTheme, newTheme);
     } else if (node is _TextNode) {
       _renderText(node, old);
     } else if (node is _ElementNode) {
-      _renderElt(node, old.props);
+      _renderElt(node, old.props, oldTheme, newTheme);
     } else {
       throw "cannot update: ${node.runtimeType}";
     }
   }
 
-  void _renderTemplate(_TemplateNode node, View old) {
-    if (!node.template.shouldRender(old, node.view)) {
+  void _renderTemplate(_TemplateNode node, View old, Theme oldTheme, Theme newTheme) {
+    if (oldTheme == newTheme && !node.template.shouldRender(old, node.view)) {
       return;
     }
     View newShadow = node.template.render(node.view);
-    node.shadow = updateOrReplace(node.shadow, newShadow, node.theme);
+    node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
   }
 
-  void _renderWidget(_WidgetNode node, View oldView, oldState) {
+  void _renderWidget(_WidgetNode node, View oldView, oldState, Theme oldTheme, Theme newTheme) {
     if (!node.controller.widget.shouldRender(oldView, oldState)) {
       return;
     }
 
     var c = node.controller;
     View newShadow = c.widget.render();
-    node.shadow = updateOrReplace(node.shadow, newShadow, node.theme);
+    node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
 
     // Schedule events.
     if (c.didRender.hasListener) {
@@ -93,9 +97,9 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  void _renderElt(_ElementNode elt, PropsMap oldProps) {
+  void _renderElt(_ElementNode elt, PropsMap oldProps, Theme oldTheme, newTheme) {
     _updateDomProperties(elt, oldProps);
-    _updateInner(elt);
+    _updateInner(elt, oldTheme, newTheme);
   }
 
   /// Updates DOM attributes and event handlers of an Elt.
@@ -139,7 +143,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates the inner DOM and mount/unmounts children when needed.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(_ElementNode elt) {
+  void _updateInner(_ElementNode elt, Theme oldTheme, Theme newTheme) {
     String path = elt.path;
     var newInner = elt.view.inner;
 
@@ -161,7 +165,7 @@ abstract class _Update extends _Mount with _Unmount {
       dom.setInnerHtml(path, newInner.html);
       elt.children = newInner;
     } else if (newInner is View) {
-      _updateChildren(elt, path, [newInner]);
+      _updateChildren(elt, path, [newInner], oldTheme, newTheme);
     } else if (newInner is Iterable) {
       List<View> children = [];
       for (var item in newInner) {
@@ -173,7 +177,7 @@ abstract class _Update extends _Mount with _Unmount {
           throw "bad item in inner: ${item}";
         }
       }
-      _updateChildren(elt, path, children);
+      _updateChildren(elt, path, children, oldTheme, newTheme);
     } else {
       throw "invalid new value of inner: ${newInner.runtimeType}";
     }
@@ -181,10 +185,11 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children,  _childText, and _childHtml are updated.)
-  void _updateChildren(_ElementNode elt, String path, List<View> newChildren) {
+  void _updateChildren(_ElementNode elt, String path, List<View> newChildren,
+                       Theme oldTheme, Theme newTheme) {
     if (!(elt.children is List)) {
       StringBuffer out = new StringBuffer();
-      elt.children = expandInner(elt, out, newChildren);
+      elt.children = expandInner(elt, newTheme, out, newChildren);
       dom.setInnerHtml(path, out.toString());
       return;
     }
@@ -201,7 +206,7 @@ abstract class _Update extends _Mount with _Unmount {
       View after = newChildren[i];
       assert(before != null);
       assert(after != null);
-      updatedChildren.add(updateOrReplace(before, after, before.theme));
+      updatedChildren.add(updateOrReplace(before, after, oldTheme, newTheme));
     }
 
     if (addedChildCount < 0) {
@@ -212,16 +217,16 @@ abstract class _Update extends _Mount with _Unmount {
     } else if (addedChildCount > 0) {
       // append  children
       for (int i = oldLength; i < newLength; i++) {
-        _Node child = _mountNewChild(elt, newChildren[i], i);
+        _Node child = _mountNewChild(elt, newChildren[i], i, newTheme);
         updatedChildren.add(child);
       }
     }
     elt.children = updatedChildren;
   }
 
-  _Node _mountNewChild(_ElementNode parent, View child, int childIndex) {
+  _Node _mountNewChild(_ElementNode parent, View child, int childIndex, Theme newTheme) {
     var html = new StringBuffer();
-    _Node view = mountView(child, parent.theme, html,
+    _Node view = mountView(child, newTheme, html,
         "${parent.path}/${childIndex}", parent.depth + 1);
     dom.addChildElement(parent.path, html.toString());
     return view;

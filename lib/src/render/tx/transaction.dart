@@ -18,6 +18,7 @@ class _Transaction extends _Update {
   _InvalidateWidgetFunc get invalidateWidget => root._invalidateWidget;
 
   void run() {
+    assert(nextTheme != null);
     if (nextTagTree != null) {
       root._renderedTree = _replaceTree(root.path, root._renderedTree, nextTagTree);
     }
@@ -26,7 +27,7 @@ class _Transaction extends _Update {
     _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
 
     for (_WidgetNode v in _widgetsToUpdate) {
-      updateWidget(v);
+      updateWidget(v, root._renderedTheme, nextTheme);
     }
 
     _finish();
@@ -48,6 +49,8 @@ class _Transaction extends _Update {
     for (EventSink s in _renderedWidgets) {
       s.add(true);
     }
+
+    root._renderedTheme = nextTheme;
   }
 
   /// Renders a tag tree and returns the new view tree.
@@ -58,23 +61,30 @@ class _Transaction extends _Update {
       dom.mount(html.toString());
       return view;
     } else {
-      return updateOrReplace(current, next, nextTheme);
+      return updateOrReplace(current, next, root._renderedTheme, nextTheme);
+    }
+  }
+
+  Viewer createViewer(View view, Theme theme) {
+    assert(view.checked());
+    if (view is _TextView) {
+      return null;
+    } else {
+      return theme.createViewer(view);
     }
   }
 
   _Node makeNode(String path, int depth, View view, Theme theme) {
-    assert(view.checked());
-
     if (view is _TextView) {
-      return new _TextNode(path, depth, view, theme);
+      return new _TextNode(path, depth, view);
     }
-    Viewer viewer = theme.createViewer(view);
+    Viewer viewer = createViewer(view, theme);
     if (viewer is ElementType) {
-      return new _ElementNode(path, depth, view, theme);
+      return new _ElementNode(path, depth, view);
     } else if (viewer is Template) {
-      return new _TemplateNode(path, depth, view, theme, viewer);
+      return new _TemplateNode(path, depth, view, viewer);
     } else if (viewer is Widget) {
-      return new _WidgetNode(path, depth, view, theme, viewer);
+      return new _WidgetNode(path, depth, view, viewer);
     }
     throw "unknown viewer type: ${viewer.runtimeType}";
   }

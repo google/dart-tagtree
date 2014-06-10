@@ -36,12 +36,11 @@ abstract class _Node<V extends View> {
   /// The view that was most recently rendered into this node.
   V view;
 
-  // The theme that was used to render this node, or null if it doesn't depend on a theme.
-  Theme theme;
-
-  _Node(this.path, this.depth, this.view, this.theme);
+  _Node(this.path, this.depth, this.view);
 
   bool get mounted => view != null;
+
+  bool canUpdate(View nextView, Viewer nextViewer);
 
   /// The props that were most recently rendered.
   PropsMap get props => view.props;
@@ -64,22 +63,35 @@ abstract class _Node<V extends View> {
 /// To simulate mixed-content HTML, we render the text inside a <span>,
 /// so that it can easily be updated using its data-path attribute.
 class _TextNode extends _Node<_TextView> {
-  _TextNode(String path, int depth, _TextView view, Theme theme) : super(path, depth, view, theme);
+  _TextNode(String path, int depth, _TextView view) : super(path, depth, view);
+
+  @override
+  canUpdate(nextView, _) => nextView is _TextView;
 }
 
 /// A node for a rendered HTML element.
 class _ElementNode extends _Node<ElementView> {
   // May be a List<_Node>, String, or RawHtml.
   var children;
-  _ElementNode(String path, int depth, View view, Theme theme) : super(path, depth, view, theme);
+  _ElementNode(String path, int depth, View view) : super(path, depth, view);
+
+  @override
+  canUpdate(nextView, nextViewer) =>
+      nextView is ElementView && nextView.tag == view.tag && nextViewer == view.tag;
 }
 
 /// A node for a expanded template.
 class _TemplateNode extends _Node<View> {
-  final Template template;
+  Template template;
   _Node shadow;
-  _TemplateNode(String path, int depth, View view, Theme theme, this.template) :
-    super(path, depth, view, theme);
+  _TemplateNode(String path, int depth, View view, this.template) :
+    super(path, depth, view);
+
+  @override
+  canUpdate(nextView, nextViewer) {
+    bool canUpdate = nextView.tag == view.tag && nextViewer == template;
+    return canUpdate;
+  }
 }
 
 typedef _InvalidateWidgetFunc(_WidgetNode v);
@@ -90,8 +102,12 @@ class _WidgetNode extends _Node<View> {
   WidgetController controller;
   _Node shadow;
 
-  _WidgetNode(String path, int depth, View view, Theme theme, this.widget) :
-    super(path, depth, view, theme);
+  _WidgetNode(String path, int depth, View view, this.widget) :
+    super(path, depth, view);
+
+  @override
+  canUpdate(nextView, nextViewer) =>
+    nextView.tag == view.tag && nextViewer.runtimeType == widget.runtimeType;
 
   @override
   View updateProps(View next) {

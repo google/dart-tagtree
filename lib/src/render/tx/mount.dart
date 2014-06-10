@@ -28,21 +28,21 @@ abstract class _Mount {
   /// incremented.
   _Node mountView(View view, Theme theme, StringBuffer html, String path, int depth) {
     _Node node = makeNode(path, depth, view, theme);
-    _expandNode(node, html, path, depth);
+    _expandNode(node, theme, html, path, depth);
     if (node.view.ref != null) {
       _mountedRefs.add(node);
     }
     return node;
   }
 
-  void _expandNode(_Node node, StringBuffer out, String path, int depth) {
+  void _expandNode(_Node node, Theme theme, StringBuffer out, String path, int depth) {
     if (node is _TextNode) {
       // need to surround with a span to support incremental updates to a child
       out.write("<span data-path=${node.path}>${HTML_ESCAPE.convert(node.view.value)}</span>");
 
     } else if (node is _TemplateNode) {
       View shadowTree = node.template.render(node.view);
-      node.shadow = mountView(shadowTree, node.theme, out, path, depth + 1);
+      node.shadow = mountView(shadowTree, theme, out, path, depth + 1);
 
     } else if (node is _WidgetNode) {
       var widget = node.widget;
@@ -50,14 +50,14 @@ abstract class _Mount {
       node.controller = c;
 
       View shadowTree = widget.render();
-      node.shadow = mountView(shadowTree, node.theme, out, node.path, node.depth + 1);
+      node.shadow = mountView(shadowTree, theme, out, node.path, node.depth + 1);
 
       if (c.didRender.hasListener) {
         _mountedWidgets.add(c.didRender);
       }
 
     } else if (node is _ElementNode) {
-      _expandElement(node, out);
+      _expandElement(node, theme, out);
 
     } else {
       throw "can't mount node for unknown tag type: ${node.runtimeType}";
@@ -65,7 +65,7 @@ abstract class _Mount {
   }
 
   /// Expands the descendants of an element node and renders the result to HTML.
-  void _expandElement(_ElementNode elt, StringBuffer out) {
+  void _expandElement(_ElementNode elt, Theme theme, StringBuffer out) {
     _writeStartTag(out, elt);
 
     if (elt.view.htmlTag == "textarea") {
@@ -75,7 +75,7 @@ abstract class _Mount {
       }
       // TODO: other cases?
     } else {
-      elt.children = expandInner(elt, out, elt.view.inner);
+      elt.children = expandInner(elt, theme, out, elt.view.inner);
     }
 
     out.write("</${elt.view.htmlTag}>");
@@ -110,7 +110,7 @@ abstract class _Mount {
   }
 
   /// Returns the new children
-  dynamic expandInner(_ElementNode elt, StringBuffer out, inner) {
+  dynamic expandInner(_ElementNode elt, Theme theme, StringBuffer out, inner) {
     if (inner == null) {
       return null;
     } else if (inner is String) {
@@ -121,7 +121,7 @@ abstract class _Mount {
       out.write(inner.html);
       return inner;
     } else if (inner is View) {
-      return _mountChildren(out, elt.path, elt.depth, [inner], elt.theme);
+      return _mountChildren(out, elt.path, elt.depth, [inner], theme);
     } else if (inner is Iterable) {
       List<View> children = [];
       for (var item in inner) {
@@ -133,7 +133,7 @@ abstract class _Mount {
           throw "bad item in inner: ${item}";
         }
       }
-      return _mountChildren(out, elt.path, elt.depth, children, elt.theme);
+      return _mountChildren(out, elt.path, elt.depth, children, theme);
     }
     throw "unexpected type for an element's inner field: ${inner.runtimeType}";
   }

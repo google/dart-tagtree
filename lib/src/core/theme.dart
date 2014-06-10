@@ -2,17 +2,29 @@ part of core;
 
 typedef Viewer CreateViewerFunc();
 
+int _untitledCount = 0;
+
+_chooseThemeName(String name) {
+  if (name == null) {
+    _untitledCount += 1;
+    return "Untitled-${ _untitledCount}";
+  }
+  return name;
+}
+
 /// A Theme implements a set of tags.
 /// Each tag has a mapping to a function that creates a Viewer.
 class Theme extends UnmodifiableMapBase<dynamic, CreateViewerFunc> {
-  /// Maps types to Viewer constructors
+  final String name;
   final _bindings = <dynamic, CreateViewerFunc>{};
 
-  Theme(Map<dynamic, CreateViewerFunc> bindings) {
+  Theme(Map<dynamic, CreateViewerFunc> bindings, {String name}) :
+    this.name = _chooseThemeName(name) {
     _bindings.addAll(bindings);
   }
 
-  Theme._extend(Theme parent, Map<dynamic, CreateViewerFunc> bindings) {
+  Theme._extend(Theme parent, Map<dynamic, CreateViewerFunc> bindings, {String name}) :
+    this.name = _chooseThemeName(name) {
     _bindings.addAll(parent._bindings);
     _bindings.addAll(bindings);
   }
@@ -40,6 +52,9 @@ class Theme extends UnmodifiableMapBase<dynamic, CreateViewerFunc> {
   /// Returns a new theme with additional tags defined.
   Theme extend(Map<dynamic, CreateViewerFunc> bindings) =>
       new Theme._extend(this,  bindings);
+
+  @override
+  String toString() => "Theme(${name})";
 }
 
 abstract class Viewer {
