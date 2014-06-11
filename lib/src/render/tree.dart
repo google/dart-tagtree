@@ -76,8 +76,7 @@ class _ElementNode extends _Node<ElementView> {
   _ElementNode(String path, int depth, View view) : super(path, depth, view);
 
   @override
-  canUpdate(nextView, nextViewer) =>
-      nextView is ElementView && nextView.tag == view.tag && nextViewer == view.tag;
+  canUpdate(View nextView, Viewer nextViewer) => nextView is ElementView;
 }
 
 /// A node for a expanded template.
@@ -88,10 +87,7 @@ class _TemplateNode extends _Node<View> {
     super(path, depth, view);
 
   @override
-  canUpdate(nextView, nextViewer) {
-    bool canUpdate = nextView.tag == view.tag && nextViewer == template;
-    return canUpdate;
-  }
+  canUpdate(View nextView, Viewer nextViewer) => nextViewer == template;
 }
 
 typedef _InvalidateWidgetFunc(_WidgetNode v);
@@ -106,8 +102,7 @@ class _WidgetNode extends _Node<View> {
     super(path, depth, view);
 
   @override
-  canUpdate(nextView, nextViewer) =>
-    nextView.tag == view.tag && nextViewer.runtimeType == widget.runtimeType;
+  canUpdate(View nextView, Viewer nextViewer) =>nextViewer.runtimeType == widget.runtimeType;
 
   @override
   View updateProps(View next) {

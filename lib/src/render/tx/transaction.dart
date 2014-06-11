@@ -65,21 +65,12 @@ class _Transaction extends _Update {
     }
   }
 
-  Viewer createViewer(View view, Theme theme) {
-    assert(view.checked());
-    if (view is _TextView) {
-      return null;
-    } else {
-      return theme.createViewer(view);
-    }
-  }
-
   _Node makeNode(String path, int depth, View view, Theme theme) {
-    if (view is _TextView) {
-      return new _TextNode(path, depth, view);
-    }
-    Viewer viewer = createViewer(view, theme);
-    if (viewer is ElementType) {
+    assert(view.checked());
+    Viewer viewer = view.createViewer(theme);
+    if (viewer is _TextView) {
+      return new _TextNode(path, depth, viewer);
+    } else if (viewer is ElementType) {
       return new _ElementNode(path, depth, view);
     } else if (viewer is Template) {
       return new _TemplateNode(path, depth, view, viewer);

@@ -113,7 +113,6 @@ final frontPage = new Page(
     menu: new Menu(
         items: themes.keys.toList(),
         onClick: (String key) {
-          print("clicked: ${key}");
           render(themes[key]);
         }
     ),

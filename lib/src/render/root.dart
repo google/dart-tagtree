@@ -81,8 +81,9 @@ abstract class RenderRoot {
   }
 }
 
-class _TextView extends View {
-  get tag => "__TextView";
+class _TextView extends View implements Viewer {
   final String value;
   const _TextView(this.value);
+  @override
+  _TextView createViewer(_) => this;
 }

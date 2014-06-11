@@ -1,16 +1,10 @@
 part of core;
 
-typedef Viewer CreateViewerFunc();
-
-int _untitledCount = 0;
-
-_chooseThemeName(String name) {
-  if (name == null) {
-    _untitledCount += 1;
-    return "Untitled-${ _untitledCount}";
-  }
-  return name;
+abstract class Viewer {
+  const Viewer();
 }
+
+typedef Viewer CreateViewerFunc();
 
 /// A Theme implements a set of tags.
 /// Each tag has a mapping to a function that creates a Viewer.
@@ -35,20 +29,6 @@ class Theme extends UnmodifiableMapBase<dynamic, CreateViewerFunc> {
   @override
   CreateViewerFunc operator [](Object key) => _bindings[key];
 
-  /// Sets the function that will create the Viewer for a View.
-  /// (If the View already had a definition, it will be replaced.)
-  void define(type, CreateViewerFunc constructor) {
-    _bindings[type] = constructor;
-  }
-
-  Viewer createViewer(View view) {
-    CreateViewerFunc create = _bindings[view.tag];
-    if (create == null) {
-      throw "no Viewer constructor found for: ${view}";
-    }
-    return create();
-  }
-
   /// Returns a new theme with additional tags defined.
   Theme extend(Map<dynamic, CreateViewerFunc> bindings) =>
       new Theme._extend(this,  bindings);
@@ -57,8 +37,14 @@ class Theme extends UnmodifiableMapBase<dynamic, CreateViewerFunc> {
   String toString() => "Theme(${name})";
 }
 
-abstract class Viewer {
-  const Viewer();
+int _untitledCount = 0;
+
+_chooseThemeName(String name) {
+  if (name == null) {
+    _untitledCount += 1;
+    return "Untitled-${ _untitledCount}";
+  }
+  return name;
 }
 
 /// A Template renders a view by substituting another View.
@@ -71,10 +57,3 @@ abstract class Template<V extends View> extends Viewer {
   Template call() => this;
 }
 
-/// A function that expands a template node to its replacement.
-typedef View TemplateFunc(View node);
-
-/// A function that returns true when a template needs to be re-rendered.
-typedef bool ShouldRenderFunc(View before, View after);
-
-bool _always(before, after) => true;

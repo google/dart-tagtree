@@ -87,7 +87,7 @@ abstract class _Mount {
 
   void _writeStartTag(StringBuffer out, _ElementNode elt) {
     out.write("<${elt.view.htmlTag} data-path=\"${elt.path}\"");
-    ElementType eltType = elt.view.tag;
+    ElementType eltType = elt.view.type;
     for (String key in elt.view.props.keys) {
       var propType = eltType.propsByName[key];
       var val = elt.props[key];

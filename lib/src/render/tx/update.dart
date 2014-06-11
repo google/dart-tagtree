@@ -4,7 +4,6 @@ part of render;
 abstract class _Update extends _Mount with _Unmount {
 
   // Dependencies
-  Viewer createViewer(View view, Theme theme);
   DomUpdater get dom;
 
   // What was updated
@@ -17,9 +16,9 @@ abstract class _Update extends _Mount with _Unmount {
   // unmounted and a new node tree will be created.
   // Either way, updates the DOM and returns the new node tree.
   _Node updateOrReplace(_Node current, View toRender, Theme oldTheme, Theme newTheme) {
-    var nextViewer = createViewer(toRender, newTheme);
+    var nextViewer = toRender.createViewer(newTheme);
     if (current.canUpdate(toRender, nextViewer)) {
-      _updateInPlace(current, toRender, oldTheme, newTheme, nextViewer);
+      _updateInPlace(current, toRender, nextViewer, oldTheme, newTheme);
       return current;
     } else {
       String path = current.path;
@@ -46,31 +45,30 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void _updateInPlace(_Node node, View toRender, Theme oldTheme, Theme newTheme,
-                      Viewer nextViewer) {
-    View old = node.updateProps(toRender);
+  void _updateInPlace(_Node node, View newView, Viewer viewer,
+                      Theme oldTheme, Theme newTheme) {
+    View oldView = node.updateProps(newView);
 
     if (node is _TemplateNode) {
-      node.template = nextViewer;
-      _renderTemplate(node, old, oldTheme, newTheme);
+      node.template = viewer;
+      if (oldTheme != newTheme || node.template.shouldRender(oldView, node.view)) {
+        _renderTemplate(node, oldTheme, newTheme);
+      }
     } else if (node is _WidgetNode) {
       Widget w = node.controller.widget;
       var oldState = w.state;
       w.commitState();
-      _renderWidget(node, old, oldState, oldTheme, newTheme);
+      _renderWidget(node, oldView, oldState, oldTheme, newTheme);
     } else if (node is _TextNode) {
-      _renderText(node, old);
+      _renderText(node, oldView);
     } else if (node is _ElementNode) {
-      _renderElt(node, old.props, oldTheme, newTheme);
+      _renderElt(node, oldView.props, oldTheme, newTheme);
     } else {
       throw "cannot update: ${node.runtimeType}";
     }
   }
 
-  void _renderTemplate(_TemplateNode node, View old, Theme oldTheme, Theme newTheme) {
-    if (oldTheme == newTheme && !node.template.shouldRender(old, node.view)) {
-      return;
-    }
+  void _renderTemplate(_TemplateNode node, Theme oldTheme, Theme newTheme) {
     View newShadow = node.template.render(node.view);
     node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
   }
@@ -104,7 +102,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Updates DOM attributes and event handlers of an Elt.
   void _updateDomProperties(_ElementNode elt, PropsMap oldProps) {
-    ElementType eltType = elt.view.tag;
+    ElementType eltType = elt.view.type;
     String path = elt.path;
     PropsMap newProps = elt.view.props;
 

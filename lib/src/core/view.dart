@@ -2,9 +2,6 @@ part of core;
 
 /// A View is the configuration of a user interface that will be rendered as HTML.
 ///
-/// Each View has a [tag] that will be used to find the View's implementation;
-/// see [Theme] for how this is done.
-///
 /// Views have configuration properties ("props") that can normally be accessed
 /// as final fields on the View subclass. These same properties are sometimes
 /// accessible as a Map as well, via [props].
@@ -24,6 +21,9 @@ part of core;
 /// Also, Views can usually be Dart constants; unless there is a good reason, they
 /// should have const constructors.
 ///
+/// The [createViewer] method determines how the View will be rendered.
+/// Normally this is done by looking up a function in the supplied [Theme].
+///
 /// You can implement a custom view by subclassing View to define the tag and
 /// its props, and separately providing a [Template] or Widget for its
 /// behavior.
@@ -40,10 +40,14 @@ abstract class View implements Jsonable {
   /// called before a View is rendered or sent over the network.
   bool checked() => true;
 
-  /// The key that will be used to bind this view to a [Viewer].
-  /// It may be any type that works as a Map key.
-  /// By default it's the [runtimeType].
-  get tag => runtimeType;
+  /// Creates the Viewer that will render this View to HTML.
+  Viewer createViewer(Theme theme) {
+    CreateViewerFunc create = theme[runtimeType];
+    if (create == null) {
+      throw "Theme ${theme.name} has no definition for ${runtimeType}";
+    }
+    return create();
+  }
 
   /// Returns the contents of the view as a [PropsMap].
   /// This form is more suitable for reflective access and serializing to
@@ -54,7 +58,7 @@ abstract class View implements Jsonable {
   PropsMap get props {
     var p = _propsCache[this];
     if (p == null) {
-      p = new PropsMap(tag, propsImpl);
+      p = new PropsMap(propsImpl);
       _propsCache[p] = p;
     }
     return p;
@@ -67,7 +71,7 @@ abstract class View implements Jsonable {
   ///
   /// A node's children may be stored in any field. By convention,
   /// they are usually stored in its "inner" field.
-  Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${tag}";
+  Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${runtimeType}";
 
   @override
   String get jsonTag => throw "jsonTag not implemented";
@@ -80,12 +84,11 @@ abstract class View implements Jsonable {
   static final _propsCache = new Expando<PropsMap>();
 }
 
-/// An alternate representation of a [View].
+/// An alternate representation of a [View]'s fields.
 class PropsMap extends UnmodifiableMapBase<String, dynamic> {
-  final type;
   final Map<String, dynamic> _map;
 
-  PropsMap(this.type, this._map);
+  PropsMap(this._map);
 
   /// Returns the key of each property.
   @override

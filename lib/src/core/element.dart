@@ -3,19 +3,21 @@ part of core;
 /// A view that TagTree will render to a single HTML element.
 /// Constructed via [ElementType.makeView].
 class ElementView implements View {
+  final ElementType type;
+
   @override
   final PropsMap props;
 
-  const ElementView._raw(this.props);
+  const ElementView._raw(this.type, this.props);
 
   @override
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  ElementType get tag => props.type;
+  Viewer createViewer(_) => type;
 
   @override
-  get jsonTag => props.type.htmlTag;
+  get jsonTag => type.htmlTag;
 
   @override
   get propsImpl => throw "not implemented"; // not needed
@@ -23,7 +25,7 @@ class ElementView implements View {
   @override
   get ref => props["ref"];
 
-  String get htmlTag => props.type.htmlTag;
+  String get htmlTag => type.htmlTag;
 
   /// The children of this element, or null if none.
   /// (May be an Iterator<View>, a View, a String, or a RawHtml.)
@@ -77,7 +79,7 @@ class ElementType implements Viewer {
   /// Creates a view that will render as this HTML element.
   /// The map must only contain properties listed in [propTypes].
   View makeView(Map<String, dynamic> propMap) {
-    var v = new ElementView._raw(new PropsMap(this, propMap));
+    var v = new ElementView._raw(this, new PropsMap(propMap));
     assert(checkView(v));
     return v;
   }
