@@ -1,12 +1,12 @@
 import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
-/// A sketch of a paint program implemented on top of an HTML table.
+/// A paint app implemented on top of an HTML table.
 ///
 /// Demonstrates how to get decent performance using a somewhat functional style,
 /// assuming that most pixels don't actually change in a single animation frame.
 /// The paint document is modelled as an immutable [Grid]. A top-level state
-/// machine in [_PixelPaint] reacts to document updates. We avoid unnecessary
+/// machine in [_PixelPaintApp] reacts to document updates. We avoid unnecessary
 /// renders by dividing up the Grid and [GridView] by row and only rendering a
 /// [RowView] if there is a change to the underlying [Row]. (A more sophisticated
 /// paint program would probably divide up the grid into tiles.)
@@ -15,23 +15,29 @@ import 'package:tagtree/core.dart';
 // Views (which are also controllers)
 //
 
-/// The configuration properties of the paint app ("props").
+/// The configuration properties of the app ("props").
 /// It displays only two colors and displays fat pixels.
 class PixelPaintApp extends View {
   final int width; // in fat pixels
   final int height; // in fat pixels
   final List<String> palette; // The CSS style for each color
+
   const PixelPaintApp({
     this.width: 50,
     this.height: 50,
     this.palette: const ["black", "white"]
   });
-  bool check() => palette.length == 2;
+
+  @override
+  bool checked() => palette.length == 2;
+
+  @override
+  createViewer(_) => new _PixelPaintApp();
 }
 
 /// The top-level state machine.
 /// There is state transition whenever a pixel changes, causing a re-render.
-class _PixelPaint extends Widget<PixelPaintApp, Grid> {
+class _PixelPaintApp extends Widget<PixelPaintApp, Grid> {
 
   @override
   createFirstState() => new Grid(props.width, props.height);
@@ -46,8 +52,6 @@ class _PixelPaint extends Widget<PixelPaintApp, Grid> {
 
   @override
   render() => new GridView(grid: state, palette: props.palette, onPaint: onPaint);
-
-  static create() => new _PixelPaint();
 }
 
 /// The specification of a single animation frame that displays the grid of pixels.
@@ -56,7 +60,11 @@ class GridView extends View {
   final Grid grid;
   final List<String> palette;
   final PixelHandler onPaint;
+
   const GridView({this.grid, this.palette, this.onPaint});
+
+  @override
+  createViewer(_) => new _GridView();
 }
 
 /// A handler that's called when the user paints a pixel.
@@ -105,8 +113,6 @@ class _GridView extends Widget<GridView, bool> {
         onMouseOut: (_) => onMouseUp() // Try to avoid a "stuck" mouse button
     );
   }
-
-  static create() => new _GridView();
 }
 
 /// An animation frame for one row of the grid.
@@ -121,6 +127,9 @@ class RowView extends View {
 
   const RowView({this.y, this.row, this.palette,
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
+
+  @override
+  createViewer(_) => const _RowView();
 }
 
 class _RowView extends Template {
@@ -216,19 +225,11 @@ class Row {
 }
 
 //
-// Put it all together.
+// Startup.
 //
-
-const appConfig = const PixelPaintApp();
-
-final appTags = $.elements.extend(const {
-  PixelPaintApp: _PixelPaint.create,
-  GridView: _GridView.create,
-  RowView: const _RowView()
-});
 
 main() =>
     getRoot("#container")
-      .mount(appConfig, appTags);
+      .mount(const PixelPaintApp());
 
 

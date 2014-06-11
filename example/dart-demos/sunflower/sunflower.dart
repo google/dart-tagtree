@@ -15,7 +15,11 @@ import 'package:tagtree/browser.dart';
 class SunflowerApp extends View {
   final int startSeeds;
   final int seedRadius;
+
   const SunflowerApp({this.startSeeds, this.seedRadius});
+
+  @override
+  createViewer(_) => new _SunflowerApp();
 }
 
 class _SunflowerApp extends Widget<SunflowerApp, int> {
@@ -83,16 +87,9 @@ class _SunflowerApp extends Widget<SunflowerApp, int> {
            ..closePath()
            ..stroke();
   }
-
-  static create() => new _SunflowerApp();
 }
 
 const app = const SunflowerApp(startSeeds: 500, seedRadius: 2);
 
-final tags = $.elements.extend(const {
-  SunflowerApp: _SunflowerApp.create
-});
-
 main() =>
-    getRoot("#sunflower")
-      .mount(app, tags);
+    getRoot("#sunflower").mount(app);

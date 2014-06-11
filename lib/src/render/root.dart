@@ -31,9 +31,11 @@ abstract class RenderRoot {
   /// Sets the tag tree to be rendered on the next animation frame.
   /// (If called more than once between two frames, only the last call will
   /// have any effect.)
-  void mount(View nextTagTree, Theme nextTheme) {
+  void mount(View nextTagTree, [Theme nextTheme]) {
     assert(nextTagTree != null);
-    assert(nextTheme != null);
+    if (nextTheme == null) {
+      nextTheme = new Theme(const {});
+    }
     _nextTagTree = nextTagTree;
     _nextTheme = nextTheme;
     _requestAnimationFrame();

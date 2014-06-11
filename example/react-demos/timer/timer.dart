@@ -4,6 +4,9 @@ import 'package:tagtree/browser.dart';
 
 class TimerApp extends View {
   const TimerApp();
+
+  @override
+  createViewer(_) => new _TimerApp();
 }
 
 class _TimerApp extends Widget<TimerApp, int> {
@@ -23,5 +26,4 @@ class _TimerApp extends Widget<TimerApp, int> {
   render() => $.Div(inner: "Seconds elapsed: ${state}");
 }
 
-final tags = $.elements.extend({TimerApp: () => new _TimerApp()});
-main() => getRoot("#container").mount(const TimerApp(), tags);
+main() => getRoot("#container").mount(const TimerApp());

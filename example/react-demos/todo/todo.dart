@@ -3,7 +3,11 @@ import 'package:tagtree/browser.dart';
 
 class TodoList extends View {
   final List<String> items;
+
   const TodoList({this.items});
+
+  @override
+  createViewer(_) => const _TodoList();
 }
 
 class _TodoList extends Template {
@@ -17,6 +21,9 @@ class _TodoList extends Template {
 
 class TodoApp extends View {
   const TodoApp();
+
+  @override
+  createViewer(_) => new _TodoApp();
 }
 
 class _TodoState {
@@ -53,14 +60,7 @@ class _TodoApp extends Widget<TodoApp, _TodoState> {
 
   @override
   cloneState(_TodoState prev) => new _TodoState(prev.items, prev.text);
-
-  static create() => new _TodoApp();
 }
 
-final tags = $.elements.extend(const {
-  TodoApp: _TodoApp.create,
-  TodoList: const _TodoList()
-});
-
-main() => getRoot("#container").mount(const TodoApp(), tags);
+main() => getRoot("#container").mount(const TodoApp());
 

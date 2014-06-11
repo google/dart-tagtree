@@ -5,6 +5,7 @@ import "shared.dart";
 
 class _TextFile extends Template {
   const _TextFile();
+
   @override
   render(TextFile props) => $.Pre(inner: props.lines.join("\n"));
 }
@@ -12,7 +13,7 @@ class _TextFile extends Template {
 final exportedTags = new HtmlTagSet()
   ..export("TextFile", (m) => new TextFile.fromMap(m));
 
-final theme = $.elements.extend(const {
+final theme = new Theme(const {
   TextFile: const _TextFile(),
   Slot: SlotWidget.create,
 });

@@ -4,6 +4,9 @@ import 'package:tagtree/core.dart';
 
 class MarkdownEditor extends View {
   const MarkdownEditor();
+
+  @override
+  createViewer(_) => new _MarkdownEditor();
 }
 
 class _MarkdownEditor extends Widget<MarkdownEditor, String> {
@@ -27,8 +30,6 @@ class _MarkdownEditor extends Widget<MarkdownEditor, String> {
     ]);
 }
 
-final theme = $.elements.extend({MarkdownEditor: () => new _MarkdownEditor()});
-
 main() =>
     getRoot("#container")
-      ..mount(const MarkdownEditor(), theme);
+      ..mount(const MarkdownEditor());

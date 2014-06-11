@@ -4,13 +4,18 @@ import 'package:tagtree/browser.dart';
 class Page extends View {
   final Menu menu;
   final List<View> content;
+
   const Page({
     this.menu: null,
     this.content: const []});
+
+  @override
+  createViewer(_) => const _Page();
 }
 
 class _Page extends Template {
   const _Page();
+
   @override
   render(Page p) {
     var items = [];
@@ -29,8 +34,13 @@ class Menu extends View {
   final List<String> items;
   final String defaultSelected;
   final MenuClickFunc onClick;
+
   const Menu({this.title, this.items, this.defaultSelected, this.onClick});
+
+  @override
   bool checked() => items != null && items.length > 0;
+
+  createViewer(_) => new _Menu();
 }
 
 class _Menu extends Widget<Menu, String> {
@@ -64,13 +74,12 @@ class _Menu extends Widget<Menu, String> {
 
     return $.Div(clazz: "pure-menu pure-menu-open pure-menu-horizontal", inner: items);
   }
-
-  static create() => new _Menu();
 }
 
 class LoginView extends View {
   final String email;
   final bool rememberMe;
+
   const LoginView({this.email: "", this.rememberMe: false});
 }
 
@@ -98,8 +107,6 @@ class _LoginView extends Template {
 Theme makeTheme(String name, String loginClasses) {
     var _loginView = new _LoginView(loginClasses);
     return $.elements.extend({
-        Page: const _Page(),
-        Menu: _Menu.create,
         LoginView: _loginView
     });
 }
