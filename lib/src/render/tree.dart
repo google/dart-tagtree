@@ -40,7 +40,7 @@ abstract class _Node<V extends View> {
 
   bool get mounted => view != null;
 
-  bool canUpdate(View nextView, Viewer nextViewer);
+  bool canUpdateInPlace(View nextView, Viewer nextViewer);
 
   /// The props that were most recently rendered.
   PropsMap get props => view.props;
@@ -66,7 +66,7 @@ class _TextNode extends _Node<_TextView> {
   _TextNode(String path, int depth, _TextView view) : super(path, depth, view);
 
   @override
-  canUpdate(nextView, _) => nextView is _TextView;
+  canUpdateInPlace(nextView, _) => nextView is _TextView;
 }
 
 /// A node for a rendered HTML element.
@@ -76,7 +76,7 @@ class _ElementNode extends _Node<ElementView> {
   _ElementNode(String path, int depth, View view) : super(path, depth, view);
 
   @override
-  canUpdate(View nextView, Viewer nextViewer) => nextView is ElementView;
+  canUpdateInPlace(nextView, _) => nextView is ElementView;
 }
 
 /// A node for a expanded template.
@@ -87,7 +87,7 @@ class _TemplateNode extends _Node<View> {
     super(path, depth, view);
 
   @override
-  canUpdate(View nextView, Viewer nextViewer) => nextViewer == template;
+  canUpdateInPlace(View nextView, Viewer nextViewer) => nextViewer is Template;
 }
 
 typedef _InvalidateWidgetFunc(_WidgetNode v);
@@ -102,7 +102,10 @@ class _WidgetNode extends _Node<View> {
     super(path, depth, view);
 
   @override
-  canUpdate(View nextView, Viewer nextViewer) =>nextViewer.runtimeType == widget.runtimeType;
+  canUpdateInPlace(View nextView, Viewer nextViewer) =>
+      // Assumes all widgets of the same type are interchangable,
+      // so we can throw the new widget away and keep using the old one.
+      nextViewer.runtimeType == widget.runtimeType;
 
   @override
   View updateProps(View next) {

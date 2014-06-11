@@ -17,7 +17,7 @@ abstract class _Update extends _Mount with _Unmount {
   // Either way, updates the DOM and returns the new node tree.
   _Node updateOrReplace(_Node current, View toRender, Theme oldTheme, Theme newTheme) {
     var nextViewer = toRender.createViewer(newTheme);
-    if (current.canUpdate(toRender, nextViewer)) {
+    if (current.canUpdateInPlace(toRender, nextViewer)) {
       _updateInPlace(current, toRender, nextViewer, oldTheme, newTheme);
       return current;
     } else {
@@ -50,8 +50,9 @@ abstract class _Update extends _Mount with _Unmount {
     View oldView = node.updateProps(newView);
 
     if (node is _TemplateNode) {
-      node.template = viewer;
-      if (oldTheme != newTheme || node.template.shouldRender(oldView, node.view)) {
+      if (oldTheme != newTheme || node.template != viewer ||
+          node.template.shouldRender(oldView, node.view)) {
+        node.template = viewer;
         _renderTemplate(node, oldTheme, newTheme);
       }
     } else if (node is _WidgetNode) {
