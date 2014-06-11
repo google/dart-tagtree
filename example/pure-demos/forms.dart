@@ -106,7 +106,7 @@ class _LoginView extends Template {
 
 Theme makeTheme(String name, String loginClasses) {
     var _loginView = new _LoginView(loginClasses);
-    return $.elements.extend({
+    return new Theme({
         LoginView: _loginView
     });
 }

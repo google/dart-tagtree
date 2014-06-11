@@ -58,6 +58,7 @@ abstract class View implements Jsonable {
   PropsMap get props {
     var p = _propsCache[this];
     if (p == null) {
+      assert(checked());
       p = new PropsMap(propsImpl);
       _propsCache[p] = p;
     }

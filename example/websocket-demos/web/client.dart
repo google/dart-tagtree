@@ -11,7 +11,7 @@ class _TextFile extends Template {
 }
 
 final exportedTags = new HtmlTagSet()
-  ..export("TextFile", (m) => new TextFile.fromMap(m));
+  ..export(TextFile.tag, TextFile.fromMap);
 
 final theme = new Theme(const {
   TextFile: const _TextFile(),
