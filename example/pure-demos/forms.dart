@@ -10,7 +10,7 @@ class Page extends View {
     this.content: const []});
 
   @override
-  createViewer(_) => const _Page();
+  createViewer() => const _Page();
 }
 
 class _Page extends Template {
@@ -40,7 +40,7 @@ class Menu extends View {
   @override
   bool checked() => items != null && items.length > 0;
 
-  createViewer(_) => new _Menu();
+  createViewer() => new _Menu();
 }
 
 class _Menu extends Widget<Menu, String> {

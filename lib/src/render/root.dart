@@ -87,5 +87,5 @@ class _TextView extends View implements Viewer {
   final String value;
   const _TextView(this.value);
   @override
-  _TextView createViewer(_) => this;
+  _TextView createViewer() => this;
 }

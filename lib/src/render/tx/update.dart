@@ -16,7 +16,7 @@ abstract class _Update extends _Mount with _Unmount {
   // unmounted and a new node tree will be created.
   // Either way, updates the DOM and returns the new node tree.
   _Node updateOrReplace(_Node current, View toRender, Theme oldTheme, Theme newTheme) {
-    var nextViewer = toRender.createViewer(newTheme);
+    var nextViewer = toRender.createViewerForTheme(newTheme);
     if (current.canUpdateInPlace(toRender, nextViewer)) {
       _updateInPlace(current, toRender, nextViewer, oldTheme, newTheme);
       return current;

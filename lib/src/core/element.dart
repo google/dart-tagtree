@@ -14,7 +14,10 @@ class ElementView implements View {
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  Viewer createViewer(_) => type;
+  Viewer createViewerForTheme(_) => type;
+
+  @override
+  Viewer createViewer() => type;
 
   @override
   get jsonTag => type.htmlTag;

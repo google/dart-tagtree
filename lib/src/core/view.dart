@@ -41,13 +41,31 @@ abstract class View implements Jsonable {
   bool checked() => true;
 
   /// Creates the Viewer that will render this View to HTML.
-  Viewer createViewer(Theme theme) {
+  /// The theme is tried first (if not null), and if it doesn't
+  /// have any Viewer, [createViewer] is called as a fallback.
+  Viewer createViewerForTheme(Theme theme) {
+    if (theme == null) {
+      var result = createViewer();
+      if (result == null) {
+        throw "createViewer is not overridden for ${runtimeType} and no theme is installed";
+      }
+      return result;
+    }
+
     CreateViewerFunc create = theme[runtimeType];
-    if (create == null) {
+    if (create != null) {
+      return create();
+    }
+
+    var fallback = createViewer();
+    if (fallback == null) {
       throw "Theme ${theme.name} has no definition for ${runtimeType}";
     }
-    return create();
+    return fallback;
   }
+
+  /// Creates the Viewer for this View in the case when there's no Theme.
+  Viewer createViewer() => null;
 
   /// Returns the contents of the view as a [PropsMap].
   /// This form is more suitable for reflective access and serializing to

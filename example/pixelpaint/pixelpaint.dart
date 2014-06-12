@@ -32,7 +32,7 @@ class PixelPaintApp extends View {
   bool checked() => palette.length == 2;
 
   @override
-  createViewer(_) => new _PixelPaintApp();
+  createViewer() => new _PixelPaintApp();
 }
 
 /// The top-level state machine.
@@ -64,7 +64,7 @@ class GridView extends View {
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
-  createViewer(_) => new _GridView();
+  createViewer() => new _GridView();
 }
 
 /// A handler that's called when the user paints a pixel.
@@ -129,7 +129,7 @@ class RowView extends View {
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
 
   @override
-  createViewer(_) => const _RowView();
+  createViewer() => const _RowView();
 }
 
 class _RowView extends Template {

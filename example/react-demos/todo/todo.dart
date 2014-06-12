@@ -7,7 +7,7 @@ class TodoList extends View {
   const TodoList({this.items});
 
   @override
-  createViewer(_) => const _TodoList();
+  createViewer() => const _TodoList();
 }
 
 class _TodoList extends Template {
@@ -23,7 +23,7 @@ class TodoApp extends View {
   const TodoApp();
 
   @override
-  createViewer(_) => new _TodoApp();
+  createViewer() => new _TodoApp();
 }
 
 class _TodoState {

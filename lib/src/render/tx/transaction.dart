@@ -67,7 +67,7 @@ class _Transaction extends _Update {
 
   _Node makeNode(String path, int depth, View view, Theme theme) {
     assert(view.checked());
-    Viewer viewer = view.createViewer(theme);
+    Viewer viewer = view.createViewerForTheme(theme);
     if (viewer is _TextView) {
       return new _TextNode(path, depth, viewer);
     } else if (viewer is ElementType) {

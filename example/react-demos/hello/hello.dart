@@ -6,7 +6,7 @@ class HelloMessage extends View {
   const HelloMessage({this.name});
 
   @override
-  createViewer(_) => const _HelloMessage();
+  createViewer() => const _HelloMessage();
 }
 
 class _HelloMessage extends Template {

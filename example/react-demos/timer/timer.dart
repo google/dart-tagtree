@@ -6,7 +6,7 @@ class TimerApp extends View {
   const TimerApp();
 
   @override
-  createViewer(_) => new _TimerApp();
+  createViewer() => new _TimerApp();
 }
 
 class _TimerApp extends Widget<TimerApp, int> {
