@@ -13,7 +13,7 @@ part of widget;
 /// A Widget may access the DOM by rendering an element tag with its "ref"
 /// property set. The DOM will be available during callbacks
 /// for [didRender] and [willUnmount] events.
-abstract class Widget<V extends View,S> extends StateMixin<S> implements Viewer {
+abstract class Widget<V extends View,S> extends StateMixin<S> implements Expander {
   V props;
 
   final _didMount = new StreamController.broadcast();
@@ -30,6 +30,18 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Viewer 
     return new WidgetController(this);
   }
 
+  @override
+  View expand(V input) {
+    setView(input);
+    return render();
+  }
+
+  @override
+  bool canReuse(Expander next) => next.runtimeType == this.runtimeType;
+
+  @override
+  bool shouldExpand(View prev, View next) => true;
+
   /// Copies the assocated view into the widget.
   /// Called automatically before [createFirstState]
   /// and whenever the associated widget tag is rendered.
@@ -42,11 +54,6 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Viewer 
   /// (That is, whenever [nextState] is accessed.)
   @override
   void invalidate() => _invalidate();
-
-  /// If shouldRender returns false, rendering will be skipped.
-  /// Subclasses may override this method to improve performance.
-  /// Called automatically in the animation frame after [setView] or [invalidate].
-  bool shouldRender(View oldView, S oldState) => true;
 
   /// Constructs the tag tree to be rendered in place of this Widget.
   /// Called automatically for first animation frame containing

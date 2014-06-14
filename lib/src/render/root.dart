@@ -83,9 +83,19 @@ abstract class RenderRoot {
   }
 }
 
-class _TextView extends View implements Viewer {
+class _TextView extends View implements Expander {
   final String value;
   const _TextView(this.value);
+
   @override
-  _TextView createViewer() => this;
+  bool canReuse(Expander next) => next == this;
+
+  @override
+  bool shouldExpand(prev, next) => false;
+
+  @override
+  expand(v) => v;
+
+  @override
+  _TextView createExpander() => this;
 }

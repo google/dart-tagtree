@@ -6,7 +6,7 @@ class MarkdownEditor extends View {
   const MarkdownEditor();
 
   @override
-  createViewer() => new _MarkdownEditor();
+  createExpander() => new _MarkdownEditor();
 }
 
 class _MarkdownEditor extends Widget<MarkdownEditor, String> {

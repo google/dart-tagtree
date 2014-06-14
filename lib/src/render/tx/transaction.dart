@@ -26,8 +26,10 @@ class _Transaction extends _Update {
     // Sort ancestors ahead of children.
     _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (_WidgetNode v in _widgetsToUpdate) {
-      updateWidget(v, root._renderedTheme, nextTheme);
+    for (_WidgetNode n in _widgetsToUpdate) {
+      if (n.mounted) {
+        updateWidget(n, root._renderedTheme, nextTheme);
+      }
     }
 
     _finish();
@@ -67,17 +69,17 @@ class _Transaction extends _Update {
 
   _Node makeNode(String path, int depth, View view, Theme theme) {
     assert(view.checked());
-    Viewer viewer = view.createViewerForTheme(theme);
-    if (viewer is _TextView) {
-      return new _TextNode(path, depth, viewer);
-    } else if (viewer is ElementType) {
+    Expander expander = view.createExpanderForTheme(theme);
+    if (expander is _TextView) {
+      return new _TextNode(path, depth, expander);
+    } else if (expander is ElementType) {
       return new _ElementNode(path, depth, view);
-    } else if (viewer is Template) {
-      return new _TemplateNode(path, depth, view, viewer);
-    } else if (viewer is Widget) {
-      return new _WidgetNode(path, depth, view, viewer);
+    } else if (expander is Template) {
+      return new _TemplateNode(path, depth, view, expander);
+    } else if (expander is Widget) {
+      return new _WidgetNode(path, depth, view, expander);
     }
-    throw "unknown viewer type: ${viewer.runtimeType}";
+    throw "unknown viewer type: ${expander.runtimeType}";
   }
 
   // What was done

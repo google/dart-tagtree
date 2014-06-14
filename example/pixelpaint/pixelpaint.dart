@@ -32,7 +32,7 @@ class PixelPaintApp extends View {
   bool checked() => palette.length == 2;
 
   @override
-  createViewer() => new _PixelPaintApp();
+  createExpander() => new _PixelPaintApp();
 }
 
 /// The top-level state machine.
@@ -64,7 +64,7 @@ class GridView extends View {
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
-  createViewer() => new _GridView();
+  createExpander() => new _GridView();
 }
 
 /// A handler that's called when the user paints a pixel.
@@ -129,14 +129,14 @@ class RowView extends View {
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
 
   @override
-  createViewer() => const _RowView();
+  createExpander() => const _RowView();
 }
 
 class _RowView extends Template {
   const _RowView();
 
   @override
-  render(RowView rv) {
+  expand(RowView rv) {
     var cells = [];
     for (int x = 0; x < rv.row.width; x++) {
       int pixel = rv.row[x];
@@ -150,7 +150,7 @@ class _RowView extends Template {
 
   /// Avoid redrawing a row that hasn't changed. (The key to good performance!)
   @override
-  shouldRender(RowView before, RowView after) => !before.row.equals(after.row);
+  shouldExpand(RowView before, RowView after) => !before.row.equals(after.row);
 }
 
 //

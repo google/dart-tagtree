@@ -7,7 +7,7 @@ class _TextFile extends Template {
   const _TextFile();
 
   @override
-  render(TextFile props) => $.Pre(inner: props.lines.join("\n"));
+  expand(TextFile props) => $.Pre(inner: props.lines.join("\n"));
 }
 
 final exportedTags = new HtmlTagSet()

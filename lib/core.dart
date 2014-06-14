@@ -10,7 +10,7 @@
  * An [ElementView] is a View that renders to an HTML element. Its structure is
  * defined by an [ElementType].
  *
- * A [Viewer] implements a [View]. The [ElementType] and [Template] viewers are
+ * A [Expander] implements a [View]. The [ElementType] and [Template] viewers are
  * included in core. Viewers for multiple kinds of views are collected into a [Theme].
  *
  * A [TagSet] can create the corresponding View for each of a set of tags.

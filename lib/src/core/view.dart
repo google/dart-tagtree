@@ -21,7 +21,7 @@ part of core;
 /// Also, Views can usually be Dart constants; unless there is a good reason, they
 /// should have const constructors.
 ///
-/// The [createViewer] method determines how the View will be rendered.
+/// The [createExpander] method determines how the View will be rendered.
 /// Normally this is done by looking up a function in the supplied [Theme].
 ///
 /// You can implement a custom view by subclassing View to define the tag and
@@ -40,32 +40,32 @@ abstract class View implements Jsonable {
   /// called before a View is rendered or sent over the network.
   bool checked() => true;
 
-  /// Creates the Viewer that will render this View to HTML.
+  /// Creates the Expander that will render this View to HTML.
   /// The theme is tried first (if not null), and if it doesn't
-  /// have any Viewer, [createViewer] is called as a fallback.
-  Viewer createViewerForTheme(Theme theme) {
+  /// have any Expander, [createExpander] is called as a fallback.
+  Expander createExpanderForTheme(Theme theme) {
     if (theme == null) {
-      var result = createViewer();
+      var result = createExpander();
       if (result == null) {
-        throw "createViewer is not overridden for ${runtimeType} and no theme is installed";
+        throw "createExpander is not overridden for ${runtimeType} and no theme is installed";
       }
       return result;
     }
 
-    CreateViewerFunc create = theme[runtimeType];
+    CreateExpander create = theme[runtimeType];
     if (create != null) {
       return create();
     }
 
-    var fallback = createViewer();
+    var fallback = createExpander();
     if (fallback == null) {
       throw "Theme ${theme.name} has no definition for ${runtimeType}";
     }
     return fallback;
   }
 
-  /// Creates the Viewer for this View in the case when there's no Theme.
-  Viewer createViewer() => null;
+  /// Creates the Expander for this View in the case when there's no Theme.
+  Expander createExpander() => null;
 
   /// Returns the contents of the view as a [PropsMap].
   /// This form is more suitable for reflective access and serializing to

@@ -16,9 +16,9 @@ abstract class _Update extends _Mount with _Unmount {
   // unmounted and a new node tree will be created.
   // Either way, updates the DOM and returns the new node tree.
   _Node updateOrReplace(_Node current, View toRender, Theme oldTheme, Theme newTheme) {
-    var nextViewer = toRender.createViewerForTheme(newTheme);
-    if (current.canUpdateInPlace(toRender, nextViewer)) {
-      _updateInPlace(current, toRender, nextViewer, oldTheme, newTheme);
+    var nextExpander = toRender.createExpanderForTheme(newTheme);
+    if (current.expander.canReuse(nextExpander)) {
+      _updateInPlace(current, toRender, oldTheme, newTheme);
       return current;
     } else {
       String path = current.path;
@@ -35,9 +35,8 @@ abstract class _Update extends _Mount with _Unmount {
   /// Renders a Widget without any property changes.
   void updateWidget(_WidgetNode node, Theme oldTheme, Theme newTheme) {
     Widget w = node.controller.widget;
-    var oldState = w.state;
     w.commitState();
-    _renderWidget(node, node.view, oldState, oldTheme, newTheme);
+    _renderWidget(node, oldTheme, newTheme);
   }
 
   /// Updates a node tree in place, by expanding a View.
@@ -45,23 +44,19 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void _updateInPlace(_Node node, View newView, Viewer viewer,
-                      Theme oldTheme, Theme newTheme) {
+  void _updateInPlace(_Node node, View newView, Theme oldTheme, Theme newTheme) {
+    if (oldTheme == newTheme && !node.expander.shouldExpand(node.view, newView)) {
+      return;
+    }
     View oldView = node.updateProps(newView);
 
     if (node is _TemplateNode) {
-      if (oldTheme != newTheme || node.template != viewer ||
-          node.template.shouldRender(oldView, node.view)) {
-        node.template = viewer;
-        _renderTemplate(node, oldTheme, newTheme);
-      }
+      View newShadow = node.template.expand(node.view);
+      node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
     } else if (node is _WidgetNode) {
-      Widget w = node.controller.widget;
-      var oldState = w.state;
-      w.commitState();
-      _renderWidget(node, oldView, oldState, oldTheme, newTheme);
+      _renderWidget(node, oldTheme, newTheme);
     } else if (node is _TextNode) {
-      _renderText(node, oldView);
+      dom.setInnerText(node.path, node.view.value);
     } else if (node is _ElementNode) {
       _renderElt(node, oldView.props, oldTheme, newTheme);
     } else {
@@ -69,16 +64,7 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  void _renderTemplate(_TemplateNode node, Theme oldTheme, Theme newTheme) {
-    View newShadow = node.template.render(node.view);
-    node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
-  }
-
-  void _renderWidget(_WidgetNode node, View oldView, oldState, Theme oldTheme, Theme newTheme) {
-    if (!node.controller.widget.shouldRender(oldView, oldState)) {
-      return;
-    }
-
+  void _renderWidget(_WidgetNode node, Theme oldTheme, Theme newTheme) {
     var c = node.controller;
     View newShadow = c.widget.render();
     node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
@@ -86,13 +72,6 @@ abstract class _Update extends _Mount with _Unmount {
     // Schedule events.
     if (c.didRender.hasListener) {
       _renderedWidgets.add(c.didRender);
-    }
-  }
-
-  void _renderText(_TextNode node, _TextView oldView) {
-    String newValue = node.view.value;
-    if (oldView.value != newValue) {
-      dom.setInnerText(node.path, newValue);
     }
   }
 

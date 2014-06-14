@@ -36,11 +36,14 @@ abstract class _Node<V extends View> {
   /// The view that was most recently rendered into this node.
   V view;
 
-  _Node(this.path, this.depth, this.view);
+  /// The expander that was most recently used to render this node.
+  Expander expander;
+
+  _Node(this.path, this.depth, this.view, this.expander);
 
   bool get mounted => view != null;
 
-  bool canUpdateInPlace(View nextView, Viewer nextViewer);
+  bool canUpdateInPlace(View nextView, Expander nextViewer);
 
   /// The props that were most recently rendered.
   PropsMap get props => view.props;
@@ -63,7 +66,8 @@ abstract class _Node<V extends View> {
 /// To simulate mixed-content HTML, we render the text inside a <span>,
 /// so that it can easily be updated using its data-path attribute.
 class _TextNode extends _Node<_TextView> {
-  _TextNode(String path, int depth, _TextView view) : super(path, depth, view);
+  _TextNode(String path, int depth, _TextView view) :
+    super(path, depth, view,  view);
 
   @override
   canUpdateInPlace(nextView, _) => nextView is _TextView;
@@ -73,7 +77,7 @@ class _TextNode extends _Node<_TextView> {
 class _ElementNode extends _Node<ElementView> {
   // May be a List<_Node>, String, or RawHtml.
   var children;
-  _ElementNode(String path, int depth, View view) : super(path, depth, view);
+  _ElementNode(String path, int depth, ElementView view) : super(path, depth, view, view.type);
 
   @override
   canUpdateInPlace(nextView, _) => nextView is ElementView;
@@ -81,28 +85,30 @@ class _ElementNode extends _Node<ElementView> {
 
 /// A node for a expanded template.
 class _TemplateNode extends _Node<View> {
-  Template template;
   _Node shadow;
-  _TemplateNode(String path, int depth, View view, this.template) :
-    super(path, depth, view);
+  _TemplateNode(String path, int depth, View view, Template template) :
+    super(path, depth, view, template);
+
+  Template get template => expander;
 
   @override
-  canUpdateInPlace(View nextView, Viewer nextViewer) => nextViewer is Template;
+  canUpdateInPlace(View nextView, Expander nextViewer) => nextViewer is Template;
 }
 
 typedef _InvalidateWidgetFunc(_WidgetNode v);
 
 /// A node for a running widget.
 class _WidgetNode extends _Node<View> {
-  Widget widget;
   WidgetController controller;
   _Node shadow;
 
-  _WidgetNode(String path, int depth, View view, this.widget) :
-    super(path, depth, view);
+  _WidgetNode(String path, int depth, View view, Widget widget) :
+    super(path, depth, view, widget);
+
+  Widget get widget => expander;
 
   @override
-  canUpdateInPlace(View nextView, Viewer nextViewer) =>
+  canUpdateInPlace(View nextView, Expander nextViewer) =>
       // Assumes all widgets of the same type are interchangable,
       // so we can throw the new widget away and keep using the old one.
       nextViewer.runtimeType == widget.runtimeType;
@@ -115,6 +121,7 @@ class _WidgetNode extends _Node<View> {
       super.updateProps(next);
       controller.widget.setView(next);
     }
+    controller.widget.commitState();
     return old;
   }
 }

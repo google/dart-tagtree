@@ -7,13 +7,13 @@ class TodoList extends View {
   const TodoList({this.items});
 
   @override
-  createViewer() => const _TodoList();
+  createExpander() => const _TodoList();
 }
 
 class _TodoList extends Template {
   const _TodoList();
   @override
-  render(TodoList props) {
+  expand(TodoList props) {
     createItem(itemText) => $.Li(inner: itemText);
     return $.Ul(inner: props.items.map(createItem));
   }
@@ -23,7 +23,7 @@ class TodoApp extends View {
   const TodoApp();
 
   @override
-  createViewer() => new _TodoApp();
+  createExpander() => new _TodoApp();
 }
 
 class _TodoState {

@@ -10,14 +10,14 @@ class Page extends View {
     this.content: const []});
 
   @override
-  createViewer() => const _Page();
+  createExpander() => const _Page();
 }
 
 class _Page extends Template {
   const _Page();
 
   @override
-  render(Page p) {
+  expand(Page p) {
     var items = [];
     if (p.menu != null) {
       items.add(p.menu);
@@ -40,7 +40,7 @@ class Menu extends View {
   @override
   bool checked() => items != null && items.length > 0;
 
-  createViewer() => new _Menu();
+  createExpander() => new _Menu();
 }
 
 class _Menu extends Widget<Menu, String> {
@@ -88,7 +88,7 @@ class _LoginView extends Template {
   const _LoginView(this.formClasses);
 
   @override
-  render(LoginView v) =>
+  expand(LoginView v) =>
     $.Form(clazz: formClasses, inner:
       $.FieldSet(inner: [
         $.Input(type: "email", placeholder: "Email", defaultValue: v.email), " ",

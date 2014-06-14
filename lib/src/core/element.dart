@@ -14,10 +14,10 @@ class ElementView implements View {
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  Viewer createViewerForTheme(_) => type;
+  Expander createExpanderForTheme(_) => type;
 
   @override
-  Viewer createViewer() => type;
+  Expander createExpander() => type;
 
   @override
   get jsonTag => type.htmlTag;
@@ -46,7 +46,7 @@ class RawHtml implements Jsonable {
 }
 
 /// The structure of an HTML element, as represented by an [ElementView].
-class ElementType implements Viewer {
+class ElementType extends Expander {
 
   /// The name of the [TagSet] method that will create this element.
   /// (See [namedParamToKey] for the named parameters it will have.)
@@ -86,6 +86,9 @@ class ElementType implements Viewer {
     assert(checkView(v));
     return v;
   }
+
+  @override
+  expand(v) => v;
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

@@ -41,7 +41,7 @@ abstract class _Mount {
       out.write("<span data-path=${node.path}>${HTML_ESCAPE.convert(node.view.value)}</span>");
 
     } else if (node is _TemplateNode) {
-      View shadowTree = node.template.render(node.view);
+      View shadowTree = node.template.expand(node.view);
       node.shadow = mountView(shadowTree, theme, out, path, depth + 1);
 
     } else if (node is _WidgetNode) {
@@ -51,6 +51,7 @@ abstract class _Mount {
 
       View shadowTree = widget.render();
       node.shadow = mountView(shadowTree, theme, out, node.path, node.depth + 1);
+      assert(node.shadow != null);
 
       if (c.didRender.hasListener) {
         _mountedWidgets.add(c.didRender);

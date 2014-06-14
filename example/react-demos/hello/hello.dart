@@ -6,14 +6,14 @@ class HelloMessage extends View {
   const HelloMessage({this.name});
 
   @override
-  createViewer() => const _HelloMessage();
+  createExpander() => const _HelloMessage();
 }
 
 class _HelloMessage extends Template {
   const _HelloMessage();
 
   @override
-  render(HelloMessage props) => $.Div(inner: "Hello ${props.name}");
+  expand(HelloMessage props) => $.Div(inner: "Hello ${props.name}");
 }
 
 main() =>
