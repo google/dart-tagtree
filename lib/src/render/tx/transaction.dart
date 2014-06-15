@@ -69,7 +69,7 @@ class _Transaction extends _Update {
     assert(view.checked());
     Expander expander = view.createExpanderForTheme(theme);
     if (expander is _TextView) {
-      return new _TextNode(path, depth, expander);
+      return new _Node(path, depth, view, expander);
     } else if (expander is ElementType) {
       return new _ElementNode(path, depth, view);
     } else if (expander is Template) {

@@ -37,6 +37,7 @@ class _Node<V extends View> {
   /// The expander that was most recently used to render this node.
   Expander expander;
 
+  /// The shadow if this node was expanded.
   _Node shadow;
 
   _Node(this.path, this.depth, this.view, this.expander);
@@ -50,17 +51,6 @@ class _Node<V extends View> {
     assert(view != null);
     view = null;
   }
-}
-
-typedef _InvalidNodeFunc(_Node v);
-
-/// A node for some text within mixed-content HTML.
-///
-/// To simulate mixed-content HTML, we render the text inside a <span>,
-/// so that it can easily be updated using its data-path attribute.
-class _TextNode extends _Node<_TextView> {
-  _TextNode(String path, int depth, _TextView view) :
-    super(path, depth, view,  view);
 }
 
 /// A node for a rendered HTML element.

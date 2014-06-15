@@ -36,19 +36,20 @@ abstract class _Mount {
   }
 
   void _expandNode(_Node node, Theme theme, StringBuffer out, String path, int depth) {
+    var view = node.view;
     var expander = node.expander;
     if (expander is Widget) {
-      expander.mount(node.view, () => invalidate(node));
+      expander.mount(view, () => invalidate(node));
     }
 
-    View shadow = node.expander.expand(node.view);
-    if (shadow != node.view) {
+    View shadow = node.expander.expand(view);
+    if (shadow != view) {
       node.shadow = mountView(shadow, theme, out, path, depth + 1);
     }
 
-    if (node is _TextNode) {
+    if (view is _TextView) {
       // need to surround with a span to support incremental updates to a child
-      out.write("<span data-path=${node.path}>${HTML_ESCAPE.convert(node.view.value)}</span>");
+      out.write("<span data-path=${node.path}>${HTML_ESCAPE.convert(view.value)}</span>");
 
     } else if (node is _ElementNode) {
       _expandElement(node, theme, out);
