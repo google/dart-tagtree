@@ -10,23 +10,21 @@ part of render;
 /// to the DOM. See Transaction and its mixins for the update calculation and
 /// DomUpdater which is the API used to send a stream of updates to the DOM.
 ///
-/// There are _Node subclasses for each kind of Tag: HTML elements, templates,
-/// and widgets. (To support mixed content, there is also a _Node subclass for plain
-/// text.) Templates and widgets have shadow trees recording the output of their
-/// render methods. To calculate the current state of the DOM, we could recursively
+/// Nodes that have been expanded have shadow trees recording the output of their
+/// expand methods. To calculate the current state of the DOM, we could recursively
 /// replace each _Node with its shadow, resulting in a tree containing only element
 /// and text nodes.
 ///
 /// Each _Node conceptually has an owner that rendered the corresponding View. For top-level
 /// nodes that aren't in a shadow tree, the owner is outside the framework and makes changes
-/// by calling Root.mount(). For nodes inside a shadow tree, the owner is the template or
-/// widget node whose render method created the shadow tree.
+/// by calling Root.mount(). For nodes inside a shadow tree, the owner is the expander that
+/// created the shadow tree.
 ///
-/// Most _Nodes have no state of their own; all their state is copied from the corresponding
-/// View. Therefore, they only need to be updated when their owner is rendered. However,
-/// widgets have their own state and therefore can start a render by calling
-/// Widget.invalidate().
-abstract class _Node<V extends View> {
+/// Most expanders have no state of their own; all their state is copied from the corresponding
+/// View. Therefore, they only need to be updated when their owner is rendered. Widgets
+/// are an exception; they can call invalidate() to add the Widget as a root for the
+/// next render.
+class _Node<V extends View> {
   /// The unique id used to find the node's HTML element.
   final String path;
 
@@ -39,27 +37,22 @@ abstract class _Node<V extends View> {
   /// The expander that was most recently used to render this node.
   Expander expander;
 
+  _Node shadow;
+
   _Node(this.path, this.depth, this.view, this.expander);
 
   bool get mounted => view != null;
 
-  bool canUpdateInPlace(View nextView, Expander nextViewer);
-
   /// The props that were most recently rendered.
   PropsMap get props => view.props;
-
-  View updateProps(View newView) {
-    assert(view != null);
-    var old = view;
-    view = newView;
-    return old;
-  }
 
   void _unmount() {
     assert(view != null);
     view = null;
   }
 }
+
+typedef _InvalidNodeFunc(_Node v);
 
 /// A node for some text within mixed-content HTML.
 ///
@@ -68,9 +61,6 @@ abstract class _Node<V extends View> {
 class _TextNode extends _Node<_TextView> {
   _TextNode(String path, int depth, _TextView view) :
     super(path, depth, view,  view);
-
-  @override
-  canUpdateInPlace(nextView, _) => nextView is _TextView;
 }
 
 /// A node for a rendered HTML element.
@@ -78,50 +68,4 @@ class _ElementNode extends _Node<ElementView> {
   // May be a List<_Node>, String, or RawHtml.
   var children;
   _ElementNode(String path, int depth, ElementView view) : super(path, depth, view, view.type);
-
-  @override
-  canUpdateInPlace(nextView, _) => nextView is ElementView;
-}
-
-/// A node for a expanded template.
-class _TemplateNode extends _Node<View> {
-  _Node shadow;
-  _TemplateNode(String path, int depth, View view, Template template) :
-    super(path, depth, view, template);
-
-  Template get template => expander;
-
-  @override
-  canUpdateInPlace(View nextView, Expander nextViewer) => nextViewer is Template;
-}
-
-typedef _InvalidateWidgetFunc(_WidgetNode v);
-
-/// A node for a running widget.
-class _WidgetNode extends _Node<View> {
-  WidgetController controller;
-  _Node shadow;
-
-  _WidgetNode(String path, int depth, View view, Widget widget) :
-    super(path, depth, view, widget);
-
-  Widget get widget => expander;
-
-  @override
-  canUpdateInPlace(View nextView, Expander nextViewer) =>
-      // Assumes all widgets of the same type are interchangable,
-      // so we can throw the new widget away and keep using the old one.
-      nextViewer.runtimeType == widget.runtimeType;
-
-  @override
-  View updateProps(View next) {
-    assert(controller.widget.isMounted);
-    View old = view;
-    if (next != null) {
-      super.updateProps(next);
-      controller.widget.setView(next);
-    }
-    controller.widget.commitState();
-    return old;
-  }
 }

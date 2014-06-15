@@ -14,7 +14,7 @@ abstract class RenderRoot {
   bool _frameRequested = false;
   View _nextTagTree;
   Theme _nextTheme;
-  final Set<_WidgetNode> _widgetsToUpdate = new Set();
+  final Set<_Node> _nodesToUpdate = new Set();
 
   RenderRoot(this.id);
 
@@ -45,11 +45,11 @@ abstract class RenderRoot {
   /// rendered tag tree.
   void dispatchEvent(HandlerEvent e) => _dispatch(e, _handlers);
 
-  /// Schedules a widget to be updated just before rendering the next frame.
-  /// (That is, marks the Widget as "dirty".)
-  void _invalidateWidget(_WidgetNode view) {
-    assert(view.mounted);
-    _widgetsToUpdate.add(view);
+  /// Schedules a node to be rendered during the next frame.
+  /// (That is, marks it as "dirty".)
+  void _invalidate(_Node node) {
+    assert(node.mounted);
+    _nodesToUpdate.add(node);
     _requestAnimationFrame();
   }
 
@@ -65,12 +65,12 @@ abstract class RenderRoot {
       _nextTheme = _renderedTheme;
     }
     _Transaction tx =
-        new _Transaction(this, dom, _handlers, _nextTagTree, _nextTheme, _widgetsToUpdate);
+        new _Transaction(this, dom, _handlers, _nextTagTree, _nextTheme, _nodesToUpdate);
 
     _frameRequested = false;
     _nextTagTree = null;
     _nextTheme = null;
-    _widgetsToUpdate.clear();
+    _nodesToUpdate.clear();
 
     bool wasEmpty = _renderedTree == null;
     tx.run();
@@ -79,7 +79,7 @@ abstract class RenderRoot {
     }
 
     // No widgets should be invalidated while rendering.
-    assert(_widgetsToUpdate.isEmpty);
+    assert(_nodesToUpdate.isEmpty);
   }
 }
 
@@ -88,14 +88,17 @@ class _TextView extends View implements Expander {
   const _TextView(this.value);
 
   @override
+  _TextView createExpander() => this;
+
+  @override
   bool canReuse(Expander next) => next == this;
 
   @override
-  bool shouldExpand(prev, next) => false;
+  bool shouldExpand(prev, next) => true;
 
   @override
   expand(v) => v;
 
   @override
-  _TextView createExpander() => this;
+  void unmount() {}
 }

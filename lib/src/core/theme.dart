@@ -23,6 +23,9 @@ abstract class Expander {
   /// (In that case, it must be an [ElementView] that can be rendered
   /// directly.)
   View expand(View input);
+
+  /// Called when the expander is no longer needed.
+  void unmount() {}
 }
 
 typedef Expander CreateExpander();

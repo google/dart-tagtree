@@ -9,13 +9,11 @@ class _Transaction extends _Update {
   // What to do
   final View nextTagTree;
   final Theme nextTheme;
-  final List<_WidgetNode> _widgetsToUpdate;
+  final List<_Node> _nodesToUpdate;
 
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree, this.nextTheme,
-      Iterable<_WidgetNode> widgetsToUpdate)
-      : _widgetsToUpdate = new List.from(widgetsToUpdate);
-
-  _InvalidateWidgetFunc get invalidateWidget => root._invalidateWidget;
+      Iterable<_Node> nodesToUpdate)
+      : _nodesToUpdate = new List.from(nodesToUpdate);
 
   void run() {
     assert(nextTheme != null);
@@ -24,11 +22,11 @@ class _Transaction extends _Update {
     }
 
     // Sort ancestors ahead of children.
-    _widgetsToUpdate.sort((a, b) => a.depth - b.depth);
+    _nodesToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (_WidgetNode n in _widgetsToUpdate) {
+    for (_Node n in _nodesToUpdate) {
       if (n.mounted) {
-        updateWidget(n, root._renderedTheme, nextTheme);
+        updateInPlace(n, n.view, root._renderedTheme, nextTheme);
       }
     }
 
@@ -44,11 +42,11 @@ class _Transaction extends _Update {
       dom.mountForm(form.path);
     }
 
-    for (EventSink s in _mountedWidgets) {
+    for (EventSink s in _mountedExpanders) {
       s.add(true);
     }
 
-    for (EventSink s in _renderedWidgets) {
+    for (EventSink s in _renderedExpanders) {
       s.add(true);
     }
 
@@ -75,12 +73,15 @@ class _Transaction extends _Update {
     } else if (expander is ElementType) {
       return new _ElementNode(path, depth, view);
     } else if (expander is Template) {
-      return new _TemplateNode(path, depth, view, expander);
+      return new _Node(path, depth, view, expander);
     } else if (expander is Widget) {
-      return new _WidgetNode(path, depth, view, expander);
+      return new _Node(path, depth, view, expander);
     }
     throw "unknown viewer type: ${expander.runtimeType}";
   }
+
+  @override
+  void invalidate(_Node node) => root._invalidate(node);
 
   // What was done
 

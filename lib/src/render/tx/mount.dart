@@ -5,12 +5,12 @@ abstract class _Mount {
 
   // Dependencies
   _Node makeNode(String path, int depth, View view, Theme theme);
-  _InvalidateWidgetFunc get invalidateWidget;
+  void invalidate(_Node node);
 
   // What was mounted
   final List<_Node> _mountedRefs = [];
   final List<_ElementNode> _mountedForms = [];
-  final List<EventSink> _mountedWidgets = [];
+  final List<EventSink> _mountedExpanders = [];
   void addHandler(HandlerType type, String path, val);
 
   /// Expands templates and starts widgets for each view in a tag tree.
@@ -36,34 +36,32 @@ abstract class _Mount {
   }
 
   void _expandNode(_Node node, Theme theme, StringBuffer out, String path, int depth) {
+    var expander = node.expander;
+    if (expander is Widget) {
+      expander.mount(node.view, () => invalidate(node));
+    }
+
+    View shadow = node.expander.expand(node.view);
+    if (shadow != node.view) {
+      node.shadow = mountView(shadow, theme, out, path, depth + 1);
+    }
+
     if (node is _TextNode) {
       // need to surround with a span to support incremental updates to a child
       out.write("<span data-path=${node.path}>${HTML_ESCAPE.convert(node.view.value)}</span>");
 
-    } else if (node is _TemplateNode) {
-      View shadowTree = node.template.expand(node.view);
-      node.shadow = mountView(shadowTree, theme, out, path, depth + 1);
-
-    } else if (node is _WidgetNode) {
-      var widget = node.widget;
-      var c = widget.mount(node.view, () => invalidateWidget(node));
-      node.controller = c;
-
-      View shadowTree = widget.render();
-      node.shadow = mountView(shadowTree, theme, out, node.path, node.depth + 1);
-      assert(node.shadow != null);
-
-      if (c.didRender.hasListener) {
-        _mountedWidgets.add(c.didRender);
-      }
-
     } else if (node is _ElementNode) {
       _expandElement(node, theme, out);
 
-    } else {
-      throw "can't mount node for unknown tag type: ${node.runtimeType}";
+    }
+
+    if (node.expander is HasDidRender) {
+      HasDidRender mixin = _cast(node.expander);
+      _mountedExpanders.add(mixin.didRenderSink);
     }
   }
+
+  _cast(x) => x;
 
   /// Expands the descendants of an element node and renders the result to HTML.
   void _expandElement(_ElementNode elt, Theme theme, StringBuffer out) {

@@ -7,7 +7,7 @@ abstract class _Update extends _Mount with _Unmount {
   DomUpdater get dom;
 
   // What was updated
-  final List<EventSink> _renderedWidgets = [];
+  final List<EventSink> _renderedExpanders = [];
   void setHandler(HandlerType type, String path, HandlerFunc handler);
   void removeHandler(HandlerType type, String path);
 
@@ -16,9 +16,11 @@ abstract class _Update extends _Mount with _Unmount {
   // unmounted and a new node tree will be created.
   // Either way, updates the DOM and returns the new node tree.
   _Node updateOrReplace(_Node current, View toRender, Theme oldTheme, Theme newTheme) {
+
     var nextExpander = toRender.createExpanderForTheme(newTheme);
+
     if (current.expander.canReuse(nextExpander)) {
-      _updateInPlace(current, toRender, oldTheme, newTheme);
+      updateInPlace(current, toRender, oldTheme, newTheme);
       return current;
     } else {
       String path = current.path;
@@ -32,48 +34,40 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  /// Renders a Widget without any property changes.
-  void updateWidget(_WidgetNode node, Theme oldTheme, Theme newTheme) {
-    Widget w = node.controller.widget;
-    w.commitState();
-    _renderWidget(node, oldTheme, newTheme);
-  }
-
   /// Updates a node tree in place, by expanding a View.
   /// Assumes the node's theme didn't change.
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void _updateInPlace(_Node node, View newView, Theme oldTheme, Theme newTheme) {
-    if (oldTheme == newTheme && !node.expander.shouldExpand(node.view, newView)) {
+  void updateInPlace(_Node node, View newView, Theme oldTheme, Theme newTheme) {
+    var oldView = node.view;
+    var expander = node.expander;
+    if (oldTheme == newTheme && !expander.shouldExpand(oldView, newView)) {
       return;
     }
-    View oldView = node.updateProps(newView);
 
-    if (node is _TemplateNode) {
-      View newShadow = node.template.expand(node.view);
+    View newShadow = node.expander.expand(newView);
+    if (node.expander is HasDidRender) {
+      HasDidRender mixin = _cast(node.expander);
+     _renderedExpanders.add(mixin.didRenderSink);
+    }
+
+    node.view = newView;
+    if (newShadow != newView) {
       node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
-    } else if (node is _WidgetNode) {
-      _renderWidget(node, oldTheme, newTheme);
-    } else if (node is _TextNode) {
-      dom.setInnerText(node.path, node.view.value);
-    } else if (node is _ElementNode) {
+      return;
+    }
+
+    if (expander is _TextView) {
+      dom.setInnerText(node.path, expander.value);
+    } else if (expander is ElementType) {
       _renderElt(node, oldView.props, oldTheme, newTheme);
     } else {
       throw "cannot update: ${node.runtimeType}";
     }
   }
 
-  void _renderWidget(_WidgetNode node, Theme oldTheme, Theme newTheme) {
-    var c = node.controller;
-    View newShadow = c.widget.render();
-    node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
-
-    // Schedule events.
-    if (c.didRender.hasListener) {
-      _renderedWidgets.add(c.didRender);
-    }
-  }
+  _cast(x) => x;
 
   void _renderElt(_ElementNode elt, PropsMap oldProps, Theme oldTheme, newTheme) {
     _updateDomProperties(elt, oldProps);

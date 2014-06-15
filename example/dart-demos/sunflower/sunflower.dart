@@ -22,7 +22,7 @@ class SunflowerApp extends View {
   createExpander() => new _SunflowerApp();
 }
 
-class _SunflowerApp extends Widget<SunflowerApp, int> {
+class _SunflowerApp extends Widget<SunflowerApp, int> with HasDidRender {
   final canvas = new Ref<CanvasElement>();
 
   _SunflowerApp() {

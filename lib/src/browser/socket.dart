@@ -23,16 +23,16 @@ class SlotWidget extends Widget<Slot, View> {
   _Connection conn;
 
   @override
-  void setView(Slot node) {
-    if ($ != node.export) {
-      $ = node.export;
+  void configure(Slot newSlot) {
+    if ($ != newSlot.export) {
+      $ = newSlot.export;
       if (conn != null) {
         conn.onTagSetChange($);
       }
     }
 
-    if (src != node.src) {
-      src = node.src;
+    if (src != newSlot.src) {
+      src = newSlot.src;
       if (conn != null) {
         conn.close();
         conn = null;

@@ -10,31 +10,19 @@ abstract class _Unmount {
   /// and marks them as unmounted. (Calls releaseElement but doesn't actually
   /// change the DOM.)
   void unmount(_Node node, {bool willReplace: false}) {
+    if (node.shadow != null) {
+      unmount(node.shadow, willReplace: willReplace);
+      node.shadow = null;
+    }
+    node.expander.unmount();
+
     if (node is _TextNode) {
       releaseElement(node.path, node.view.ref, willReplace: willReplace);
     } else if (node is _ElementNode) {
       unmountInner(node);
       releaseElement(node.path, node.view.ref, willReplace: willReplace);
-    } else if (node is _TemplateNode) {
-      unmount(node.shadow);
-      node.shadow = null;
-    } else if (node is _WidgetNode) {
-      _unmountWidget(node, willReplace);
-    } else {
-      throw "unable to unmount ${node.runtimeType}";
     }
     node._unmount();
-  }
-
-  void _unmountWidget(_WidgetNode node, bool willReplace) {
-    if (node.shadow == null) {
-      throw "not mounted: ${this.runtimeType}";
-    }
-    if (node.controller.willUnmount.hasListener) {
-      node.controller.willUnmount.add(true);
-    }
-    unmount(node.shadow, willReplace: willReplace);
-    node.shadow = null;
   }
 
   void unmountInner(_ElementNode elt) {

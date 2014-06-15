@@ -8,7 +8,7 @@ part of widget;
 ///
 /// Each widget has an associated [View] that was rendered to create
 /// the widget. The widget must copy its props from this node whenever it
-/// changes, by implementing [setView].
+/// changes, by implementing [configure].
 ///
 /// A Widget may access the DOM by rendering an element tag with its "ref"
 /// property set. The DOM will be available during callbacks
@@ -16,23 +16,23 @@ part of widget;
 abstract class Widget<V extends View,S> extends StateMixin<S> implements Expander {
   V props;
 
-  final _didMount = new StreamController.broadcast();
-  final _didRender = new StreamController.broadcast();
   final _willUnmount = new StreamController.broadcast();
   var _invalidate; // non-null when mounted
 
   /// Initializes the widget.
   /// Called automatically when the associated node is first rendered.
-  WidgetController mount(V view, invalidate()) {
-    setView(view);
-    initState(); // depends on props
+  void mount(V input, invalidate()) {
+    this.props = input;
+    configure(input);
+    initState(); // depends on props being set.
     _invalidate = invalidate;
-    return new WidgetController(this);
   }
 
   @override
   View expand(V input) {
-    setView(input);
+    this.props = input;
+    configure(input);
+    commitState();
     return render();
   }
 
@@ -42,12 +42,10 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   @override
   bool shouldExpand(View prev, View next) => true;
 
-  /// Copies the assocated view into the widget.
+  /// A subclass hook that's called whenever the view changes.
   /// Called automatically before [createFirstState]
-  /// and whenever the associated widget tag is rendered.
-  void setView(V view) {
-    this.props = view;
-  }
+  /// and whenever the widget is rendered.
+  void configure(V view) {}
 
   /// Asks for the widget to be rendered again.
   /// Called automatically after the widget's state changes.
@@ -67,25 +65,24 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   /// doesn't include the widget.
   bool get isMounted => _invalidate != null;
 
-  /// A stream that receives an event at the end of the animation frame when the
-  /// widget was rendered. (The DOM may be accessed using a Ref.)
-  Stream get didRender => _didRender.stream;
-
   /// A stream that receives an event during the animation frame when the widget
   /// is being unmounted. The widget's DOM hasn't been removed yet.
   Stream get willUnmount => _willUnmount.stream;
-}
-
-/// The API that the render library uses to control the widget.
-class WidgetController {
-  final Widget widget;
-
-  WidgetController(this.widget);
-
-  StreamController get didRender => widget._didRender;
-  StreamController get willUnmount => widget._willUnmount;
 
   void unmount() {
-    widget._invalidate = null;
+    if (_willUnmount.hasListener) {
+      _willUnmount.add(true);
+    }
+    _invalidate = null;
   }
+}
+
+class HasDidRender {
+  final _didRender = new StreamController.broadcast();
+
+  /// A stream that receives an event at the end of the animation frame when the
+  /// expander was rendered. (The DOM may be accessed using a Ref.)
+  Stream get didRender => _didRender.stream;
+
+  EventSink get didRenderSink => _didRender;
 }

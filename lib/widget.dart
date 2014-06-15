@@ -4,7 +4,7 @@
  */
 library widget;
 
-import 'dart:async' show Stream, StreamController, StreamSink;
+import 'dart:async' show Stream, StreamController, StreamSink, EventSink;
 
 import 'package:tagtree/core.dart';
 
