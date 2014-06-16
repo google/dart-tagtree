@@ -10,16 +10,15 @@ abstract class _Unmount {
   /// and marks them as unmounted. (Calls releaseElement but doesn't actually
   /// change the DOM.)
   void unmount(_Node node, {bool willReplace: false}) {
-    if (node.shadow != null) {
+    if (node is _ExpandedNode) {
       unmount(node.shadow, willReplace: willReplace);
       node.shadow = null;
-    }
-    node.expander.unmount();
-
-    var view = node.view;
-    if (node is _ElementNode) {
+      node.expander.unmount();
+    } else if (node is _ElementNode) {
       unmountInner(node);
       releaseElement(node.path, node.view.ref, willReplace: willReplace);
+    } else {
+      throw "unknown node type";
     }
     node._unmount();
   }

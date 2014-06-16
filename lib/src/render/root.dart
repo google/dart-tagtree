@@ -14,7 +14,7 @@ abstract class RenderRoot {
   bool _frameRequested = false;
   View _nextTagTree;
   Theme _nextTheme;
-  final Set<_Node> _nodesToUpdate = new Set();
+  final Set<_ExpandedNode> _nodesToUpdate = new Set();
 
   RenderRoot(this.id);
 
@@ -47,7 +47,7 @@ abstract class RenderRoot {
 
   /// Schedules a node to be rendered during the next frame.
   /// (That is, marks it as "dirty".)
-  void _invalidate(_Node node) {
+  void _invalidate(_ExpandedNode node) {
     assert(node.mounted);
     _nodesToUpdate.add(node);
     _requestAnimationFrame();

@@ -19,7 +19,11 @@ abstract class _Update extends _Mount with _Unmount {
 
     var nextExpander = toRender.createExpanderForTheme(newTheme);
 
-    if (current.expander.canReuse(nextExpander)) {
+    if (current is _ElementNode && nextExpander is ElementType &&
+        current.view.type == nextExpander) {
+      updateElementInPlace(current, toRender, oldTheme, newTheme);
+      return current;
+    } else if (current is _ExpandedNode && current.expander.canReuse(nextExpander))  {
       updateInPlace(current, toRender, oldTheme, newTheme);
       return current;
     } else {
@@ -35,41 +39,36 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   /// Updates a node tree in place, by expanding a View.
-  /// Assumes the node's theme didn't change.
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void updateInPlace(_Node node, View newView, Theme oldTheme, Theme newTheme) {
+  void updateInPlace(_ExpandedNode node, View newView, Theme oldTheme, Theme newTheme) {
     var oldView = node.view;
     var expander = node.expander;
     if (oldTheme == newTheme && !expander.shouldExpand(oldView, newView)) {
       return;
     }
 
-    View newShadow = node.expander.expand(newView);
-    if (node.expander is HasDidRender) {
-      HasDidRender mixin = _cast(node.expander);
+    View newShadow = expander.expand(newView);
+    if (expander is HasDidRender) {
+      HasDidRender mixin = _cast(expander);
      _renderedExpanders.add(mixin.didRenderSink);
     }
 
     node.view = newView;
     if (newShadow != newView) {
       node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
-      return;
-    }
-
-    if (expander is ElementType) {
-      _renderElt(node, oldView.props, oldTheme, newTheme);
-    } else {
-      throw "cannot update: ${node.runtimeType}";
     }
   }
 
   _cast(x) => x;
 
-  void _renderElt(_ElementNode elt, PropsMap oldProps, Theme oldTheme, newTheme) {
-    _updateDomProperties(elt, oldProps);
-    _updateInner(elt, oldTheme, newTheme);
+  void updateElementInPlace(_ElementNode node, ElementView newView,
+                            Theme oldTheme, Theme newTheme) {
+    var oldView = node.view;
+    node.view = newView;
+    _updateDomProperties(node, oldView.props);
+    _updateInner(node, oldTheme, newTheme);
   }
 
   /// Updates DOM attributes and event handlers of an Elt.

@@ -5,7 +5,7 @@ abstract class _Mount {
 
   // Dependencies
   _Node makeNode(String path, int depth, View view, Theme theme);
-  void invalidate(_Node node);
+  void invalidate(_ExpandedNode node);
 
   // What was mounted
   final List<_Node> _mountedRefs = [];
@@ -37,23 +37,25 @@ abstract class _Mount {
 
   void _expandNode(_Node node, Theme theme, StringBuffer out, String path, int depth) {
     var view = node.view;
-    var expander = node.expander;
-    if (expander is Widget) {
-      expander.mount(view, () => invalidate(node));
-    }
 
-    View shadow = node.expander.expand(view);
-    if (shadow != view) {
+    if (node is _ExpandedNode) {
+      var expander = node.expander;
+      if (expander is Widget) {
+        expander.mount(view, () => invalidate(node));
+      }
+
+      View shadow = expander.expand(view);
+
       node.shadow = mountView(shadow, theme, out, path, depth + 1);
-    }
+      if (expander is HasDidRender) {
+        HasDidRender mixin = _cast(expander);
+        _mountedExpanders.add(mixin.didRenderSink);
+      }
 
-    if (node is _ElementNode) {
+    } else if (node is _ElementNode) {
       _expandElement(node, theme, out);
-    }
-
-    if (node.expander is HasDidRender) {
-      HasDidRender mixin = _cast(node.expander);
-      _mountedExpanders.add(mixin.didRenderSink);
+    } else {
+      throw "unknown node type";
     }
   }
 

@@ -24,7 +24,7 @@ part of render;
 /// View. Therefore, they only need to be updated when their owner is rendered. Widgets
 /// are an exception; they can call invalidate() to add the Widget as a root for the
 /// next render.
-class _Node<V extends View> {
+abstract class _Node<V extends View> {
   /// The unique id used to find the node's HTML element.
   final String path;
 
@@ -34,13 +34,7 @@ class _Node<V extends View> {
   /// The view that was most recently rendered into this node.
   V view;
 
-  /// The expander that was most recently used to render this node.
-  Expander expander;
-
-  /// The shadow if this node was expanded.
-  _Node shadow;
-
-  _Node(this.path, this.depth, this.view, this.expander);
+  _Node(this.path, this.depth, this.view);
 
   bool get mounted => view != null;
 
@@ -53,12 +47,22 @@ class _Node<V extends View> {
   }
 }
 
+class _ExpandedNode extends _Node<View> {
+  final Expander expander;
+  _Node shadow;
+
+  _ExpandedNode(String path, int depth, View view, this.expander)
+      : super(path, depth, view);
+}
+
 /// A node for a rendered HTML element.
 class _ElementNode extends _Node<ElementView> {
   // May be a List<_Node>, String, or RawHtml.
   var children;
-  _ElementNode(String path, int depth, ElementView view) : super(path, depth, view, view.type);
+
+  _ElementNode(String path, int depth, ElementView view) :
+    super(path, depth, view);
 }
 
-/// Used for text nodes when emulating mixed content.
-const ElementType _textType = const ElementType(#_text, "span", const [innerType]);
+/// Used to wrap text children in a span when emulating mixed content.
+const ElementType _textType = const ElementType(#text, "span", const [innerType]);

@@ -9,10 +9,10 @@ class _Transaction extends _Update {
   // What to do
   final View nextTagTree;
   final Theme nextTheme;
-  final List<_Node> _nodesToUpdate;
+  final List<_ExpandedNode> _nodesToUpdate;
 
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree, this.nextTheme,
-      Iterable<_Node> nodesToUpdate)
+      Iterable<_ExpandedNode> nodesToUpdate)
       : _nodesToUpdate = new List.from(nodesToUpdate);
 
   void run() {
@@ -24,7 +24,7 @@ class _Transaction extends _Update {
     // Sort ancestors ahead of children.
     _nodesToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (_Node n in _nodesToUpdate) {
+    for (_ExpandedNode n in _nodesToUpdate) {
       if (n.mounted) {
         updateInPlace(n, n.view, root._renderedTheme, nextTheme);
       }
@@ -71,15 +71,15 @@ class _Transaction extends _Update {
     if (expander is ElementType) {
       return new _ElementNode(path, depth, view);
     } else if (expander is Template) {
-      return new _Node(path, depth, view, expander);
+      return new _ExpandedNode(path, depth, view, expander);
     } else if (expander is Widget) {
-      return new _Node(path, depth, view, expander);
+      return new _ExpandedNode(path, depth, view, expander);
     }
     throw "unknown viewer type: ${expander.runtimeType}";
   }
 
   @override
-  void invalidate(_Node node) => root._invalidate(node);
+  void invalidate(_ExpandedNode node) => root._invalidate(node);
 
   // What was done
 
