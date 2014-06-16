@@ -47,13 +47,8 @@ abstract class _Mount {
       node.shadow = mountView(shadow, theme, out, path, depth + 1);
     }
 
-    if (view is _TextView) {
-      // need to surround with a span to support incremental updates to a child
-      out.write("<span data-path=${node.path}>${HTML_ESCAPE.convert(view.value)}</span>");
-
-    } else if (node is _ElementNode) {
+    if (node is _ElementNode) {
       _expandElement(node, theme, out);
-
     }
 
     if (node.expander is HasDidRender) {
@@ -126,7 +121,7 @@ abstract class _Mount {
       List<View> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(new _TextView(item));
+          children.add(_textType.makeView({"inner": item}));
         } else if (item is View) {
           children.add(item);
         } else {

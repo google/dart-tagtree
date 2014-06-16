@@ -59,3 +59,6 @@ class _ElementNode extends _Node<ElementView> {
   var children;
   _ElementNode(String path, int depth, ElementView view) : super(path, depth, view, view.type);
 }
+
+/// Used for text nodes when emulating mixed content.
+const ElementType _textType = const ElementType(#_text, "span", const [innerType]);

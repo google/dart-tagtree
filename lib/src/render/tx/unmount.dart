@@ -17,9 +17,7 @@ abstract class _Unmount {
     node.expander.unmount();
 
     var view = node.view;
-    if (view is _TextView) {
-      releaseElement(node.path, view.ref, willReplace: willReplace);
-    } else if (node is _ElementNode) {
+    if (node is _ElementNode) {
       unmountInner(node);
       releaseElement(node.path, node.view.ref, willReplace: willReplace);
     }

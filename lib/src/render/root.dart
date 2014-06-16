@@ -82,23 +82,3 @@ abstract class RenderRoot {
     assert(_nodesToUpdate.isEmpty);
   }
 }
-
-class _TextView extends View implements Expander {
-  final String value;
-  const _TextView(this.value);
-
-  @override
-  _TextView createExpander() => this;
-
-  @override
-  bool canReuse(Expander next) => next == this;
-
-  @override
-  bool shouldExpand(prev, next) => true;
-
-  @override
-  expand(v) => v;
-
-  @override
-  void unmount() {}
-}

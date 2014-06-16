@@ -32,7 +32,7 @@ class ElementView implements View {
 
   /// The children of this element, or null if none.
   /// (May be an Iterator<View>, a View, a String, or a RawHtml.)
-  get inner => props["inner"];
+  get inner => props[innerType.propKey];
 }
 
 /// Represents raw (unsanitized) HTML.
@@ -191,6 +191,8 @@ class MixedContentType extends PropType {
     return true;
   }
 }
+
+const innerType = const MixedContentType(#inner, "inner");
 
 /// The type of an HTML attribute.
 class AttributeType extends PropType {

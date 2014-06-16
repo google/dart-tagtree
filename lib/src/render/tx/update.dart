@@ -58,9 +58,7 @@ abstract class _Update extends _Mount with _Unmount {
       return;
     }
 
-    if (expander is _TextView) {
-      dom.setInnerText(node.path, expander.value);
-    } else if (expander is ElementType) {
+    if (expander is ElementType) {
       _renderElt(node, oldView.props, oldTheme, newTheme);
     } else {
       throw "cannot update: ${node.runtimeType}";
@@ -142,7 +140,7 @@ abstract class _Update extends _Mount with _Unmount {
       List<View> children = [];
       for (var item in newInner) {
         if (item is String) {
-          children.add(new _TextView(item));
+          children.add(_textType.makeView({"inner": item}));
         } else if (item is View) {
           children.add(item);
         } else {

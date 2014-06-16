@@ -105,7 +105,7 @@ final List<ElementType> _htmlTags = () {
     onMouseOver,
     onMouseUp,
     onMouseOut,
-    const MixedContentType(#inner, "inner"),
+    innerType,
   ];
 
   const href = const AttributeType(#href, "href");
