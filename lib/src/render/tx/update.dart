@@ -7,7 +7,7 @@ abstract class _Update extends _Mount with _Unmount {
   DomUpdater get dom;
 
   // What was updated
-  final List<EventSink> _renderedExpanders = [];
+  final List<OnRendered> _renderedExpanders = [];
   void setHandler(HandlerType type, String path, HandlerFunc handler);
   void removeHandler(HandlerType type, String path);
 
@@ -50,9 +50,8 @@ abstract class _Update extends _Mount with _Unmount {
     }
 
     View newShadow = expander.expand(newView);
-    if (expander is HasDidRender) {
-      HasDidRender mixin = _cast(expander);
-     _renderedExpanders.add(mixin.didRenderSink);
+    if (expander.onRendered != null) {
+      _renderedExpanders.add(expander.onRendered);
     }
 
     node.view = newView;

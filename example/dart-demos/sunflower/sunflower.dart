@@ -22,13 +22,8 @@ class SunflowerApp extends View {
   createExpander() => new _SunflowerApp();
 }
 
-class _SunflowerApp extends Widget<SunflowerApp, int> with HasDidRender {
+class _SunflowerApp extends Widget<SunflowerApp, int> {
   final canvas = new Ref<CanvasElement>();
-
-  _SunflowerApp() {
-    // Redraw the canvas whenever we render a frame.
-    didRender.listen((_) => draw(canvas.elt.context2D));
-  }
 
   // The slider controls the number of seeds.
 
@@ -58,6 +53,9 @@ class _SunflowerApp extends Widget<SunflowerApp, int> with HasDidRender {
         ]),
     ]);
   }
+
+  @override
+  OnRendered get onRendered => () => draw(canvas.elt.context2D);
 
   static const num TAU = PI * 2;
   static final num PHI = (sqrt(5) + 1) / 2;

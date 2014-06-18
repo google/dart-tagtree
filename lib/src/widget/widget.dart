@@ -58,6 +58,10 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   /// the widget, and in any animation frame where [shouldRender] returned true.
   View render();
 
+  /// If not null, the widget will be called back after the DOM is rendered.
+  @override
+  OnRendered get onRendered => null;
+
   /// Returns true when the widget is visible.
   /// That is, isMounted changes to true when mount() is automatically
   /// called while rendering the first animation frame displaying the widget.
@@ -77,12 +81,3 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   }
 }
 
-class HasDidRender {
-  final _didRender = new StreamController.broadcast();
-
-  /// A stream that receives an event at the end of the animation frame when the
-  /// expander was rendered. (The DOM may be accessed using a Ref.)
-  Stream get didRender => _didRender.stream;
-
-  EventSink get didRenderSink => _didRender;
-}

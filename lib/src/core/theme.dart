@@ -1,5 +1,7 @@
 part of core;
 
+typedef OnRendered();
+
 /// Expands a view to its "shadow" which will be used for rendering.
 /// Expanders can be stateless (a template) or stateful (a Widget).
 abstract class Expander {
@@ -23,6 +25,9 @@ abstract class Expander {
   /// (In that case, it must be an [ElementView] that can be rendered
   /// directly.)
   View expand(View input);
+
+  /// If not null, this expander needs to be called back after the DOM is rendered.
+  OnRendered get onRendered => null;
 
   /// Called when the expander is no longer needed.
   void unmount() {}

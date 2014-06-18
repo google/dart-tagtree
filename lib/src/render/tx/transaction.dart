@@ -42,12 +42,12 @@ class _Transaction extends _Update {
       dom.mountForm(form.path);
     }
 
-    for (EventSink s in _mountedExpanders) {
-      s.add(true);
+    for (OnRendered callback in _mountedExpanders) {
+      callback();
     }
 
-    for (EventSink s in _renderedExpanders) {
-      s.add(true);
+    for (OnRendered callback in _renderedExpanders) {
+      callback();
     }
 
     root._renderedTheme = nextTheme;

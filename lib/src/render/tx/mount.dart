@@ -10,7 +10,7 @@ abstract class _Mount {
   // What was mounted
   final List<_Node> _mountedRefs = [];
   final List<_ElementNode> _mountedForms = [];
-  final List<EventSink> _mountedExpanders = [];
+  final List<OnRendered> _mountedExpanders = [];
   void addHandler(HandlerType type, String path, val);
 
   /// Expands templates and starts widgets for each view in a tag tree.
@@ -47,9 +47,8 @@ abstract class _Mount {
       View shadow = expander.expand(view);
 
       node.shadow = mountView(shadow, theme, out, path, depth + 1);
-      if (expander is HasDidRender) {
-        HasDidRender mixin = _cast(expander);
-        _mountedExpanders.add(mixin.didRenderSink);
+      if (expander.onRendered != null) {
+        _mountedExpanders.add(expander.onRendered);
       }
 
     } else if (node is _ElementNode) {

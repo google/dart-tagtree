@@ -17,7 +17,6 @@ library render;
 import 'package:tagtree/core.dart';
 import 'package:tagtree/widget.dart';
 
-import 'dart:async' show EventSink;
 import 'dart:convert';
 
 part 'src/render/debug.dart';
