@@ -70,12 +70,9 @@ class _Transaction extends _Update {
     Expander expander = view.createExpanderForTheme(theme);
     if (expander is ElementType) {
       return new _ElementNode(path, depth, view);
-    } else if (expander is Template) {
-      return new _ExpandedNode(path, depth, view, expander);
-    } else if (expander is Widget) {
+    } else {
       return new _ExpandedNode(path, depth, view, expander);
     }
-    throw "unknown viewer type: ${expander.runtimeType}";
   }
 
   @override

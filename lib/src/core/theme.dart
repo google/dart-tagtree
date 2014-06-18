@@ -1,11 +1,16 @@
 part of core;
 
+typedef RenderNeeded();
 typedef OnRendered();
 
 /// Expands a view to its "shadow" which will be used for rendering.
 /// Expanders can be stateless (a template) or stateful (a Widget).
 abstract class Expander {
   const Expander();
+
+  /// Called when the expander is about to be added to a render tree.
+  /// The callback requests a call to expand.
+  void mount(RenderNeeded callback) {}
 
   /// Returns true if we can reuse this expander for another animation frame.
   ///

@@ -40,10 +40,8 @@ abstract class _Mount {
 
     if (node is _ExpandedNode) {
       var expander = node.expander;
-      if (expander is Widget) {
-        expander.mount(view, () => invalidate(node));
-      }
 
+      expander.mount(() => invalidate(node));
       View shadow = expander.expand(view);
 
       node.shadow = mountView(shadow, theme, out, path, depth + 1);

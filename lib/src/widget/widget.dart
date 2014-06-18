@@ -17,22 +17,25 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   V props;
 
   final _willUnmount = new StreamController.broadcast();
-  var _invalidate; // non-null when mounted
+
+  RenderNeeded _renderNeeded; // non-null when mounted
+  bool configured = false;
 
   /// Initializes the widget.
   /// Called automatically when the associated node is first rendered.
-  void mount(V input, invalidate()) {
-    this.props = input;
-    configure(input);
-    initState(); // depends on props being set.
-    _invalidate = invalidate;
+  void mount(renderNeeded) {
+    this._renderNeeded = renderNeeded;
   }
 
   @override
   View expand(V input) {
     this.props = input;
     configure(input);
-    commitState();
+    if (state == null) {
+      initState();
+    } else {
+      commitState();
+    }
     return render();
   }
 
@@ -51,7 +54,7 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   /// Called automatically after the widget's state changes.
   /// (That is, whenever [nextState] is accessed.)
   @override
-  void invalidate() => _invalidate();
+  void invalidate() => _renderNeeded();
 
   /// Constructs the tag tree to be rendered in place of this Widget.
   /// Called automatically for first animation frame containing
@@ -67,7 +70,7 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   /// called while rendering the first animation frame displaying the widget.
   /// It changes to false while rendering the first animation frame that
   /// doesn't include the widget.
-  bool get isMounted => _invalidate != null;
+  bool get isMounted => _renderNeeded != null;
 
   /// A stream that receives an event during the animation frame when the widget
   /// is being unmounted. The widget's DOM hasn't been removed yet.
@@ -77,7 +80,7 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
     if (_willUnmount.hasListener) {
       _willUnmount.add(true);
     }
-    _invalidate = null;
+    _renderNeeded = null;
   }
 }
 

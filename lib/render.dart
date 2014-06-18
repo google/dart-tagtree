@@ -1,5 +1,5 @@
 /**
- * Renders tag trees to HTML.
+ * Renders a [View] to HTML.
  * (Most programs shouldn't need to use this library directly.)
  *
  * This library implements an algorithm for efficiently updating the DOM
@@ -15,8 +15,6 @@
 library render;
 
 import 'package:tagtree/core.dart';
-import 'package:tagtree/widget.dart';
-
 import 'dart:convert';
 
 part 'src/render/debug.dart';
