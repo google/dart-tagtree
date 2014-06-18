@@ -40,17 +40,4 @@ _chooseThemeName(String name) {
   return name;
 }
 
-/// A Template renders a view by substituting another View.
-abstract class Template<V extends View> extends Expander {
-  const Template();
-
-  @override
-  View expand(V props);
-
-  @override
-  bool shouldExpand(V before, V after) => true;
-
-  // implement CreateExpander.
-  Template call() => this;
-}
 

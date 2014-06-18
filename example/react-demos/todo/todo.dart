@@ -1,21 +1,14 @@
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class TodoList extends View {
+class TodoList extends TemplateView {
   final List<String> items;
-
   const TodoList({this.items});
 
   @override
-  createExpander() => const _TodoList();
-}
-
-class _TodoList extends Template {
-  const _TodoList();
-  @override
-  expand(TodoList props) {
+  render() {
     createItem(itemText) => $.Li(inner: itemText);
-    return $.Ul(inner: props.items.map(createItem));
+    return $.Ul(inner: items.map(createItem));
   }
 }
 

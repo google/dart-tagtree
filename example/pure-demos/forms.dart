@@ -1,39 +1,29 @@
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class Page extends View {
+class Page extends TemplateView {
   final Menu menu;
   final List<View> content;
-
-  const Page({
-    this.menu: null,
-    this.content: const []});
+  const Page({this.menu, this.content});
 
   @override
-  createExpander() => const _Page();
-}
-
-class _Page extends Template {
-  const _Page();
-
-  @override
-  expand(Page p) {
+  render() {
     var items = [];
-    if (p.menu != null) {
-      items.add(p.menu);
+    if (menu != null) {
+      items.add(menu);
     }
-    items.add($.Div(clazz: "content", inner: p.content));
+    items.add($.Div(clazz: "content", inner: content));
     return $.Div(clazz: "main", inner: items);
   }
 }
 
-typedef void MenuClickFunc(String item);
+typedef void OnMenuClick(String item);
 
 class Menu extends View {
   final String title;
   final List<String> items;
   final String defaultSelected;
-  final MenuClickFunc onClick;
+  final OnMenuClick onClick;
 
   const Menu({this.title, this.items, this.defaultSelected, this.onClick});
 

@@ -117,7 +117,7 @@ class _GridView extends Widget<GridView, bool> {
 
 /// An animation frame for one row of the grid.
 /// Expands to a <tr> tag.
-class RowView extends View {
+class RowView extends TemplateView {
   final int y;
   final Row row;
   final Map<int, String> palette;
@@ -128,29 +128,22 @@ class RowView extends View {
   const RowView({this.y, this.row, this.palette,
     this.onMouseOver, this.onMouseDown, this.onMouseUp});
 
+  /// Avoid redrawing a row that hasn't changed. (The key to good performance!)
   @override
-  createExpander() => const _RowView();
-}
-
-class _RowView extends Template {
-  const _RowView();
+  shouldExpand(RowView prev) => !prev.row.equals(row);
 
   @override
-  expand(RowView rv) {
+  render() {
     var cells = [];
-    for (int x = 0; x < rv.row.width; x++) {
-      int pixel = rv.row[x];
-      cells.add($.Td(clazz: rv.palette[pixel],
-          onMouseDown: (_) => rv.onMouseDown(x, rv.y),
-          onMouseOver: (_) => rv.onMouseOver(x, rv.y),
-          onMouseUp: (_) => rv.onMouseUp()));
+    for (int x = 0; x < row.width; x++) {
+      int pixel = row[x];
+      cells.add($.Td(clazz: palette[pixel],
+          onMouseDown: (_) => onMouseDown(x, y),
+          onMouseOver: (_) => onMouseOver(x, y),
+          onMouseUp: (_) => onMouseUp()));
     }
     return $.Tr(inner: cells);
   }
-
-  /// Avoid redrawing a row that hasn't changed. (The key to good performance!)
-  @override
-  shouldExpand(RowView before, RowView after) => !before.row.equals(after.row);
 }
 
 //
