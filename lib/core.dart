@@ -22,9 +22,10 @@ library core;
 import 'dart:collection';
 import 'package:tagtree/json.dart';
 
+part 'src/core/element.dart';
+part 'src/core/expander.dart';
 part 'src/core/handler.dart';
 part 'src/core/json.dart';
-part 'src/core/element.dart';
 part 'src/core/tagset.dart';
 part 'src/core/theme.dart';
 part 'src/core/view.dart';

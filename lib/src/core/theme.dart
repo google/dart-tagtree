@@ -1,43 +1,5 @@
 part of core;
 
-typedef RenderNeeded();
-typedef OnRendered();
-
-/// Expands a view to its "shadow" which will be used for rendering.
-/// Expanders can be stateless (a template) or stateful (a Widget).
-abstract class Expander {
-  const Expander();
-
-  /// Called when the expander is about to be added to a render tree.
-  /// The callback requests a call to expand.
-  void mount(RenderNeeded callback) {}
-
-  /// Returns true if we can reuse this expander for another animation frame.
-  ///
-  /// Otherwise, the current expander will be discarded and the [next]
-  /// one will be used instead. The DOM will be updated by removing the
-  /// corresponding element and recreating it.
-  bool canReuse(Expander next) => next == this;
-
-  /// Returns true if we should call [expand] to render the next frame.
-  ///
-  /// Otherwise, the previous expansion will be reused,
-  /// and usually the DOM update will be skipped entirely.
-  bool shouldExpand(View prev, View next) => true;
-
-  /// Returns the shadow view to be rendered in place of the given input.
-  /// The input may be returned if the view doesn't need to be expanded.
-  /// (In that case, it must be an [ElementView] that can be rendered
-  /// directly.)
-  View expand(View input);
-
-  /// If not null, this expander needs to be called back after the DOM is rendered.
-  OnRendered get onRendered => null;
-
-  /// Called when the expander is no longer needed.
-  void unmount() {}
-}
-
 typedef Expander CreateExpander();
 
 /// A Theme maps Views to Expanders.
