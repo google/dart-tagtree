@@ -37,14 +37,14 @@ class _Menu extends Widget<Menu, String> {
 
   @override
   createFirstState() =>
-      props.defaultSelected == null ? props.items.first : props.defaultSelected;
+      view.defaultSelected == null ? view.items.first : view.defaultSelected;
 
   String get selected => state;
 
   onClick(String item) {
     nextState = item;
-    if (props.onClick != null) {
-      props.onClick(item);
+    if (view.onClick != null) {
+      view.onClick(item);
     }
   }
 
@@ -57,10 +57,10 @@ class _Menu extends Widget<Menu, String> {
     };
 
     var items = [];
-    if (props.title != null) {
-      items.add($.A(href: "#", clazz: "pure-menu-heading", inner: props.title));
+    if (view.title != null) {
+      items.add($.A(href: "#", clazz: "pure-menu-heading", inner: view.title));
     }
-    items.add($.Ul(inner: props.items.map(renderItem)));
+    items.add($.Ul(inner: view.items.map(renderItem)));
 
     return $.Div(clazz: "pure-menu pure-menu-open pure-menu-horizontal", inner: items);
   }

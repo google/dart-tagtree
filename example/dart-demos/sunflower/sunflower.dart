@@ -28,7 +28,7 @@ class _SunflowerApp extends Widget<SunflowerApp, int> {
   // The slider controls the number of seeds.
 
   @override
-  createFirstState() => props.startSeeds;
+  createFirstState() => view.startSeeds;
 
   get seeds => state;
 
@@ -65,12 +65,12 @@ class _SunflowerApp extends Widget<SunflowerApp, int> {
 
   /// Draw the complete figure for the current number of seeds.
   void draw(CanvasRenderingContext2D context) {
-    num scaleFactor = props.seedRadius * 2;
+    num scaleFactor = view.seedRadius * 2;
     context.clearRect(0, 0, maxD, maxD);
     for (var i = 0; i < seeds; i++) {
       final num theta = i * TAU / PHI;
       final num r = sqrt(i) * scaleFactor;
-      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), props.seedRadius);
+      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), view.seedRadius);
     }
   }
 

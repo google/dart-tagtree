@@ -40,7 +40,7 @@ class PixelPaintApp extends View {
 class _PixelPaintApp extends Widget<PixelPaintApp, Grid> {
 
   @override
-  createFirstState() => new Grid(props.width, props.height);
+  createFirstState() => new Grid(view.width, view.height);
 
   onPaint(int x, int y) {
     var nextGrid = new Grid.withChangedPixel(state, x, y, 1);
@@ -51,7 +51,7 @@ class _PixelPaintApp extends Widget<PixelPaintApp, Grid> {
   }
 
   @override
-  render() => new GridView(grid: state, palette: props.palette, onPaint: onPaint);
+  render() => new GridView(grid: state, palette: view.palette, onPaint: onPaint);
 }
 
 /// The specification of a single animation frame that displays the grid of pixels.
@@ -82,16 +82,16 @@ class _GridView extends Widget<GridView, bool> {
   createFirstState() => false; // assume mouse is up
 
   get mouseDown => nextState;
-  set mouseDown(bool next) => nextState = next;
+  set mouseDown(bool pressed) => nextState = pressed;
 
   onMouseDown(int x, int y) {
-    props.onPaint(x, y);
+    view.onPaint(x, y);
     mouseDown = true;
   }
 
   onMouseOver(int x, int y) {
     if (mouseDown) {
-      props.onPaint(x, y);
+      view.onPaint(x, y);
     }
   }
 
@@ -101,10 +101,10 @@ class _GridView extends Widget<GridView, bool> {
 
   @override
   View render() {
-    var palette = props.palette.asMap();
+    var palette = view.palette.asMap();
     var rows = [];
-    for (int y = 0; y < props.grid.height; y++) {
-      rows.add(new RowView(y: y, row: props.grid.rows[y], palette: palette,
+    for (int y = 0; y < view.grid.height; y++) {
+      rows.add(new RowView(y: y, row: view.grid.rows[y], palette: palette,
                            onMouseDown: onMouseDown, onMouseOver: onMouseOver,
                            onMouseUp: onMouseUp));
     }

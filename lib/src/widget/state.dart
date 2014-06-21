@@ -45,7 +45,7 @@ abstract class StateMixin<S> {
 
   /// Returns uncommitted state that will become current after a call to [commitState].
   /// The returned state object may safely be mutated.
-  /// Accessing nextState automatically marks it as dirty and calls [invalidate].
+  /// Accessing next automatically marks it as dirty and calls [invalidate].
   S get nextState {
     if (_nextState == null) {
       _nextState = cloneState(_state);

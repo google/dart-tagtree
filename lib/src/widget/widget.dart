@@ -14,7 +14,7 @@ part of widget;
 /// property set. The DOM will be available during callbacks
 /// for [didRender] and [willUnmount] events.
 abstract class Widget<V extends View,S> extends StateMixin<S> implements Expander {
-  V props;
+  V view;
 
   final _willUnmount = new StreamController.broadcast();
 
@@ -29,7 +29,7 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
 
   @override
   View expand(V input) {
-    this.props = input;
+    this.view = input;
     configure(input);
     if (state == null) {
       initState();
