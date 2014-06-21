@@ -25,7 +25,9 @@ class ElementView implements View {
   @override
   get propsImpl => throw "not implemented"; // not needed
 
-  @override
+  /// If non-null, the DOM element corresponding to this view will be placed
+  /// in the ref when it's first rendered.
+  /// (Only works client-side; see browser.Ref).
   get ref => props["ref"];
 
   String get htmlTag => type.htmlTag;
@@ -88,7 +90,7 @@ class ElementType extends Expander {
   }
 
   @override
-  expand(v) => v;
+  expand(v) => throw "not implemented"; // render handles elements as a special case
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

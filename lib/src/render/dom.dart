@@ -20,9 +20,9 @@ abstract class DomUpdater {
   void mountForm(String path);
 
   /// Removes any event handlers or refs to the DOM element with the given path,
-  /// in preparation for unmounting the Tag.
+  /// in preparation for unmounting it.
   /// If willReplace is set, the element cache's reference to the DOM node should
-  /// be kept for a subsequent replaceElement call. Otherwise, it can be cleared.
+  /// be kept for a subsequent [replaceElement] call. Otherwise, it can be cleared.
   void detachElement(String path, ref, {bool willReplace: false});
 
   /// Creates a new Element with the given HTML and replaces the current element.

@@ -6,9 +6,9 @@ abstract class _Unmount {
   // What was unmounted
   void releaseElement(String path, ref, {bool willReplace: false});
 
-  /// Frees resources associated with this View and all its descendants
-  /// and marks them as unmounted. (Calls releaseElement but doesn't actually
-  /// change the DOM.)
+  /// Recursively frees resources in a node tree. Marks all nodes as unmounted.
+  /// Calls releaseElement() on each HTML element in the tree.
+  /// Doesn't change the DOM; this is up to the caller.
   void unmount(_Node node, {bool willReplace: false}) {
     if (node is _ExpandedNode) {
       unmount(node.shadow, willReplace: willReplace);

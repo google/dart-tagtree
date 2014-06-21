@@ -95,11 +95,6 @@ abstract class View implements Jsonable {
   @override
   String get jsonTag => throw "jsonTag not implemented";
 
-  /// If non-null, the DOM element corresponding to this node will be placed
-  /// in the ref when it's first rendered.
-  /// (Only works client-side; see browser.Ref).
-  get ref => null;
-
   static final _propsCache = new Expando<PropsMap>();
 }
 

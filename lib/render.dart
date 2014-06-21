@@ -21,7 +21,7 @@ part 'src/render/debug.dart';
 part 'src/render/dom.dart';
 part 'src/render/event.dart';
 part 'src/render/root.dart';
-part 'src/render/tree.dart';
+part 'src/render/node.dart';
 part 'src/render/tx/mount.dart';
 part 'src/render/tx/transaction.dart';
 part 'src/render/tx/unmount.dart';

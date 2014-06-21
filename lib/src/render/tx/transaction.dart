@@ -11,6 +11,9 @@ class _Transaction extends _Update {
   final Theme nextTheme;
   final List<_ExpandedNode> _nodesToUpdate;
 
+  // What was done
+  final List<OnRendered> _renderCallbacks = [];
+
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree, this.nextTheme,
       Iterable<_ExpandedNode> nodesToUpdate)
       : _nodesToUpdate = new List.from(nodesToUpdate);
@@ -26,7 +29,8 @@ class _Transaction extends _Update {
 
     for (_ExpandedNode n in _nodesToUpdate) {
       if (n.mounted) {
-        updateInPlace(n, n.view, root._renderedTheme, nextTheme);
+        // Re-render using the same view.
+        updateShadow(n, n.view, root._renderedTheme, nextTheme);
       }
     }
 
@@ -34,19 +38,15 @@ class _Transaction extends _Update {
   }
 
   void _finish() {
-    for (_Node v in _mountedRefs) {
-      dom.mountRef(v.path, v.view.ref);
+    for (_Node n in _mountedRefs) {
+      dom.mountRef(n.path, n.view.ref);
     }
 
     for (_ElementNode form in _mountedForms) {
       dom.mountForm(form.path);
     }
 
-    for (OnRendered callback in _mountedExpanders) {
-      callback();
-    }
-
-    for (OnRendered callback in _renderedExpanders) {
+    for (OnRendered callback in _renderCallbacks) {
       callback();
     }
 
@@ -65,20 +65,15 @@ class _Transaction extends _Update {
     }
   }
 
-  _Node makeNode(String path, int depth, View view, Theme theme) {
-    assert(view.checked());
-    Expander expander = view.createExpanderForTheme(theme);
-    if (expander is ElementType) {
-      return new _ElementNode(path, depth, view);
-    } else {
-      return new _ExpandedNode(path, depth, view, expander);
-    }
-  }
-
   @override
   void invalidate(_ExpandedNode node) => root._invalidate(node);
 
   // What was done
+
+  @override
+  void addRenderCallback(OnRendered r) {
+    _renderCallbacks.add(r);
+  }
 
   @override
   void addHandler(HandlerType type, String path, val) {

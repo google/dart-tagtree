@@ -7,74 +7,89 @@ abstract class _Update extends _Mount with _Unmount {
   DomUpdater get dom;
 
   // What was updated
-  final List<OnRendered> _renderedExpanders = [];
+  void addRenderCallback(OnRendered callback);
   void setHandler(HandlerType type, String path, HandlerFunc handler);
   void removeHandler(HandlerType type, String path);
 
-  // Renders the given view into an existing node tree.
-  // The node tree will either be updated in place, or it will
-  // unmounted and a new node tree will be created.
-  // Either way, updates the DOM and returns the new node tree.
-  _Node updateOrReplace(_Node current, View toRender, Theme oldTheme, Theme newTheme) {
+  // Recursively renders the next view onto an existing node subtree.
+  // The node subtree will either be updated in place, or it will
+  // unmounted and a new subtree will be created.
+  // Either way, updates the DOM and returns the root node of the new subtree.
+  _Node updateOrReplace(_Node node, View nextView, Theme oldTheme, Theme newTheme) {
 
-    var nextExpander = toRender.createExpanderForTheme(newTheme);
+    var defaultExpander = nextView.createExpanderForTheme(newTheme);
+    var next = node.expander.nextExpander(nextView, defaultExpander);
 
-    if (current is _ElementNode && nextExpander is ElementType &&
-        current.view.type == nextExpander) {
-      updateElementInPlace(current, toRender, oldTheme, newTheme);
-      return current;
-    } else if (current is _ExpandedNode && current.expander.canReuse(nextExpander))  {
-      updateInPlace(current, toRender, oldTheme, newTheme);
-      return current;
-    } else {
-      String path = current.path;
-      int depth = current.depth;
-      unmount(current, willReplace: true);
+    if (next.canReuseDom(node.expander)) {
 
-      var html = new StringBuffer();
-      _Node result = mountView(toRender, newTheme, html, path, depth);
-      dom.replaceElement(path, html.toString());
-      return result;
+      if (node is _ExpandedNode) {
+        node.expander = next;
+        updateShadow(node, nextView, oldTheme, newTheme);
+
+      } else if (node is _ElementNode) {
+        assert(node.expander == next);
+        _updateElement(node, nextView, oldTheme, newTheme);
+
+      } else {
+        throw "unknown node type: ${node.runtimeType}";
+      }
+
+      return node;
     }
+
+    // cannot expand in place; unmount and remount
+
+    String path = node.path;
+    int depth = node.depth;
+    unmount(node, willReplace: true);
+
+    var html = new StringBuffer();
+    _Node nextNode = mountView(nextView, newTheme, html, path, depth);
+    dom.replaceElement(path, html.toString());
+    return nextNode;
   }
 
-  /// Updates a node tree in place, by expanding a View.
+  /// Recursively updates a node's shadow tree, using its current expander and the given view.
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void updateInPlace(_ExpandedNode node, View newView, Theme oldTheme, Theme newTheme) {
+  void updateShadow(_ExpandedNode node, View nextView, Theme oldTheme, Theme newTheme) {
     var oldView = node.view;
-    var expander = node.expander;
-    if (oldTheme == newTheme && !expander.shouldExpand(oldView, newView)) {
-      return;
+    var next = node.expander;
+
+    if (oldTheme == newTheme && !next.shouldExpand(oldView, nextView)) {
+      return; // Performance shortcut.
     }
 
-    View newShadow = expander.expand(newView);
-    if (expander.onRendered != null) {
-      _renderedExpanders.add(expander.onRendered);
-    }
+    node.view = nextView;
 
-    node.view = newView;
-    if (newShadow != newView) {
-      node.shadow = updateOrReplace(node.shadow, newShadow, oldTheme, newTheme);
+    // Recurse.
+    View nextShadowView = next.expand(nextView);
+    node.shadow = updateOrReplace(node.shadow, nextShadowView, oldTheme, newTheme);
+
+    // This is last so that the shadow's callbacks fire before the parent.
+    if (next.onRendered != null) {
+      addRenderCallback(next.onRendered);
     }
   }
 
-  _cast(x) => x;
+  /// Recursively updates an HTML element and its children to match the given view.
+  /// (The new view must have the same ElementType as the old.)
+  void _updateElement(_ElementNode node, ElementView newView, Theme oldTheme, Theme newTheme) {
+    assert(node.view.type == newView.type);
 
-  void updateElementInPlace(_ElementNode node, ElementView newView,
-                            Theme oldTheme, Theme newTheme) {
-    var oldView = node.view;
-    node.view = newView;
-    _updateDomProperties(node, oldView.props);
-    _updateInner(node, oldTheme, newTheme);
+    _updateDomProperties(node.path, node.view, newView);
+
+    // Recurse.
+    _updateInner(node, newView, oldTheme, newTheme);
   }
 
-  /// Updates DOM attributes and event handlers of an Elt.
-  void _updateDomProperties(_ElementNode elt, PropsMap oldProps) {
-    ElementType eltType = elt.view.type;
-    String path = elt.path;
-    PropsMap newProps = elt.view.props;
+  /// Updates the DOM attributes and event handlers of an element to match the node's view.
+  void _updateDomProperties(String path, ElementView oldView, ElementView newView) {
+
+    ElementType eltType = newView.type;
+    PropsMap oldProps = oldView.props;
+    PropsMap newProps = newView.props;
 
     // Delete any removed props
     for (String key in oldProps.keys) {
@@ -109,15 +124,19 @@ abstract class _Update extends _Mount with _Unmount {
     }
   }
 
-  /// Updates the inner DOM and mount/unmounts children when needed.
+  /// Updates an element's inner HTML to match the given view's inner property.
+  /// Recursively updates the children in the node tree as necessary.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(_ElementNode elt, Theme oldTheme, Theme newTheme) {
+  void _updateInner(_ElementNode elt, ElementView newView, Theme oldTheme, Theme newTheme) {
+    elt.view = newView;
+
     String path = elt.path;
-    var newInner = elt.view.inner;
+    var newInner = newView.inner;
 
     if (newInner == null) {
       unmountInner(elt);
       dom.setInnerText(path, "");
+
     } else if (newInner is String) {
       if (newInner == elt.children) {
         return;
@@ -125,6 +144,7 @@ abstract class _Update extends _Mount with _Unmount {
       unmountInner(elt);
       dom.setInnerText(path, newInner);
       elt.children = newInner;
+
     } else if (newInner is RawHtml) {
       if (newInner == elt.children) {
         return;
@@ -132,8 +152,11 @@ abstract class _Update extends _Mount with _Unmount {
       unmountInner(elt);
       dom.setInnerHtml(path, newInner.html);
       elt.children = newInner;
+
     } else if (newInner is View) {
+      // Recurse.
       _updateChildren(elt, path, [newInner], oldTheme, newTheme);
+
     } else if (newInner is Iterable) {
       List<View> children = [];
       for (var item in newInner) {
@@ -145,16 +168,20 @@ abstract class _Update extends _Mount with _Unmount {
           throw "bad item in inner: ${item}";
         }
       }
+
+      // Recurse.
       _updateChildren(elt, path, children, oldTheme, newTheme);
+
     } else {
       throw "invalid new value of inner: ${newInner.runtimeType}";
     }
   }
 
-  /// Updates the inner DOM and mounts/unmounts children when needed.
+  /// Recursively updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children,  _childText, and _childHtml are updated.)
   void _updateChildren(_ElementNode elt, String path, List<View> newChildren,
                        Theme oldTheme, Theme newTheme) {
+
     if (!(elt.children is List)) {
       StringBuffer out = new StringBuffer();
       elt.children = expandInner(elt, newTheme, out, newChildren);
@@ -174,6 +201,8 @@ abstract class _Update extends _Mount with _Unmount {
       View after = newChildren[i];
       assert(before != null);
       assert(after != null);
+
+      // Recurse.
       updatedChildren.add(updateOrReplace(before, after, oldTheme, newTheme));
     }
 

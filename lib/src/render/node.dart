@@ -2,13 +2,14 @@ part of render;
 
 /// A _Node records how a [View] was rendered in the most recent animation frame.
 ///
-/// Each Root has a tree of _Nodes that records how its DOM was last rendered.
+/// Each [RenderRoot] has a tree of nodes that records how the DOM was last rendered.
 /// Between animation frames, the tree should match the DOM. When rendering an
-/// animation frame, a Transaction updates the view tree to the new state of the DOM.
+/// animation frame, a Transaction updates the tree (in place) to the new state
+/// of the DOM.
 ///
 /// Performing this update is a way of calculating all the changes that need to be made
 /// to the DOM. See Transaction and its mixins for the update calculation and
-/// DomUpdater which is the API used to send a stream of updates to the DOM.
+/// [DomUpdater] for the API used to send a stream of updates to the DOM.
 ///
 /// Nodes that have been expanded have shadow trees recording the output of their
 /// expand methods. To calculate the current state of the DOM, we could recursively
@@ -34,6 +35,9 @@ abstract class _Node<V extends View> {
   /// The view that was most recently rendered into this node.
   V view;
 
+  /// The expander that was used.
+  Expander get expander;
+
   _Node(this.path, this.depth, this.view);
 
   bool get mounted => view != null;
@@ -48,7 +52,7 @@ abstract class _Node<V extends View> {
 }
 
 class _ExpandedNode extends _Node<View> {
-  final Expander expander;
+  Expander expander;
   _Node shadow;
 
   _ExpandedNode(String path, int depth, View view, this.expander)
@@ -62,6 +66,8 @@ class _ElementNode extends _Node<ElementView> {
 
   _ElementNode(String path, int depth, ElementView view) :
     super(path, depth, view);
+
+  Expander get expander => view.type;
 }
 
 /// Used to wrap text children in a span when emulating mixed content.

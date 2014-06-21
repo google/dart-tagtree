@@ -1,80 +1,83 @@
 part of render;
 
-/// A Transaction mixin that implements mounting views.
+/// A Transaction mixin that implements mounting a view.
 abstract class _Mount {
 
   // Dependencies
-  _Node makeNode(String path, int depth, View view, Theme theme);
-  void invalidate(_ExpandedNode node);
+  void invalidate(_ExpandedNode n);
 
   // What was mounted
   final List<_Node> _mountedRefs = [];
   final List<_ElementNode> _mountedForms = [];
-  final List<OnRendered> _mountedExpanders = [];
+  void addRenderCallback(OnRendered callback);
   void addHandler(HandlerType type, String path, val);
 
-  /// Expands templates and starts widgets for each view in a tag tree.
-  /// Appends the HTML to a buffer and returns the corresponding node tree.
+  /// Recursively expands a view to find the underlying HTML elements to render.
+  /// Appends the HTML to a buffer and returns a tree data structure corresponding to it.
   ///
-  /// The path should be a string starting with "/" and using "/" as a separator,
-  /// for example "/asdf/1/2/3", chosen to ensure uniqueness in the DOM. The path
-  /// of a child View is created by appending a suffix starting with "/" to its
-  /// parent. When rendered to HTML, the path will show up in the data-path
-  /// attribute.
+  /// The path is a string starting with "/" and using "/" as a separator, for example
+  /// "/asdf/1/2/3", chosen to ensure uniqueness in the DOM. An expanded node and its
+  /// shadow(s) have the same path. An element's children have a path that's a suffix
+  /// of the parent's path. When rendered to HTML, an element's path shows up in the
+  /// data-path attribute.
   ///
   /// The depth is used to sort updates at render time. It's the depth in the
-  /// view tree, not the depth in the DOM tree (like the path). For example,
-  /// the root of a Widget's shadow tree has the same path, but its depth is
-  /// incremented.
+  /// view tree, not the depth in the DOM tree (like the path). An expanded node
+  /// has a lower depth than its shadow.
   _Node mountView(View view, Theme theme, StringBuffer html, String path, int depth) {
-    _Node node = makeNode(path, depth, view, theme);
-    _expandNode(node, theme, html, path, depth);
-    if (node.view.ref != null) {
-      _mountedRefs.add(node);
-    }
-    return node;
-  }
 
-  void _expandNode(_Node node, Theme theme, StringBuffer out, String path, int depth) {
-    var view = node.view;
+    assert(view.checked());
+    var expander = view.createExpanderForTheme(theme);
 
-    if (node is _ExpandedNode) {
-      var expander = node.expander;
-
-      expander.mount(() => invalidate(node));
-      View shadow = expander.expand(view);
-
-      node.shadow = mountView(shadow, theme, out, path, depth + 1);
-      if (expander.onRendered != null) {
-        _mountedExpanders.add(expander.onRendered);
-      }
-
-    } else if (node is _ElementNode) {
-      _expandElement(node, theme, out);
+    if (expander is ElementType) {
+      var node = new _ElementNode(path, depth, view);
+      _expandElement(node, theme, html);
+      return node;
     } else {
-      throw "unknown node type";
+      var node = new _ExpandedNode(path, depth, view, expander);
+      _expandShadow(node, theme, html);
+      return node;
     }
   }
 
-  _cast(x) => x;
+  /// Render a template or widget by recursively expanding its shadow.
+  void _expandShadow(_ExpandedNode node, Theme theme, StringBuffer out) {
+    var expander = node.expander;
 
-  /// Expands the descendants of an element node and renders the result to HTML.
+    expander.mount(() => invalidate(node));
+    View shadow = expander.expand(node.view);
+
+    // Recurse.
+    node.shadow = mountView(shadow, theme, out, node.path, node.depth + 1);
+
+    // This is last so that the shadows' callbacks happen before the parent.
+    if (expander.onRendered != null) {
+      addRenderCallback(expander.onRendered);
+    }
+  }
+
+  /// Render an HTML element by recursively expanding its children.
   void _expandElement(_ElementNode elt, Theme theme, StringBuffer out) {
+    var view = elt.view;
+
     _writeStartTag(out, elt);
 
-    if (elt.view.htmlTag == "textarea") {
+    if (view.htmlTag == "textarea") {
       String val = elt.props["defaultValue"];
       if (val != null) {
         out.write(HTML_ESCAPE.convert(val));
       }
       // TODO: other cases?
     } else {
-      elt.children = expandInner(elt, theme, out, elt.view.inner);
+      elt.children = expandInner(elt, theme, out, view.inner);
     }
 
-    out.write("</${elt.view.htmlTag}>");
+    out.write("</${view.htmlTag}>");
 
-    if (elt.view.htmlTag == "form") {
+    if (view.ref != null) {
+      _mountedRefs.add(elt);
+    }
+    if (view.htmlTag == "form") {
       _mountedForms.add(elt);
     }
   }

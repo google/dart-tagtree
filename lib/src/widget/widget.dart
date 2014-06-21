@@ -21,8 +21,7 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   RenderNeeded _renderNeeded; // non-null when mounted
   bool configured = false;
 
-  /// Initializes the widget.
-  /// Called automatically when the associated node is first rendered.
+  @override
   void mount(renderNeeded) {
     this._renderNeeded = renderNeeded;
   }
@@ -40,7 +39,11 @@ abstract class Widget<V extends View,S> extends StateMixin<S> implements Expande
   }
 
   @override
-  bool canReuse(Expander next) => next.runtimeType == this.runtimeType;
+  Expander nextExpander(View next, Expander defaultVal) =>
+      defaultVal.runtimeType == this.runtimeType ? this : defaultVal;
+
+  @override
+  bool canReuseDom(Expander prev) => prev == this;
 
   @override
   bool shouldExpand(View prev, View next) => true;
