@@ -29,8 +29,8 @@ main(List<String> args) {
 }
 
 class ButtonSession extends Session<int> {
-
-  int createFirstState() => 0;
+  @override
+  getFirstState(_) => 0;
 
   int get clicks => state;
 
@@ -39,6 +39,7 @@ class ButtonSession extends Session<int> {
     nextState = clicks + 1;
   }
 
+  @override
   View render() {
     return $.Div(inner: [
                  $.Div(inner: "Clicks: ${clicks}"),

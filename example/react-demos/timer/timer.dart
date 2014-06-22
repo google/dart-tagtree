@@ -10,15 +10,16 @@ class TimerApp extends View {
 }
 
 class _TimerApp extends Widget<TimerApp, int> {
-  _TimerApp() {
-    var timer = new Timer.periodic(new Duration(seconds: 1), (t) => tick());
-    willUnmount.listen((_) => timer.cancel());
-  }
+  var timer;
 
   @override
-  createFirstState() => 0;
+  getFirstState(_) {
+    var timer = new Timer.periodic(new Duration(seconds: 1), tick);
+    addTearDown(() => timer.cancel());
+    return 0;
+  }
 
-  tick() {
+  tick(_) {
     nextState = state + 1;
   }
 

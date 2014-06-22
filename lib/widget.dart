@@ -1,6 +1,6 @@
 /**
  * A [Widget] runs within the rendered tag tree until the tree is re-rendered without the
- * corresponding view. The [StateMixin] implements automatic dirty-tracking for Widgets.
+ * corresponding view. The [StateMachineMixin] implements automatic dirty-tracking for Widgets.
  */
 library widget;
 

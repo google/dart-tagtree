@@ -3,7 +3,8 @@ import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
 class MarkdownEditor extends View {
-  const MarkdownEditor();
+  final String defaultText;
+  const MarkdownEditor(this.defaultText);
 
   @override
   createExpander() => new _MarkdownEditor();
@@ -12,9 +13,9 @@ class MarkdownEditor extends View {
 class _MarkdownEditor extends Widget<MarkdownEditor, String> {
 
   @override
-  createFirstState() => "Type some *markdown* here!";
+  getFirstState(MarkdownEditor view) => view.defaultText;
 
-  get value => state;
+  get text => state;
 
   handleChange(e) {
     nextState = e.value;
@@ -24,12 +25,12 @@ class _MarkdownEditor extends Widget<MarkdownEditor, String> {
   render() =>
     $.Div(clazz: "MarkdownEditor", inner: [
       $.H3(inner: "Input"),
-      $.TextArea(onChange: handleChange, defaultValue: value),
+      $.TextArea(onChange: handleChange, defaultValue: text),
       $.H3(inner: "Output"),
-      $.Div(clazz: "Content", inner: new RawHtml(markdownToHtml(value))),
+      $.Div(clazz: "Content", inner: new RawHtml(markdownToHtml(text))),
     ]);
 }
 
 main() =>
     getRoot("#container")
-      ..mount(const MarkdownEditor());
+      ..mount(const MarkdownEditor("Type some *markdown* here!"));

@@ -1,7 +1,8 @@
 part of core;
 
 /// A function provided by the renderer that the expander should call
-/// when it needs to be rendered in the next animation frame.
+/// when it needs to be re-rendered in the next animation frame.
+/// Takes the expander to be used for the next animation frame.
 typedef RenderNeeded();
 
 /// A function provided by the expander that the renderer should call
@@ -34,15 +35,6 @@ abstract class Expander {
   /// instead.
   Expander nextExpander(View nextView, Expander defaultValue) => defaultValue;
 
-  // Lifecycle hooks (relevant only for mutable expanders).
-
-  /// Initializes the expander.
-  /// The renderer will call [mount] before any other method.
-  void mount(RenderNeeded r) {}
-
-  /// Called when the expander is no longer needed.
-  void unmount() {}
-
   // Performance hooks for avoiding unnecessary rendering.
 
   /// Returns true if the renderer can reuse the previous expander's DOM for
@@ -56,7 +48,11 @@ abstract class Expander {
   /// Called only if canReuseDom returned true.
   bool shouldExpand(View prev, View next) => true;
 
-  // Direct DOM access.
+  // Hooks needed for direct DOM access.
+
+  /// Initializes the expander.
+  /// The renderer will call [mount] before any other method.
+  void mount(RenderNeeded r) {}
 
   /// Returns a function that the renderer will call after updating the DOM.
   /// This callback can be used along with [ElementView.ref] to get direct
@@ -64,4 +60,8 @@ abstract class Expander {
   ///
   /// If null, the callback will be skipped.
   OnRendered get onRendered => null;
+
+  /// Called when the expander is no longer needed.
+  /// The DOM hasn't been removed yet.
+  void willUnmount() {}
 }

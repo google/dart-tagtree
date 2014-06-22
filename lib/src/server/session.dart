@@ -1,12 +1,12 @@
 part of server;
 
 /// A Session renders its UI remotely, via a web socket.
-abstract class Session<S> extends StateMixin<S> {
+abstract class Session<S> extends StateMachineMixin<dynamic, S> {
   WebSocketRoot _root;
 
   _mount(root) {
     _root = root;
-    initState();
+    initStateMachine(null);
   }
 
   @override

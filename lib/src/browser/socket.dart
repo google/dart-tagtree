@@ -42,7 +42,7 @@ class SlotWidget extends Widget<Slot, View> {
   }
 
   @override
-  View createFirstState() => $.Div(inner: "Loading...");
+  getFirstState(_) => $.Div(inner: "Loading...");
 
   @override
   View render() => state;

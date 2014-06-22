@@ -11,11 +11,19 @@ abstract class _Unmount {
   /// Doesn't change the DOM; this is up to the caller.
   void unmount(_Node node, {bool willReplace: false}) {
     if (node is _ExpandedNode) {
+
+      // This is first so that the parent cleans up before the children.
+      node.expander.willUnmount();
+
+      // Recurse.
       unmount(node.shadow, willReplace: willReplace);
+
       node.shadow = null;
-      node.expander.unmount();
+
     } else if (node is _ElementNode) {
+      // Recurse.
       unmountInner(node);
+
       releaseElement(node.path, node.view.ref, willReplace: willReplace);
     } else {
       throw "unknown node type";
@@ -26,6 +34,7 @@ abstract class _Unmount {
   void unmountInner(_ElementNode elt) {
     if (elt.children is List) {
       for (_Node child in elt.children) {
+        // Recurse.
         unmount(child);
       }
     }

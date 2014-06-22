@@ -33,10 +33,11 @@ class Menu extends View {
   createExpander() => new _Menu();
 }
 
+// Keeps track of the currently selected item in the top menu.
 class _Menu extends Widget<Menu, String> {
 
   @override
-  createFirstState() =>
+  getFirstState(Menu view) =>
       view.defaultSelected == null ? view.items.first : view.defaultSelected;
 
   String get selected => state;

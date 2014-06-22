@@ -10,7 +10,7 @@
 library server;
 
 import 'package:tagtree/core.dart' as core;
-import 'package:tagtree/widget.dart' show StateMixin;
+import 'package:tagtree/widget.dart' show StateMachineMixin;
 
 import 'dart:async' show scheduleMicrotask;
 import 'dart:convert' show Codec;

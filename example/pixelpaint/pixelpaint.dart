@@ -40,14 +40,14 @@ class PixelPaintApp extends View {
 class _PixelPaintApp extends Widget<PixelPaintApp, Grid> {
 
   @override
-  createFirstState() => new Grid(view.width, view.height);
+  getFirstState(PixelPaintApp view) => new Grid(view.width, view.height);
 
   onPaint(int x, int y) {
     var nextGrid = new Grid.withChangedPixel(state, x, y, 1);
     if (nextGrid == state) {
       return; // unchanged; don't need to render.
     }
-    nextState = nextGrid;
+    nextState = nextGrid; // This triggers a render.
   }
 
   @override
@@ -79,7 +79,7 @@ class _GridView extends Widget<GridView, bool> {
   // This implementation usually works, but could be improved.
 
   @override
-  createFirstState() => false; // assume mouse is up
+  getFirstState(_) => false; // assume mouse is up
 
   get mouseDown => nextState;
   set mouseDown(bool pressed) => nextState = pressed;

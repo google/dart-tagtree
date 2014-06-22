@@ -1,20 +1,22 @@
 part of widget;
 
-/// StateMixin implements automatic dirty tracking for an object that
-/// implements a state machine.
+/// StateMachineMixin implements automatic dirty tracking for a state machine
+/// that "ticks" according to an external schedule.
 ///
-/// The strategy used is to clone the state each time the state machine prepares
-/// to take a step. This happens automatically whenever [nextState] is accessed.
+/// The strategy is to clone the state whenever it changes. This happens
+/// automatically whenever [nextState] is accessed.
 /// To complete a step, call [commitState].
-abstract class StateMixin<S> {
-  S _state, _nextState;
+abstract class StateMachineMixin<IN, S> {
+
+  S _state; // non-null when initialized
+  S _nextState; // non-null when dirty
 
   /// Sets the state machine to the first state. This can only be done once.
-  void initState() {
+  void initStateMachine(IN input) {
     assert(_state == null && _nextState == null);
-    _state = createFirstState();
+    _state = getFirstState(input);
     if (_state == null) {
-      throw "${this}: createFirstState() shouldn't return null.";
+      throw "${this}: getFirstState() shouldn't return null.";
     }
   }
 
@@ -28,7 +30,7 @@ abstract class StateMixin<S> {
   }
 
   /// Subclass hook to create the first state.
-  S createFirstState();
+  S getFirstState(IN input);
 
   /// Subclass hook to return a new copy of the state, given the previous version.
   /// A default implementation is provided for bool, num, and String.

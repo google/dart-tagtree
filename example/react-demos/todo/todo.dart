@@ -28,7 +28,7 @@ class _TodoState {
 class _TodoApp extends Widget<TodoApp, _TodoState> {
 
   @override
-  createFirstState() => new _TodoState([], '');
+  getFirstState(_) => new _TodoState([], '');
 
   onChange(HandlerEvent e) {
     nextState.text = e.value;

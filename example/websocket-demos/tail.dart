@@ -73,7 +73,7 @@ class TailSession extends Session<Tail> {
   }
 
   @override
-  Tail createFirstState() => watcher.currentValue;
+  getFirstState(_) => watcher.currentValue;
 
   @override
   View render() {
