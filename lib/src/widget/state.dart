@@ -6,15 +6,15 @@ part of widget;
 /// The strategy is to clone the state whenever it changes. This happens
 /// automatically whenever [nextState] is accessed.
 /// To complete a step, call [commitState].
-abstract class StateMachineMixin<IN, S> {
+abstract class StateMachineMixin<S> {
 
   S _state; // non-null when initialized
   S _nextState; // non-null when dirty
 
   /// Sets the state machine to the first state. This can only be done once.
-  void initStateMachine(IN input) {
+  void initStateMachine(S firstState) {
     assert(_state == null && _nextState == null);
-    _state = getFirstState(input);
+    _state = firstState;
     if (_state == null) {
       throw "${this}: getFirstState() shouldn't return null.";
     }
@@ -28,9 +28,6 @@ abstract class StateMachineMixin<IN, S> {
       _nextState = null;
     }
   }
-
-  /// Subclass hook to create the first state.
-  S getFirstState(IN input);
 
   /// Subclass hook to return a new copy of the state, given the previous version.
   /// A default implementation is provided for bool, num, and String.

@@ -15,7 +15,6 @@ final exportedTags = new HtmlTagSet()
 
 final theme = new Theme(const {
   TextFile: const _TextFile(),
-  Slot: SlotWidget.create,
 });
 
 main() =>

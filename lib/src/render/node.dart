@@ -1,6 +1,6 @@
 part of render;
 
-typedef void _InvalidateFunc(_ExpandedNode node);
+typedef void _InvalidateFunc(_AnimatedNode node);
 
 /// A _Node records how a [View] was rendered in the most recent animation frame.
 ///
@@ -39,19 +39,10 @@ abstract class _Node<V extends View> {
 
   _Node(this.path, this.depth, this.view);
 
-
-  /// The expander that was used for the last render.
-  Expander get renderedExpander;
-
-  /// The expander from the most recent call to [Refresh].
-  Expander get reloadExpander;
-
-  bool get mounted => view != null;
+  bool get isMounted => view != null;
 
   /// The props that were most recently rendered.
   PropsMap get props => view.props;
-
-  Expander chooseExpander(View nextView, Expander first);
 
   void _unmount() {
     assert(view != null);
@@ -59,24 +50,20 @@ abstract class _Node<V extends View> {
   }
 }
 
-class _ExpandedNode extends _Node<View> {
+class _AnimatedNode extends _Node<View> {
   _InvalidateFunc invalidate;
-  Expander renderedExpander;
-  Expander reloadExpander;
+  Animation anim;
+  var nextState;
   _Node shadow;
 
-  _ExpandedNode(String path, int depth, View view, this.invalidate, this.renderedExpander)
-      : super(path, depth, view);
-
-  void startRender(Expander next) {
-    reloadExpander = next;
-    invalidate(this);
+  _AnimatedNode(String path, int depth, View view, this.invalidate, this.anim)
+      : super(path, depth, view) {
+    assert(anim != null);
   }
 
-  @override
-  Expander chooseExpander(View nextView, Expander first) {
-    var prev = reloadExpander == null ? renderedExpander : reloadExpander;
-    return prev.chooseExpander(nextView, first);
+  void refresh(nextState) {
+    this.nextState = nextState;
+    invalidate(this);
   }
 }
 
@@ -88,11 +75,8 @@ class _ElementNode extends _Node<ElementView> {
   _ElementNode(String path, int depth, ElementView view) :
     super(path, depth, view);
 
-  Expander get renderedExpander => view.type;
-  Expander get reloadExpander => view.type;
-
-  @override
-  Expander chooseExpander(View nextView, Expander first) => first;
+  Animation get anim => view.type;
+  Animation get reloadExpander => view.type;
 }
 
 /// Used to wrap text children in a span when emulating mixed content.

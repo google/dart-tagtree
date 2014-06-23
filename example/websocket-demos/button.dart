@@ -30,7 +30,7 @@ main(List<String> args) {
 
 class ButtonSession extends Session<int> {
   @override
-  getFirstState(_) => 0;
+  getFirstState() => 0;
 
   int get clicks => state;
 

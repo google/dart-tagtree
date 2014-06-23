@@ -8,21 +8,21 @@ typedef TearDown();
 /// A Widget contains internal state. S is the type of the state object.
 /// It can be any type, but you must override the [cloneState] method if
 /// it's not a bool, num, or String.
-abstract class Widget<V extends View,S> extends StateMachineMixin<V,S> implements Expander {
+abstract class Widget<V extends View,S> extends StateMachineMixin<S> implements Animation<V,S> {
   V view;
 
   final _willUnmount = new StreamController.broadcast();
 
-  Refresh _renderNext;
+  Refresh _refresh;
   bool configured = false;
 
   @override
-  View expand(V input, Refresh renderNext) {
+  View expand(V input, prev, Refresh refresh) {
     this.view = input;
-    this._renderNext = renderNext;
+    this._refresh = refresh;
     configure(input);
     if (state == null) {
-      initStateMachine(input);
+      initStateMachine(prev);
     } else {
       commitState();
     }
@@ -30,13 +30,7 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<V,S> implement
   }
 
   @override
-  Expander chooseExpander(View next, Expander first) {
-    // Keep running this widget instance unless the view points to a different widget class.
-    return first.runtimeType == this.runtimeType ? this : first;
-  }
-
-  @override
-  bool canReuseDom(Expander prev) => prev == this;
+  bool canPlay(View nextView, Animation nextAnim) => this.runtimeType == nextAnim.runtimeType;
 
   @override
   bool shouldExpand(View prev, View next) => true;
@@ -49,11 +43,9 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<V,S> implement
   /// Called automatically after the widget's state changes.
   /// (That is, whenever [nextState] is accessed.)
   @override
-  void invalidate() => _renderNext(this);
+  void invalidate() => _refresh(null);
 
-  /// Constructs the tag tree to be rendered in place of this Widget.
-  /// Called automatically for first animation frame containing
-  /// the widget, and in any animation frame where [shouldExpand] returned true.
+  /// Returns the shadow view for this Widget.
   View render();
 
   /// If not null, the widget will be called back after the DOM is rendered.
@@ -70,7 +62,7 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<V,S> implement
     if (_willUnmount.hasListener) {
       _willUnmount.add(true);
     }
-    _renderNext = null;
+    _refresh = null;
   }
 }
 

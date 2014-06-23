@@ -26,31 +26,54 @@ abstract class _Mount {
   /// has a lower depth than its shadow.
   _Node mountView(View view, Theme theme, StringBuffer html, String path, int depth) {
 
-    assert(view.checked());
-    var expander = view.getFirstExpander(theme);
-
-    if (expander is ElementType) {
+    var anim = findAnimation(view, theme);
+    if (anim is ElementType) {
       var node = new _ElementNode(path, depth, view);
       _expandElement(node, theme, html);
       return node;
     } else {
-      var node = new _ExpandedNode(path, depth, view, invalidate, expander);
+      var node = new _AnimatedNode(path, depth, view, invalidate, anim);
       _expandShadow(node, theme, html);
       return node;
     }
   }
 
+  /// Returns the animation to be used to display the given View.
+  Animation findAnimation(View view, Theme theme) {
+    assert(view.checked());
+
+    if (theme != null) {
+      CreateExpander create = theme[view.runtimeType];
+      if (create != null) {
+        Animation result = create();
+        assert(result != null);
+        return result;
+      }
+    }
+
+    Animation animation = view.animation;
+    if (animation == null) {
+      if (theme == null) {
+        throw "There is no animation for ${view.runtimeType} and no theme is installed";
+      } else {
+        throw "Theme ${theme.name} has no animation for ${runtimeType}";
+      }
+    }
+    return animation;
+  }
+
   /// Render a template or widget by recursively expanding its shadow.
-  void _expandShadow(_ExpandedNode node, Theme theme, StringBuffer out) {
-    var expander = node.renderedExpander;
-    View shadow = expander.expand(node.view, node.startRender);
+  void _expandShadow(_AnimatedNode node, Theme theme, StringBuffer out) {
+    var anim = node.anim;
+    var first = anim.getFirstState(node.view);
+    View shadow = anim.expand(node.view, first, node.refresh);
 
     // Recurse.
     node.shadow = mountView(shadow, theme, out, node.path, node.depth + 1);
 
     // This is last so that the shadows' callbacks happen before the parent.
-    if (expander.onRendered != null) {
-      addRenderCallback(expander.onRendered);
+    if (anim.onRendered != null) {
+      addRenderCallback(anim.onRendered);
     }
   }
 

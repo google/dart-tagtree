@@ -19,6 +19,9 @@ class TextFile extends View {
   }
 
   @override
+  get animation => null; // theme must provide
+
+  @override
   get propsImpl => {"lines": lines};
 
   static final tag = "TextFile";

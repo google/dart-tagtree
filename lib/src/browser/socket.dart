@@ -6,8 +6,11 @@ part of browser;
 /// may sent over the network.
 class Slot extends View {
   final String src;
-  final TagSet export;
+  final HtmlTagSet export;
   const Slot({this.src, this.export});
+
+  @override
+  get animation => new SlotWidget();
 
   @override
   bool checked() {
@@ -42,7 +45,7 @@ class SlotWidget extends Widget<Slot, View> {
   }
 
   @override
-  getFirstState(_) => $.Div(inner: "Loading...");
+  getFirstState(Slot view) => view.export.Div(inner: "Loading...");
 
   @override
   View render() => state;
@@ -55,8 +58,6 @@ class SlotWidget extends Widget<Slot, View> {
     print(message);
     nextState = $.Div(inner: message);
   }
-
-  static create() => new SlotWidget();
 }
 
 class _Connection {

@@ -32,7 +32,7 @@ class PixelPaintApp extends View {
   bool checked() => palette.length == 2;
 
   @override
-  get defaultExpander => new _PixelPaintApp();
+  get animation => new _PixelPaintApp();
 }
 
 /// The top-level state machine.
@@ -64,7 +64,7 @@ class GridView extends View {
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
-  get defaultExpander => new _GridView();
+  get animation => new _GridView();
 }
 
 /// A handler that's called when the user paints a pixel.

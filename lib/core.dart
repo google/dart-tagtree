@@ -10,7 +10,7 @@
  * An [ElementView] is a View that renders to an HTML element. Its structure is
  * defined by an [ElementType].
  *
- * A [Expander] implements a [View]. The [ElementType] and [Template] viewers are
+ * A [Animation] implements a [View]. The [ElementType] and [Template] viewers are
  * included in core. Viewers for multiple kinds of views are collected into a [Theme].
  *
  * A [TagSet] can create the corresponding View for each of a set of tags.
@@ -22,8 +22,8 @@ library core;
 import 'dart:collection';
 import 'package:tagtree/json.dart';
 
+part 'src/core/animation.dart';
 part 'src/core/element.dart';
-part 'src/core/expander.dart';
 part 'src/core/handler.dart';
 part 'src/core/json.dart';
 part 'src/core/tagset.dart';

@@ -1,38 +1,24 @@
 import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
-// Demonstrates how to switch between two templates.
-
 class ReversableText extends View {
   final String text;
   const ReversableText(this.text);
   @override
-  get defaultExpander => const _ForwardText();
+  get animation => const _ReversableText();
 }
 
-class _ForwardText extends TemplateState<ReversableText> {
-  const _ForwardText();
+class _ReversableText extends Animation<ReversableText, bool> {
+  const _ReversableText();
 
   @override
-  isFirstState(Expander other) => other == this;
+  getFirstState(_) => false;
 
   @override
-  render(view, refresh) {
-    onClick(_) => refresh(const _ReversedText());
-    return $.Div(clazz: "sample_text", onClick: onClick, inner: view.text);
-  }
-}
-
-class _ReversedText extends TemplateState<ReversableText> {
-  const _ReversedText();
-
-  @override
-  isFirstState(Expander other) => other == const _ForwardText();
-
-  @override
-  render(view, refresh) {
-    onClick(_) => refresh(const _ForwardText());
-    return $.Div(clazz: "sample_text", onClick: onClick, inner: reverse(view.text));
+  View expand(ReversableText view, bool isReversed, Refresh refresh) {
+    String text = isReversed ? reverse(view.text) : view.text;
+    onClick(_) => refresh(!isReversed);
+    return $.Div(clazz: "sample_text", onClick: onClick, inner: text);
   }
 
   reverse(text) {
@@ -42,6 +28,8 @@ class _ReversedText extends TemplateState<ReversableText> {
     }
     return buffer.toString();
   }
+
+  canPlay(View nextView, Animation nextAnim) => nextView is ReversableText && nextAnim == this;
 }
 
 main() =>

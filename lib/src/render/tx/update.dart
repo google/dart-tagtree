@@ -16,21 +16,20 @@ abstract class _Update extends _Mount with _Unmount {
   /// unmounted and a new subtree will be created.
   /// Either way, updates the DOM and returns the root node of the new subtree.
   _Node updateOrReplace(_Node node, View nextView, Theme oldTheme, Theme newTheme) {
-    var first = nextView.getFirstExpander(newTheme);
+    Animation nextAnim = findAnimation(nextView, newTheme);
 
-    var next = node.chooseExpander(nextView, first);
-
-    if (!next.canReuseDom(node.renderedExpander)) {
-      return _replace(node, nextView, newTheme);
-    }
-
-    if (node is _ExpandedNode) {
-      node.renderedExpander = next;
-      node.reloadExpander = null;
+    if (node is _AnimatedNode) {
+      assert (node.anim != null);
+      if (!node.anim.canPlay(nextView, nextAnim)) {
+        return _replace(node, nextView, newTheme);
+      }
       _updateShadow(node, nextView, oldTheme, newTheme);
 
     } else if (node is _ElementNode) {
-      assert(node.renderedExpander == next);
+      if (node.view.type != nextAnim) {
+        return _replace(node, nextView, newTheme);
+      }
+      assert(node.anim == nextAnim);
       _updateElement(node, nextView, oldTheme, newTheme);
 
     } else {
@@ -58,9 +57,9 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void _updateShadow(_ExpandedNode node, View nextView, Theme oldTheme, Theme newTheme) {
+  void _updateShadow(_AnimatedNode node, View nextView, Theme oldTheme, Theme newTheme) {
     var oldView = node.view;
-    var next = node.renderedExpander;
+    var next = node.anim;
 
     if (oldTheme == newTheme && !next.shouldExpand(oldView, nextView)) {
       return; // Performance shortcut.
@@ -69,8 +68,8 @@ abstract class _Update extends _Mount with _Unmount {
     node.view = nextView;
 
     // Recurse.
-    View nextShadowView = next.expand(nextView, node.startRender);
-    node.shadow = updateOrReplace(node.shadow, nextShadowView, oldTheme, newTheme);
+    View shadowView = next.expand(nextView, node.nextState, node.refresh);
+    node.shadow = updateOrReplace(node.shadow, shadowView, oldTheme, newTheme);
 
     // This is last so that the shadow's callbacks fire before the parent.
     if (next.onRendered != null) {
@@ -204,7 +203,7 @@ abstract class _Update extends _Mount with _Unmount {
     for (int i = 0; i < endBoth; i++) {
       _Node before = elt.children[i];
       View after = newChildren[i];
-      assert(before != null);
+      assert(before != null && before.isMounted);
       assert(after != null);
 
       // Recurse.

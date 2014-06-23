@@ -2,32 +2,22 @@ import 'package:markdown/markdown.dart' show markdownToHtml;
 import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
-// Demonstrates how to implement a view using a state machine.
-
 class MarkdownEditor extends View {
   final String defaultText;
   const MarkdownEditor(this.defaultText);
 
   @override
-  get defaultExpander => new _EditorState.first(defaultText);
+  get animation => const _MarkdownEditor();
 }
 
-class _EditorState extends TemplateState<MarkdownEditor> {
-  final String firstText;
-  final String text;
-
-  _EditorState.first(String text) : firstText = text, this.text = text;
-
-  _EditorState.next(this.firstText, this.text);
+class _MarkdownEditor extends Animation<MarkdownEditor, String> {
+  const _MarkdownEditor();
 
   @override
-  isFirstState(Expander other) => other is _EditorState && other.text == firstText;
+  getFirstState(MarkdownEditor view) => view.defaultText;
 
-  @override
-  render(View view, Refresh refresh) {
-    onChange(e) {
-      refresh(new _EditorState.next(firstText, e.value));
-    }
+  View expand(MarkdownEditor view, String text, Refresh refresh) {
+    onChange(e) => refresh(e.value);
     return $.Div(clazz: "MarkdownEditor", inner: [
       $.H3(inner: "Input"),
       $.TextArea(onChange: onChange, defaultValue: text),
@@ -35,6 +25,9 @@ class _EditorState extends TemplateState<MarkdownEditor> {
       $.Div(clazz: "Content", inner: new RawHtml(markdownToHtml(text))),
     ]);
   }
+
+  @override
+  canPlay(View next, Animation nextAnim) => next is MarkdownEditor && nextAnim == this;
 }
 
 main() =>

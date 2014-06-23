@@ -30,7 +30,7 @@ class Menu extends View {
   @override
   bool checked() => items != null && items.length > 0;
 
-  get defaultExpander => new _Menu();
+  get animation => new _Menu();
 }
 
 // Keeps track of the currently selected item in the top menu.
@@ -72,6 +72,9 @@ class LoginView extends View {
   final bool rememberMe;
 
   const LoginView({this.email: "", this.rememberMe: false});
+
+  @override
+  get animation => null; // provided by theme
 }
 
 class _LoginView extends Template {

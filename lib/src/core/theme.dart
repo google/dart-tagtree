@@ -1,6 +1,6 @@
 part of core;
 
-typedef Expander CreateExpander();
+typedef Animation CreateExpander();
 
 /// A Theme maps Views to Expanders.
 class Theme {

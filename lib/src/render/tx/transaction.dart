@@ -9,13 +9,13 @@ class _Transaction extends _Update {
   // What to do
   final View nextTagTree;
   final Theme nextTheme;
-  final List<_ExpandedNode> _nodesToUpdate;
+  final List<_AnimatedNode> _nodesToUpdate;
 
   // What was done
   final List<OnRendered> _renderCallbacks = [];
 
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree, this.nextTheme,
-      Iterable<_ExpandedNode> nodesToUpdate)
+      Iterable<_AnimatedNode> nodesToUpdate)
       : _nodesToUpdate = new List.from(nodesToUpdate);
 
   void run() {
@@ -27,8 +27,8 @@ class _Transaction extends _Update {
     // Sort ancestors ahead of children.
     _nodesToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (_ExpandedNode n in _nodesToUpdate) {
-      if (n.mounted) {
+    for (_AnimatedNode n in _nodesToUpdate) {
+      if (n.isMounted) {
         // Re-render using the same view.
         updateOrReplace(n, n.view, root._renderedTheme, nextTheme);
       }

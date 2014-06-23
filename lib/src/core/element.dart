@@ -14,10 +14,7 @@ class ElementView implements View {
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  Expander getFirstExpander(_) => type;
-
-  @override
-  Expander get defaultExpander => type;
+  Animation get animation => type;
 
   @override
   get jsonTag => type.htmlTag;
@@ -48,7 +45,7 @@ class RawHtml implements Jsonable {
 }
 
 /// The structure of an HTML element, as represented by an [ElementView].
-class ElementType extends Expander {
+class ElementType extends Animation {
 
   /// The name of the [TagSet] method that will create this element.
   /// (See [namedParamToKey] for the named parameters it will have.)
@@ -90,16 +87,16 @@ class ElementType extends Expander {
   }
 
   @override
-  expand(v, _) {
+  getFirstState(_) => null; // stateless
+
+  @override
+  expand(v, prev, refresh) {
     // Elements don't have a shadow. (Special case handled by the renderer.)
     throw "not implemented";
   }
 
   @override
-  Expander chooseExpander(View next, Expander first) {
-    // Handled by the renderer.
-    throw "not implemented";
-  }
+  canPlay(View view, Animation nextAnim) => (view is ElementView) && view.type == this;
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

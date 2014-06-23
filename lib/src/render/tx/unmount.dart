@@ -10,14 +10,13 @@ abstract class _Unmount {
   /// Calls releaseElement() on each HTML element in the tree.
   /// Doesn't change the DOM; this is up to the caller.
   void unmount(_Node node, {bool willReplace: false}) {
-    if (node is _ExpandedNode) {
+    if (node is _AnimatedNode) {
 
       node.invalidate = null;
-      node.reloadExpander = null;
 
       // This is first so that the parent cleans up before the children.
-      node.renderedExpander.willUnmount();
-      node.renderedExpander = null;
+      node.anim.willUnmount();
+      node.anim = null;
 
       // Recurse.
       unmount(node.shadow, willReplace: willReplace);

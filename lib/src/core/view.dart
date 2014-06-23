@@ -1,79 +1,41 @@
 part of core;
 
-/// A View is the configuration of a user interface that will be rendered as HTML.
+/// A View specifies an animation that will be rendered as stream of HTML elements.
 ///
-/// Views have configuration properties ("props") that can normally be accessed
-/// as final fields on the View subclass. These same properties are sometimes
-/// accessible as a Map as well, via [props].
+/// The View itself is only a set of configuration properties ("props").
+/// Views are normally immutable and their props should be final fields.
 ///
-/// A prop may store an arbitrary Dart object. By convention it should be
-/// immutable. A Viewer might use a prop's value to set an HTML attribute,
-/// substitute data into a template, report an event (if it's a [HandlerFunc]),
-/// or store a list of children (forming a "tag tree"). Declaring the type of a
-/// prop (in the usual Dart way) is optional but recommended for clarity.
+/// A View's implementation is an animation. A View can be associated with
+/// its animation either by overriding [animation] to point to the first
+/// frame of the animation, or by using a [Theme] to specify the first
+/// frame. (The Theme takes priority if both ways are used.)
 ///
-/// Unlike a tree of HTML elements in the DOM, a View is an immutable data
-/// structure with no lifecycle or dependency on the browser. View subclasses
-/// should be usable on client or server and can be freely shared or sent over
-/// the network (provided that [propsImpl] is implemented and each property
-/// can be encoded as JSON).
+/// Not all views animate; in that case, there is only a first frame and
+/// the view acts as a template. (See [TemplateView].) Some views render
+/// as single HTML elements. (See [ElementView].)
 ///
-/// Also, Views can usually be Dart constants; unless there is a good reason, they
-/// should have const constructors.
-///
-/// The [defaultExpander] method determines how the View will be rendered.
-/// Normally this is done by looking up a function in the supplied [Theme].
-///
-/// You can implement a custom view by subclassing View to define the tag and
-/// its props, and separately providing a [Template] or Widget for its
-/// behavior.
+/// View objects have no lifecycle or dependency on the browser and should be
+/// usable on client or server. If [propsImpl] is implemented, a View can
+/// be serialized and sent over the network.
 abstract class View implements Jsonable {
 
-  /// The default constructor of each View should be const.
-  /// It should take a named parameter for each property.
+  /// Most Views can be stored as Dart constants.
   const View();
 
-  /// Asserts that a View's properties are valid.
+  /// Asserts that the View's props are valid. If so, returns true.
+  ///
   /// (Not done in the constructor so that it can be const.)
-  /// Subclasses should implement this method if they have any constraints.
   /// When Dart is running in checked mode, this method will automatically be
   /// called before a View is rendered or sent over the network.
   bool checked() => true;
 
-  /// Returns the Expander that will render this View to HTML for the
-  /// first animation frame where it appears.
-  /// The theme is tried first (if not null), and if it doesn't
-  /// have anything, [defaultExpander] is called as a fallback.
-  Expander getFirstExpander(Theme theme) {
-    if (theme == null) {
-      var result = defaultExpander;
-      if (result == null) {
-        throw "There is no default expander for ${runtimeType} and no theme is installed";
-      }
-      return result;
-    }
+  /// Returns the animation for this View when not overridden by a Theme.
+  Animation get animation;
 
-    CreateExpander create = theme[runtimeType];
-    if (create != null) {
-      return create();
-    }
-
-    var fallback = defaultExpander;
-    if (fallback == null) {
-      throw "Theme ${theme.name} has no expander for ${runtimeType}";
-    }
-    return fallback;
-  }
-
-  /// Creates the Expander for this View in the case when there's no Theme.
-  Expander get defaultExpander => null;
-
-  /// Returns the contents of the view as a [PropsMap].
-  /// This form is more suitable for reflective access and serializing to
-  /// JSON.
+  /// Returns the view's props as a [PropsMap].
   ///
-  /// Not implemented by all View subclasses. If not implemented, it will throw
-  /// an exception. A subclass can implement by overriding [propsImpl].
+  /// Throws an exception if not implemented. Subclasses should implement
+  /// this method by overriding [propsImpl].
   PropsMap get props {
     var p = _propsCache[this];
     if (p == null) {
@@ -86,8 +48,8 @@ abstract class View implements Jsonable {
 
   /// Constructs the property map needed for [props] to work.
   ///
-  /// A property may contain JSON data (including other Jsonable nodes)
-  /// or a [HandlerFunc].
+  /// For a View to be serializable, its props should contain JSON data
+  /// (including other [Jsonable] nodes) or a [HandlerFunc].
   ///
   /// A node's children may be stored in any field. By convention,
   /// they are usually stored in its "inner" field.
