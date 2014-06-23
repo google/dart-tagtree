@@ -4,7 +4,7 @@ part of render;
 abstract class _Mount {
 
   // Dependencies
-  void invalidate(_ExpandedNode n);
+  _InvalidateFunc get invalidate;
 
   // What was mounted
   final List<_Node> _mountedRefs = [];
@@ -27,14 +27,14 @@ abstract class _Mount {
   _Node mountView(View view, Theme theme, StringBuffer html, String path, int depth) {
 
     assert(view.checked());
-    var expander = view.createExpanderForTheme(theme);
+    var expander = view.getFirstExpander(theme);
 
     if (expander is ElementType) {
       var node = new _ElementNode(path, depth, view);
       _expandElement(node, theme, html);
       return node;
     } else {
-      var node = new _ExpandedNode(path, depth, view, expander);
+      var node = new _ExpandedNode(path, depth, view, invalidate, expander);
       _expandShadow(node, theme, html);
       return node;
     }
@@ -42,10 +42,8 @@ abstract class _Mount {
 
   /// Render a template or widget by recursively expanding its shadow.
   void _expandShadow(_ExpandedNode node, Theme theme, StringBuffer out) {
-    var expander = node.expander;
-
-    expander.mount(() => invalidate(node));
-    View shadow = expander.expand(node.view);
+    var expander = node.renderedExpander;
+    View shadow = expander.expand(node.view, node.startRender);
 
     // Recurse.
     node.shadow = mountView(shadow, theme, out, node.path, node.depth + 1);

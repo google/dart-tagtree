@@ -1,26 +1,49 @@
 import 'package:tagtree/browser.dart';
+import 'package:tagtree/core.dart';
 
-const text = "Click me!";
-final forward = clickable(text);
-final reversed = clickable(reverse(text));
-final root = getRoot("#container");
+// Demonstrates how to switch between two templates.
 
-var current = forward;
-
-clickable(text) =>
-    $.Div(clazz: "sample_text", onClick: onClick, inner: text);
-
-onClick(_) {
-  current = (current == forward) ? reversed: forward;
-  root.mount(current);
+class ReversableText extends View {
+  final String text;
+  const ReversableText(this.text);
+  @override
+  get defaultExpander => const _ForwardText();
 }
 
-reverse(text) {
-  var buffer = new StringBuffer();
-  for (int i = text.length - 1; i >= 0; i--) {
-    buffer.write(text[i]);
+class _ForwardText extends TemplateState<ReversableText> {
+  const _ForwardText();
+
+  @override
+  isFirstState(Expander other) => other == this;
+
+  @override
+  render(view, refresh) {
+    onClick(_) => refresh(const _ReversedText());
+    return $.Div(clazz: "sample_text", onClick: onClick, inner: view.text);
   }
-  return buffer.toString();
 }
 
-main() => root.mount(current);
+class _ReversedText extends TemplateState<ReversableText> {
+  const _ReversedText();
+
+  @override
+  isFirstState(Expander other) => other == const _ForwardText();
+
+  @override
+  render(view, refresh) {
+    onClick(_) => refresh(const _ForwardText());
+    return $.Div(clazz: "sample_text", onClick: onClick, inner: reverse(view.text));
+  }
+
+  reverse(text) {
+    var buffer = new StringBuffer();
+    for (int i = text.length - 1; i >= 0; i--) {
+      buffer.write(text[i]);
+    }
+    return buffer.toString();
+  }
+}
+
+main() =>
+    getRoot("#container")
+      .mount(const ReversableText("Click me!"));

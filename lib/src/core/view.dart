@@ -21,7 +21,7 @@ part of core;
 /// Also, Views can usually be Dart constants; unless there is a good reason, they
 /// should have const constructors.
 ///
-/// The [createExpander] method determines how the View will be rendered.
+/// The [defaultExpander] method determines how the View will be rendered.
 /// Normally this is done by looking up a function in the supplied [Theme].
 ///
 /// You can implement a custom view by subclassing View to define the tag and
@@ -40,14 +40,15 @@ abstract class View implements Jsonable {
   /// called before a View is rendered or sent over the network.
   bool checked() => true;
 
-  /// Creates the Expander that will render this View to HTML.
+  /// Returns the Expander that will render this View to HTML for the
+  /// first animation frame where it appears.
   /// The theme is tried first (if not null), and if it doesn't
-  /// have any Expander, [createExpander] is called as a fallback.
-  Expander createExpanderForTheme(Theme theme) {
+  /// have anything, [defaultExpander] is called as a fallback.
+  Expander getFirstExpander(Theme theme) {
     if (theme == null) {
-      var result = createExpander();
+      var result = defaultExpander;
       if (result == null) {
-        throw "createExpander is not overridden for ${runtimeType} and no theme is installed";
+        throw "There is no default expander for ${runtimeType} and no theme is installed";
       }
       return result;
     }
@@ -57,15 +58,15 @@ abstract class View implements Jsonable {
       return create();
     }
 
-    var fallback = createExpander();
+    var fallback = defaultExpander;
     if (fallback == null) {
-      throw "Theme ${theme.name} has no definition for ${runtimeType}";
+      throw "Theme ${theme.name} has no expander for ${runtimeType}";
     }
     return fallback;
   }
 
   /// Creates the Expander for this View in the case when there's no Theme.
-  Expander createExpander() => null;
+  Expander get defaultExpander => null;
 
   /// Returns the contents of the view as a [PropsMap].
   /// This form is more suitable for reflective access and serializing to

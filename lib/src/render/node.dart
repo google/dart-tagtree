@@ -1,5 +1,7 @@
 part of render;
 
+typedef void _InvalidateFunc(_ExpandedNode node);
+
 /// A _Node records how a [View] was rendered in the most recent animation frame.
 ///
 /// Each [RenderRoot] has a tree of nodes that records how the DOM was last rendered.
@@ -35,15 +37,21 @@ abstract class _Node<V extends View> {
   /// The view that was most recently rendered into this node.
   V view;
 
-  /// The expander that was used.
-  Expander get expander;
-
   _Node(this.path, this.depth, this.view);
+
+
+  /// The expander that was used for the last render.
+  Expander get renderedExpander;
+
+  /// The expander from the most recent call to [Refresh].
+  Expander get reloadExpander;
 
   bool get mounted => view != null;
 
   /// The props that were most recently rendered.
   PropsMap get props => view.props;
+
+  Expander chooseExpander(View nextView, Expander first);
 
   void _unmount() {
     assert(view != null);
@@ -52,11 +60,24 @@ abstract class _Node<V extends View> {
 }
 
 class _ExpandedNode extends _Node<View> {
-  Expander expander;
+  _InvalidateFunc invalidate;
+  Expander renderedExpander;
+  Expander reloadExpander;
   _Node shadow;
 
-  _ExpandedNode(String path, int depth, View view, this.expander)
+  _ExpandedNode(String path, int depth, View view, this.invalidate, this.renderedExpander)
       : super(path, depth, view);
+
+  void startRender(Expander next) {
+    reloadExpander = next;
+    invalidate(this);
+  }
+
+  @override
+  Expander chooseExpander(View nextView, Expander first) {
+    var prev = reloadExpander == null ? renderedExpander : reloadExpander;
+    return prev.chooseExpander(nextView, first);
+  }
 }
 
 /// A node for a rendered HTML element.
@@ -67,7 +88,11 @@ class _ElementNode extends _Node<ElementView> {
   _ElementNode(String path, int depth, ElementView view) :
     super(path, depth, view);
 
-  Expander get expander => view.type;
+  Expander get renderedExpander => view.type;
+  Expander get reloadExpander => view.type;
+
+  @override
+  Expander chooseExpander(View nextView, Expander first) => first;
 }
 
 /// Used to wrap text children in a span when emulating mixed content.

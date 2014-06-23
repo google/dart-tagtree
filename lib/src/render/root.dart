@@ -1,9 +1,5 @@
 part of render;
 
-bool _alwaysRender(before, after) => true;
-
-typedef _Node _MakeNodeFunc(String path, int depth, View node);
-
 /// A RenderRoot is a place on an HTML page where a tag tree may be rendered.
 abstract class RenderRoot {
   final int id;

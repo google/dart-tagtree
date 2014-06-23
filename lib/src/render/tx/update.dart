@@ -11,34 +11,39 @@ abstract class _Update extends _Mount with _Unmount {
   void setHandler(HandlerType type, String path, HandlerFunc handler);
   void removeHandler(HandlerType type, String path);
 
-  // Recursively renders the next view onto an existing node subtree.
-  // The node subtree will either be updated in place, or it will
-  // unmounted and a new subtree will be created.
-  // Either way, updates the DOM and returns the root node of the new subtree.
+  /// Recursively renders the next view onto an existing node subtree.
+  /// The node subtree will either be updated in place, or it will
+  /// unmounted and a new subtree will be created.
+  /// Either way, updates the DOM and returns the root node of the new subtree.
   _Node updateOrReplace(_Node node, View nextView, Theme oldTheme, Theme newTheme) {
+    var first = nextView.getFirstExpander(newTheme);
 
-    var defaultExpander = nextView.createExpanderForTheme(newTheme);
-    var next = node.expander.nextExpander(nextView, defaultExpander);
+    var next = node.chooseExpander(nextView, first);
 
-    if (next.canReuseDom(node.expander)) {
-
-      if (node is _ExpandedNode) {
-        node.expander = next;
-        updateShadow(node, nextView, oldTheme, newTheme);
-
-      } else if (node is _ElementNode) {
-        assert(node.expander == next);
-        _updateElement(node, nextView, oldTheme, newTheme);
-
-      } else {
-        throw "unknown node type: ${node.runtimeType}";
-      }
-
-      return node;
+    if (!next.canReuseDom(node.renderedExpander)) {
+      return _replace(node, nextView, newTheme);
     }
 
-    // cannot expand in place; unmount and remount
+    if (node is _ExpandedNode) {
+      node.renderedExpander = next;
+      node.reloadExpander = null;
+      _updateShadow(node, nextView, oldTheme, newTheme);
 
+    } else if (node is _ElementNode) {
+      assert(node.renderedExpander == next);
+      _updateElement(node, nextView, oldTheme, newTheme);
+
+    } else {
+      throw "unknown node type: ${node.runtimeType}";
+    }
+
+    return node;
+  }
+
+  /// Replace a node by unmounting and remounting. Any view state is lost.
+  _Node _replace(_Node node, View nextView, Theme newTheme) {
+
+    // cannot expand in place; unmount and remount
     String path = node.path;
     int depth = node.depth;
     unmount(node, willReplace: true);
@@ -53,9 +58,9 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void updateShadow(_ExpandedNode node, View nextView, Theme oldTheme, Theme newTheme) {
+  void _updateShadow(_ExpandedNode node, View nextView, Theme oldTheme, Theme newTheme) {
     var oldView = node.view;
-    var next = node.expander;
+    var next = node.renderedExpander;
 
     if (oldTheme == newTheme && !next.shouldExpand(oldView, nextView)) {
       return; // Performance shortcut.
@@ -64,7 +69,7 @@ abstract class _Update extends _Mount with _Unmount {
     node.view = nextView;
 
     // Recurse.
-    View nextShadowView = next.expand(nextView);
+    View nextShadowView = next.expand(nextView, node.startRender);
     node.shadow = updateOrReplace(node.shadow, nextShadowView, oldTheme, newTheme);
 
     // This is last so that the shadow's callbacks fire before the parent.

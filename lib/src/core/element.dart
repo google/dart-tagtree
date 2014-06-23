@@ -14,10 +14,10 @@ class ElementView implements View {
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  Expander createExpanderForTheme(_) => type;
+  Expander getFirstExpander(_) => type;
 
   @override
-  Expander createExpander() => type;
+  Expander get defaultExpander => type;
 
   @override
   get jsonTag => type.htmlTag;
@@ -90,7 +90,16 @@ class ElementType extends Expander {
   }
 
   @override
-  expand(v) => throw "not implemented"; // render handles elements as a special case
+  expand(v, _) {
+    // Elements don't have a shadow. (Special case handled by the renderer.)
+    throw "not implemented";
+  }
+
+  @override
+  Expander chooseExpander(View next, Expander first) {
+    // Handled by the renderer.
+    throw "not implemented";
+  }
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

@@ -12,12 +12,15 @@ abstract class _Unmount {
   void unmount(_Node node, {bool willReplace: false}) {
     if (node is _ExpandedNode) {
 
+      node.invalidate = null;
+      node.reloadExpander = null;
+
       // This is first so that the parent cleans up before the children.
-      node.expander.willUnmount();
+      node.renderedExpander.willUnmount();
+      node.renderedExpander = null;
 
       // Recurse.
       unmount(node.shadow, willReplace: willReplace);
-
       node.shadow = null;
 
     } else if (node is _ElementNode) {

@@ -32,7 +32,7 @@ class PixelPaintApp extends View {
   bool checked() => palette.length == 2;
 
   @override
-  createExpander() => new _PixelPaintApp();
+  get defaultExpander => new _PixelPaintApp();
 }
 
 /// The top-level state machine.
@@ -64,7 +64,7 @@ class GridView extends View {
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
-  createExpander() => new _GridView();
+  get defaultExpander => new _GridView();
 }
 
 /// A handler that's called when the user paints a pixel.
@@ -130,7 +130,7 @@ class RowView extends TemplateView {
 
   /// Avoid redrawing a row that hasn't changed. (The key to good performance!)
   @override
-  shouldExpand(RowView prev) => !prev.row.equals(row);
+  shouldRender(RowView prev) => !prev.row.equals(row);
 
   @override
   render() {

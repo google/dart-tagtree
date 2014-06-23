@@ -19,7 +19,7 @@ class SunflowerApp extends View {
   const SunflowerApp({this.startSeeds, this.seedRadius});
 
   @override
-  createExpander() => new _SunflowerApp();
+  get defaultExpander => new _SunflowerApp();
 }
 
 class _SunflowerApp extends Widget<SunflowerApp, int> {

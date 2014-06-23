@@ -30,7 +30,7 @@ class Menu extends View {
   @override
   bool checked() => items != null && items.length > 0;
 
-  createExpander() => new _Menu();
+  get defaultExpander => new _Menu();
 }
 
 // Keeps track of the currently selected item in the top menu.
@@ -79,7 +79,7 @@ class _LoginView extends Template {
   const _LoginView(this.formClasses);
 
   @override
-  expand(LoginView v) =>
+  render(LoginView v) =>
     $.Form(clazz: formClasses, inner:
       $.FieldSet(inner: [
         $.Input(type: "email", placeholder: "Email", defaultValue: v.email), " ",

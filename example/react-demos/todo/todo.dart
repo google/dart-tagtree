@@ -16,7 +16,7 @@ class TodoApp extends View {
   const TodoApp();
 
   @override
-  createExpander() => new _TodoApp();
+  get defaultExpander => new _TodoApp();
 }
 
 class _TodoState {

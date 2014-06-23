@@ -13,17 +13,13 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<V,S> implement
 
   final _willUnmount = new StreamController.broadcast();
 
-  RenderNeeded _renderNeeded;
+  Refresh _renderNext;
   bool configured = false;
 
   @override
-  void mount(renderNeeded) {
-    this._renderNeeded = renderNeeded;
-  }
-
-  @override
-  View expand(V input) {
+  View expand(V input, Refresh renderNext) {
     this.view = input;
+    this._renderNext = renderNext;
     configure(input);
     if (state == null) {
       initStateMachine(input);
@@ -34,8 +30,10 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<V,S> implement
   }
 
   @override
-  Expander nextExpander(View next, Expander defaultVal) =>
-      defaultVal.runtimeType == this.runtimeType ? this : defaultVal;
+  Expander chooseExpander(View next, Expander first) {
+    // Keep running this widget instance unless the view points to a different widget class.
+    return first.runtimeType == this.runtimeType ? this : first;
+  }
 
   @override
   bool canReuseDom(Expander prev) => prev == this;
@@ -51,7 +49,7 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<V,S> implement
   /// Called automatically after the widget's state changes.
   /// (That is, whenever [nextState] is accessed.)
   @override
-  void invalidate() => _renderNeeded();
+  void invalidate() => _renderNext(this);
 
   /// Constructs the tag tree to be rendered in place of this Widget.
   /// Called automatically for first animation frame containing
@@ -72,7 +70,7 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<V,S> implement
     if (_willUnmount.hasListener) {
       _willUnmount.add(true);
     }
-    _renderNeeded = null;
+    _renderNext = null;
   }
 }
 

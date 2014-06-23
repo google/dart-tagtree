@@ -30,7 +30,7 @@ class _Transaction extends _Update {
     for (_ExpandedNode n in _nodesToUpdate) {
       if (n.mounted) {
         // Re-render using the same view.
-        updateShadow(n, n.view, root._renderedTheme, nextTheme);
+        updateOrReplace(n, n.view, root._renderedTheme, nextTheme);
       }
     }
 
@@ -66,7 +66,7 @@ class _Transaction extends _Update {
   }
 
   @override
-  void invalidate(_ExpandedNode node) => root._invalidate(node);
+  _InvalidateFunc get invalidate => root._invalidate;
 
   // What was done
 
