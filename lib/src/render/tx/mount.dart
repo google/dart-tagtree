@@ -7,7 +7,7 @@ abstract class _Mount {
   _InvalidateFunc get invalidate;
 
   // What was mounted
-  final List<_Node> _mountedRefs = [];
+  final List<_ElementNode> _mountedRefs = [];
   final List<_ElementNode> _mountedForms = [];
   void addRenderCallback(OnRendered callback);
   void addHandler(HandlerType type, String path, val);
@@ -33,7 +33,14 @@ abstract class _Mount {
       return node;
     } else {
       var node = new _AnimatedNode(path, depth, view, invalidate, anim);
-      _expandShadow(node, theme, html);
+      var shadow = node.expand(view);
+
+      // Recurse.
+      node.shadow = mountView(shadow, theme, html, node.path, node.depth + 1);
+
+      // This is last so that the shadows' callbacks happen before the parent.
+      addRenderCallback(node.anim.onRendered);
+
       return node;
     }
   }
@@ -60,21 +67,6 @@ abstract class _Mount {
       }
     }
     return animation;
-  }
-
-  /// Render a template or widget by recursively expanding its shadow.
-  void _expandShadow(_AnimatedNode node, Theme theme, StringBuffer out) {
-    var anim = node.anim;
-    var first = anim.getFirstState(node.view);
-    View shadow = anim.expand(node.view, first, node.refresh);
-
-    // Recurse.
-    node.shadow = mountView(shadow, theme, out, node.path, node.depth + 1);
-
-    // This is last so that the shadows' callbacks happen before the parent.
-    if (anim.onRendered != null) {
-      addRenderCallback(anim.onRendered);
-    }
   }
 
   /// Render an HTML element by recursively expanding its children.

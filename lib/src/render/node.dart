@@ -27,56 +27,76 @@ typedef void _InvalidateFunc(_AnimatedNode node);
 /// View. Therefore, they only need to be updated when their owner is rendered. Widgets
 /// are an exception; they can call invalidate() to add the Widget as a root for the
 /// next render.
-abstract class _Node<V extends View> {
+abstract class _Node {
   /// The unique id used to find the node's HTML element.
   final String path;
 
   /// The depth of this node in the node tree (not in the DOM).
   final int depth;
 
-  /// The view that was most recently rendered into this node.
-  V view;
+  _Node(this.path, this.depth);
 
-  _Node(this.path, this.depth, this.view);
-
-  bool get isMounted => view != null;
-
-  /// The props that were most recently rendered.
-  PropsMap get props => view.props;
-
-  void _unmount() {
-    assert(view != null);
-    view = null;
-  }
+  bool get isMounted;
+  void _unmount();
 }
 
-class _AnimatedNode extends _Node<View> {
+class _AnimatedNode extends _Node {
+  View renderedView;
   _InvalidateFunc invalidate;
   Animation anim;
-  var nextState;
   _Node shadow;
+  var _renderedState;
+  var _state;
 
   _AnimatedNode(String path, int depth, View view, this.invalidate, this.anim)
-      : super(path, depth, view) {
-    assert(anim != null);
+      : super(path, depth) {
+    _state = anim.getFirstState(view);
   }
 
-  void refresh(nextState) {
-    this.nextState = nextState;
-    invalidate(this);
+  bool get isMounted => renderedView != null;
+
+  View expand(View nextView) {
+    renderedView = nextView;
+    _renderedState = _state;
+    return anim.expand(renderedView, _renderedState, refresh);
+  }
+
+  bool shouldExpand(View next) => anim.shouldExpand(renderedView, _renderedState, next, _state);
+
+  void refresh(Step step) {
+    if (isMounted) {
+      _state = step(_state);
+      invalidate(this);
+    }
+  }
+
+  void _unmount() {
+    renderedView = null;
+    invalidate = null;
+    anim.willUnmount();
+    anim = null;
+    shadow = null;
   }
 }
 
 /// A node for a rendered HTML element.
-class _ElementNode extends _Node<ElementView> {
+class _ElementNode extends _Node {
+  ElementView view;
   // May be a List<_Node>, String, or RawHtml.
   var children;
 
-  _ElementNode(String path, int depth, ElementView view) :
-    super(path, depth, view);
+  _ElementNode(String path, int depth, this.view) : super(path, depth);
 
+  bool get isMounted => view != null;
+
+  PropsMap get props => view.props;
   Animation get anim => view.type;
   Animation get reloadExpander => view.type;
+
+  void _unmount() {
+    view = null;
+    children = null;
+  }
 }
 
 /// Used to wrap text children in a span when emulating mixed content.

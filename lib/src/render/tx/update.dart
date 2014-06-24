@@ -7,7 +7,6 @@ abstract class _Update extends _Mount with _Unmount {
   DomUpdater get dom;
 
   // What was updated
-  void addRenderCallback(OnRendered callback);
   void setHandler(HandlerType type, String path, HandlerFunc handler);
   void removeHandler(HandlerType type, String path);
 
@@ -19,8 +18,7 @@ abstract class _Update extends _Mount with _Unmount {
     Animation nextAnim = findAnimation(nextView, newTheme);
 
     if (node is _AnimatedNode) {
-      assert (node.anim != null);
-      if (!node.anim.canPlay(nextView, nextAnim)) {
+      if (!node.anim.shouldPlay(nextView, nextAnim)) {
         return _replace(node, nextView, newTheme);
       }
       _updateShadow(node, nextView, oldTheme, newTheme);
@@ -29,7 +27,6 @@ abstract class _Update extends _Mount with _Unmount {
       if (node.view.type != nextAnim) {
         return _replace(node, nextView, newTheme);
       }
-      assert(node.anim == nextAnim);
       _updateElement(node, nextView, oldTheme, newTheme);
 
     } else {
@@ -58,23 +55,17 @@ abstract class _Update extends _Mount with _Unmount {
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
   void _updateShadow(_AnimatedNode node, View nextView, Theme oldTheme, Theme newTheme) {
-    var oldView = node.view;
-    var next = node.anim;
-
-    if (oldTheme == newTheme && !next.shouldExpand(oldView, nextView)) {
+     if (oldTheme == newTheme && !node.shouldExpand(nextView)) {
       return; // Performance shortcut.
     }
 
-    node.view = nextView;
+    View shadowView = node.expand(nextView);
 
     // Recurse.
-    View shadowView = next.expand(nextView, node.nextState, node.refresh);
     node.shadow = updateOrReplace(node.shadow, shadowView, oldTheme, newTheme);
 
     // This is last so that the shadow's callbacks fire before the parent.
-    if (next.onRendered != null) {
-      addRenderCallback(next.onRendered);
-    }
+    addRenderCallback(node.anim.onRendered);
   }
 
   /// Recursively updates an HTML element and its children to match the given view.

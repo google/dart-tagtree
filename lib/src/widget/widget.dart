@@ -30,10 +30,10 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<S> implements 
   }
 
   @override
-  bool canPlay(View nextView, Animation nextAnim) => this.runtimeType == nextAnim.runtimeType;
+  bool shouldPlay(View nextView, Animation nextAnim) => this.runtimeType == nextAnim.runtimeType;
 
   @override
-  bool shouldExpand(View prev, View next) => true;
+  bool shouldExpand(View prev, S prevState, View next, S nextState) => true;
 
   /// A subclass hook that's called whenever the view changes.
   /// Called automatically before [getFirstState] and whenever the widget is rendered.
@@ -43,7 +43,7 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<S> implements 
   /// Called automatically after the widget's state changes.
   /// (That is, whenever [nextState] is accessed.)
   @override
-  void invalidate() => _refresh(null);
+  void invalidate() => _refresh((s) => s);
 
   /// Returns the shadow view for this Widget.
   View render();

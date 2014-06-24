@@ -6,6 +6,8 @@ abstract class Template<V extends View> extends Animation<V,dynamic> {
 
   render(V view);
 
+  shouldRender(V before, V after) => true;
+
   @override
   getFirstState(_) => null; // stateless
 
@@ -13,10 +15,10 @@ abstract class Template<V extends View> extends Animation<V,dynamic> {
   View expand(V view, prev, refresh) => render(view);
 
   @override
-  bool canPlay(View nextView, Animation nextAnim) => nextAnim == this;
+  bool shouldPlay(View nextView, Animation nextAnim) => nextAnim == this;
 
   @override
-  bool shouldExpand(V before, V after) => true;
+  bool shouldExpand(V before, _, V after, _2) => shouldRender(before, after);
 
   // implement [CreateExpander].
   Template call() => this;
@@ -38,7 +40,7 @@ class _TemplateView extends Template<TemplateView> {
   const _TemplateView();
 
   @override
-  bool shouldExpand(TemplateView prev, TemplateView next) => next.shouldRender(prev);
+  bool shouldExpand(TemplateView prev, _, TemplateView next, _2) => next.shouldRender(prev);
 
   @override
   View render(input) => input.render();

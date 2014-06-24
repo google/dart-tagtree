@@ -30,7 +30,7 @@ class _Transaction extends _Update {
     for (_AnimatedNode n in _nodesToUpdate) {
       if (n.isMounted) {
         // Re-render using the same view.
-        updateOrReplace(n, n.view, root._renderedTheme, nextTheme);
+        updateOrReplace(n, n.renderedView, root._renderedTheme, nextTheme);
       }
     }
 
@@ -38,7 +38,7 @@ class _Transaction extends _Update {
   }
 
   void _finish() {
-    for (_Node n in _mountedRefs) {
+    for (_ElementNode n in _mountedRefs) {
       dom.mountRef(n.path, n.view.ref);
     }
 
@@ -72,7 +72,9 @@ class _Transaction extends _Update {
 
   @override
   void addRenderCallback(OnRendered r) {
-    _renderCallbacks.add(r);
+    if (r != null) {
+      _renderCallbacks.add(r);
+    }
   }
 
   @override

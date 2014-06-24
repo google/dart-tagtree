@@ -15,9 +15,9 @@ class _ReversableText extends Animation<ReversableText, bool> {
   getFirstState(_) => false;
 
   @override
-  View expand(ReversableText view, bool isReversed, Refresh refresh) {
-    String text = isReversed ? reverse(view.text) : view.text;
-    onClick(_) => refresh(!isReversed);
+  View expand(ReversableText view, bool reversed, Refresh refresh) {
+    String text = reversed ? reverse(view.text) : view.text;
+    onClick(_) => refresh((bool rev) => !rev);
     return $.Div(clazz: "sample_text", onClick: onClick, inner: text);
   }
 
@@ -29,7 +29,8 @@ class _ReversableText extends Animation<ReversableText, bool> {
     return buffer.toString();
   }
 
-  canPlay(View nextView, Animation nextAnim) => nextView is ReversableText && nextAnim == this;
+  @override
+  shouldPlay(View nextView, Animation nextAnim) => nextView is ReversableText && nextAnim == this;
 }
 
 main() =>

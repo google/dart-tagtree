@@ -96,7 +96,7 @@ class ElementType extends Animation {
   }
 
   @override
-  canPlay(View view, Animation nextAnim) => (view is ElementView) && view.type == this;
+  shouldPlay(View view, Animation nextAnim) => (view is ElementView) && view.type == this;
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

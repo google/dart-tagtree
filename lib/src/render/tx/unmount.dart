@@ -12,34 +12,30 @@ abstract class _Unmount {
   void unmount(_Node node, {bool willReplace: false}) {
     if (node is _AnimatedNode) {
 
-      node.invalidate = null;
-
-      // This is first so that the parent cleans up before the children.
-      node.anim.willUnmount();
-      node.anim = null;
-
       // Recurse.
       unmount(node.shadow, willReplace: willReplace);
-      node.shadow = null;
 
     } else if (node is _ElementNode) {
+
       // Recurse.
       unmountInner(node);
 
       releaseElement(node.path, node.view.ref, willReplace: willReplace);
+
     } else {
       throw "unknown node type";
     }
+
     node._unmount();
   }
 
-  void unmountInner(_ElementNode elt) {
-    if (elt.children is List) {
-      for (_Node child in elt.children) {
+  void unmountInner(_ElementNode node ) {
+    if (node.children is List) {
+      for (_Node child in node.children) {
         // Recurse.
         unmount(child);
       }
     }
-    elt.children = null;
+    node.children = null;
   }
 }
