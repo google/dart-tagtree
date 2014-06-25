@@ -40,7 +40,7 @@ class PixelPaintApp extends View {
 class _PixelPaintApp extends Widget<PixelPaintApp, Grid> {
 
   @override
-  getFirstState(PixelPaintApp view) => new Grid(view.width, view.height);
+  firstState(PixelPaintApp view) => new Grid(view.width, view.height);
 
   onPaint(int x, int y) {
     var nextGrid = new Grid.withChangedPixel(state, x, y, 1);
@@ -79,7 +79,7 @@ class _GridView extends Widget<GridView, bool> {
   // This implementation usually works, but could be improved.
 
   @override
-  getFirstState(_) => false; // assume mouse is up
+  firstState(_) => false; // assume mouse is up
 
   get mouseDown => nextState;
   set mouseDown(bool pressed) => nextState = pressed;

@@ -28,7 +28,7 @@ class _SunflowerApp extends Widget<SunflowerApp, int> {
   // The slider controls the number of seeds.
 
   @override
-  getFirstState(SunflowerApp view) => view.startSeeds;
+  firstState(SunflowerApp view) => view.startSeeds;
 
   get seeds => state;
 

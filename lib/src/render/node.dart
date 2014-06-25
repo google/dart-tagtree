@@ -47,10 +47,12 @@ class _AnimatedNode extends _Node {
   _Node shadow;
   var _renderedState;
   var _state;
+  Place _place;
 
   _AnimatedNode(String path, int depth, View view, this.invalidate, this.anim)
       : super(path, depth) {
-    _state = anim.getFirstState(view);
+    _state = anim.firstState(view);
+    _place = new PlaceImpl(this);
   }
 
   bool get isMounted => renderedView != null;
@@ -58,10 +60,10 @@ class _AnimatedNode extends _Node {
   View expand(View nextView) {
     renderedView = nextView;
     _renderedState = _state;
-    return anim.expand(renderedView, _renderedState, refresh);
+    return anim.renderFrame(_place);
   }
 
-  bool shouldExpand(View next) => anim.shouldExpand(renderedView, _renderedState, next, _state);
+  bool shouldExpand(View next) => anim.expandIf(renderedView, _renderedState, next, _state);
 
   void refresh(Step step) {
     if (isMounted) {
@@ -77,6 +79,24 @@ class _AnimatedNode extends _Node {
     anim = null;
     shadow = null;
   }
+}
+
+class PlaceImpl implements Place {
+  _AnimatedNode _node;
+  PlaceImpl(this._node);
+
+  @override
+  Animation get nextAnimation => _node.anim;
+
+  @override
+  get state => _node._state;
+
+  @override
+  void nextFrame(Step step) => _node.refresh(step);
+
+  // TODO: implement view
+  @override
+  View get view => _node.renderedView;
 }
 
 /// A node for a rendered HTML element.

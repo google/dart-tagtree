@@ -11,7 +11,7 @@ part of core;
 /// than the frame rate.
 ///
 /// Each animation instance has its own refresh function. The renderer
-/// calls [Animation.expand] with the appropriate function to
+/// calls [Animation.renderFrame] with the appropriate function to
 /// use that that animation.
 typedef Refresh(Step step);
 
@@ -37,27 +37,24 @@ abstract class Animation<V extends View, S> {
   const Animation();
 
   /// Returns the animation's state for rendering its first frame.
-  S getFirstState(V firstView);
+  S firstState(V firstView);
 
-  /// Returns the shadow view to be rendered.
-  /// The shadow may contain event handlers that call [refresh] to
-  /// re-render with a new animation state.
-  View expand(View input, S state, Refresh refresh);
+  /// Returns the shadow view to be rendered in the given place.
+  View renderFrame(Place<V,S> place);
 
   /// Returns true if the animation should continue to play.
-  /// If so, the next View  must be compatible.
   /// Otherwise, the renderer will cut to the next animation.
-  /// The current animation will stop and the next animation will
-  /// start from the beginning.
-  bool shouldPlay(View next, Animation nextAnim);
+  /// (The current animation will stop and the next animation will
+  /// start from the beginning.)
+  bool loopWhile(View next, Animation nextAnim) => nextAnim == this;
 
   // Performance hooks for avoiding unnecessary rendering.
 
-  /// Returns true if [expand] should be called to create a new shadow
+  /// Returns true if [renderFrame] should be called to create a new shadow
   /// for the next animation frame. Otherwise, the previous shadow will
   /// be reused, the possibly the DOM update will be skipped.
   /// (Note that the previous and next View or state may be the same.)
-  bool shouldExpand(View previousView, S previousState, View nextView, S nextState) => true;
+  bool expandIf(View previousView, S previousState, View nextView, S nextState) => true;
 
   // Hooks needed for direct DOM access.
 
@@ -69,6 +66,14 @@ abstract class Animation<V extends View, S> {
   /// Called when the expander is no longer needed.
   /// The DOM hasn't been removed yet.
   void willUnmount() {}
+}
+
+/// The place where an animation runs.
+abstract class Place<V extends View, S> {
+  V get view;
+  S get state;
+  Animation get nextAnimation;
+  void nextFrame(Step);
 }
 
 class AnimFrame {

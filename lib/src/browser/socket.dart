@@ -45,7 +45,7 @@ class SlotWidget extends Widget<Slot, View> {
   }
 
   @override
-  getFirstState(Slot view) => view.export.Div(inner: "Loading...");
+  firstState(Slot view) => view.export.Div(inner: "Loading...");
 
   @override
   View render() => state;

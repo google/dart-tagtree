@@ -37,7 +37,7 @@ class Menu extends View {
 class _Menu extends Widget<Menu, String> {
 
   @override
-  getFirstState(Menu view) =>
+  firstState(Menu view) =>
       view.defaultSelected == null ? view.items.first : view.defaultSelected;
 
   String get selected => state;

@@ -87,16 +87,16 @@ class ElementType extends Animation {
   }
 
   @override
-  getFirstState(_) => null; // stateless
+  firstState(_) => null; // stateless
 
   @override
-  expand(v, prev, refresh) {
+  renderFrame(place) {
     // Elements don't have a shadow. (Special case handled by the renderer.)
     throw "not implemented";
   }
 
   @override
-  shouldPlay(View view, Animation nextAnim) => (view is ElementView) && view.type == this;
+  loopWhile(View view, Animation nextAnim) => (view is ElementView) && view.type == this;
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

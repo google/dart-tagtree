@@ -14,10 +14,11 @@ class _MarkdownEditor extends Animation<MarkdownEditor, String> {
   const _MarkdownEditor();
 
   @override
-  getFirstState(MarkdownEditor view) => view.defaultText;
+  firstState(MarkdownEditor view) => view.defaultText;
 
-  View expand(MarkdownEditor view, String text, Refresh refresh) {
-    onChange(e) => refresh((_) => e.value);
+  View renderFrame(Place p) {
+    String text = p.state;
+    onChange(e) => p.nextFrame((_) => e.value);
     return $.Div(clazz: "MarkdownEditor", inner: [
       $.H3(inner: "Input"),
       $.TextArea(onChange: onChange, defaultValue: text),
@@ -25,9 +26,6 @@ class _MarkdownEditor extends Animation<MarkdownEditor, String> {
       $.Div(clazz: "Content", inner: new RawHtml(markdownToHtml(text))),
     ]);
   }
-
-  @override
-  shouldPlay(View next, Animation nextAnim) => next is MarkdownEditor && nextAnim == this;
 }
 
 main() =>

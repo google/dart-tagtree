@@ -9,20 +9,20 @@ typedef TearDown();
 /// It can be any type, but you must override the [cloneState] method if
 /// it's not a bool, num, or String.
 abstract class Widget<V extends View,S> extends StateMachineMixin<S> implements Animation<V,S> {
-  V view;
+
+  V get view => _place.view;
 
   final _willUnmount = new StreamController.broadcast();
 
-  Refresh _refresh;
+  Place _place;
   bool configured = false;
 
   @override
-  View expand(V input, prev, Refresh refresh) {
-    this.view = input;
-    this._refresh = refresh;
-    configure(input);
+  View renderFrame(Place p) {
+    this._place = p;
+    configure(p.view);
     if (state == null) {
-      initStateMachine(prev);
+      initStateMachine(p.state);
     } else {
       commitState();
     }
@@ -30,20 +30,20 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<S> implements 
   }
 
   @override
-  bool shouldPlay(View nextView, Animation nextAnim) => this.runtimeType == nextAnim.runtimeType;
+  bool loopWhile(View nextView, Animation nextAnim) => this.runtimeType == nextAnim.runtimeType;
 
   @override
-  bool shouldExpand(View prev, S prevState, View next, S nextState) => true;
+  bool expandIf(View prev, S prevState, View next, S nextState) => true;
 
   /// A subclass hook that's called whenever the view changes.
-  /// Called automatically before [getFirstState] and whenever the widget is rendered.
+  /// Called automatically before [firstState] and whenever the widget is rendered.
   void configure(V view) {}
 
   /// Asks for the widget to be rendered again.
   /// Called automatically after the widget's state changes.
   /// (That is, whenever [nextState] is accessed.)
   @override
-  void invalidate() => _refresh((s) => s);
+  void invalidate() => _place.nextFrame((s) => s);
 
   /// Returns the shadow view for this Widget.
   View render();
@@ -62,7 +62,7 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<S> implements 
     if (_willUnmount.hasListener) {
       _willUnmount.add(true);
     }
-    _refresh = null;
+    _place = null;
   }
 }
 

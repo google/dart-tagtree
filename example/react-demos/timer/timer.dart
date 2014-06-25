@@ -13,7 +13,7 @@ class _TimerApp extends Widget<TimerApp, int> {
   var timer;
 
   @override
-  getFirstState(_) {
+  firstState(_) {
     var timer = new Timer.periodic(new Duration(seconds: 1), tick);
     addTearDown(() => timer.cancel());
     return 0;

@@ -18,7 +18,7 @@ abstract class _Update extends _Mount with _Unmount {
     Animation nextAnim = findAnimation(nextView, newTheme);
 
     if (node is _AnimatedNode) {
-      if (!node.anim.shouldPlay(nextView, nextAnim)) {
+      if (!node.anim.loopWhile(nextView, nextAnim)) {
         return _replace(node, nextView, newTheme);
       }
       _updateShadow(node, nextView, oldTheme, newTheme);
