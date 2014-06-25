@@ -96,7 +96,7 @@ class ElementType extends Animation {
   }
 
   @override
-  loopWhile(View view, Animation nextAnim) => (view is ElementView) && view.type == this;
+  playWhile(Place p) => (p.view is ElementView) && p.view.type == this;
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

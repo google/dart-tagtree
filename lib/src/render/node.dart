@@ -41,31 +41,42 @@ abstract class _Node {
 }
 
 class _AnimatedNode extends _Node {
-  View renderedView;
+  View view;
   _InvalidateFunc invalidate;
+  bool _isDirty = true;
   Animation anim;
+  Animation nextAnim;
   _Node shadow;
-  var _renderedState;
   var _state;
-  Place _place;
+  PlaceImpl _place;
 
   _AnimatedNode(String path, int depth, View view, this.invalidate, this.anim)
       : super(path, depth) {
+    nextAnim = anim;
     _state = anim.firstState(view);
     _place = new PlaceImpl(this);
   }
 
-  bool get isMounted => renderedView != null;
+  bool get isMounted => view != null;
 
-  View expand(View nextView) {
-    renderedView = nextView;
-    _renderedState = _state;
-    return anim.renderFrame(_place);
+  View renderFrame(View nextView) {
+    view = nextView;
+    View out = anim.renderFrame(_place);
+    _isDirty = false;
+    return out;
   }
 
-  bool shouldExpand(View next) => anim.expandIf(renderedView, _renderedState, next, _state);
+  bool playWhile(Animation next) {
+    nextAnim = next;
+    return anim.playWhile(_place);
+  }
 
-  void refresh(Step step) {
+  bool isDirty(View next) {
+    _isDirty = _isDirty || anim.needsRender(view, next);
+    return _isDirty;
+  }
+
+  void nextFrame(Step step) {
     if (isMounted) {
       _state = step(_state);
       invalidate(this);
@@ -73,7 +84,7 @@ class _AnimatedNode extends _Node {
   }
 
   void _unmount() {
-    renderedView = null;
+    view = null;
     invalidate = null;
     anim.willUnmount();
     anim = null;
@@ -86,17 +97,16 @@ class PlaceImpl implements Place {
   PlaceImpl(this._node);
 
   @override
-  Animation get nextAnimation => _node.anim;
+  View get view => _node.view;
 
   @override
   get state => _node._state;
 
   @override
-  void nextFrame(Step step) => _node.refresh(step);
+  Animation get nextAnimation => _node.nextAnim;
 
-  // TODO: implement view
   @override
-  View get view => _node.renderedView;
+  void nextFrame(Step step) => _node.nextFrame(step);
 }
 
 /// A node for a rendered HTML element.

@@ -18,7 +18,7 @@ abstract class _Update extends _Mount with _Unmount {
     Animation nextAnim = findAnimation(nextView, newTheme);
 
     if (node is _AnimatedNode) {
-      if (!node.anim.loopWhile(nextView, nextAnim)) {
+      if (!node.playWhile(nextAnim)) {
         return _replace(node, nextView, newTheme);
       }
       _updateShadow(node, nextView, oldTheme, newTheme);
@@ -55,11 +55,11 @@ abstract class _Update extends _Mount with _Unmount {
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
   void _updateShadow(_AnimatedNode node, View nextView, Theme oldTheme, Theme newTheme) {
-     if (oldTheme == newTheme && !node.shouldExpand(nextView)) {
+    if (oldTheme == newTheme && !node.isDirty(nextView)) {
       return; // Performance shortcut.
     }
 
-    View shadowView = node.expand(nextView);
+    View shadowView = node.renderFrame(nextView);
 
     // Recurse.
     node.shadow = updateOrReplace(node.shadow, shadowView, oldTheme, newTheme);

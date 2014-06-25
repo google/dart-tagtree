@@ -46,15 +46,14 @@ abstract class Animation<V extends View, S> {
   /// Otherwise, the renderer will cut to the next animation.
   /// (The current animation will stop and the next animation will
   /// start from the beginning.)
-  bool loopWhile(View next, Animation nextAnim) => nextAnim == this;
+  bool playWhile(Place p) => p.nextAnimation == this;
 
   // Performance hooks for avoiding unnecessary rendering.
 
-  /// Returns true if [renderFrame] should be called to create a new shadow
-  /// for the next animation frame. Otherwise, the previous shadow will
-  /// be reused, the possibly the DOM update will be skipped.
-  /// (Note that the previous and next View or state may be the same.)
-  bool expandIf(View previousView, S previousState, View nextView, S nextState) => true;
+  /// Returns true if [renderFrame] should be called after a view change.
+  /// Otherwise, the previous shadow will be reused, the possibly the DOM
+  /// update will be skipped.
+  bool needsRender(View previousView, View nextView) => true;
 
   // Hooks needed for direct DOM access.
 
@@ -72,7 +71,12 @@ abstract class Animation<V extends View, S> {
 abstract class Place<V extends View, S> {
   V get view;
   S get state;
+
+  /// The animation that the renderer will cut to after [Animation.playWhile]
+  /// returns false. This will be different from the current animation when
+  /// the View or Theme for this place has changed.
   Animation get nextAnimation;
+
   void nextFrame(Step);
 }
 

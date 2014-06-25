@@ -30,10 +30,10 @@ abstract class Widget<V extends View,S> extends StateMachineMixin<S> implements 
   }
 
   @override
-  bool loopWhile(View nextView, Animation nextAnim) => this.runtimeType == nextAnim.runtimeType;
+  bool playWhile(Place p) => this.runtimeType == p.nextAnimation.runtimeType;
 
   @override
-  bool expandIf(View prev, S prevState, View next, S nextState) => true;
+  bool needsRender(View prev, View next) => true;
 
   /// A subclass hook that's called whenever the view changes.
   /// Called automatically before [firstState] and whenever the widget is rendered.

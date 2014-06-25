@@ -12,17 +12,17 @@ class ReversableText extends View {
   get animation => const _ReversableText();
 }
 
-class _ReversableText extends Animation<ReversableText, bool> {
+class _ReversableText extends Animation<ReversableText, int> {
   const _ReversableText();
 
   @override
-  firstState(view) => false;
+  firstState(view) => 0;
 
   @override
   View renderFrame(Place p) {
-    onClick(event) => p.nextFrame(toggle);
+    onClick(event) => p.nextFrame(increment);
 
-    bool isReversed = p.state;
+    bool isReversed = (p.state % 2) == 1;
 
     var text = p.view.text;
     if (isReversed) {
@@ -32,9 +32,9 @@ class _ReversableText extends Animation<ReversableText, bool> {
     return $.Div(clazz: "sample_text", onClick: onClick, inner: text);
   }
 
-  toggle(bool reversed) => !reversed;
+  static increment(int count) => count + 1;
 
-  reverse(text) {
+  static reverse(text) {
     var buffer = new StringBuffer();
     for (int i = text.length - 1; i >= 0; i--) {
       buffer.write(text[i]);

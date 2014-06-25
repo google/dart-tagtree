@@ -15,10 +15,7 @@ abstract class Template<V extends View> extends Animation<V,dynamic> {
   View renderFrame(Place p) => render(p.view);
 
   @override
-  bool loopWhile(View nextView, Animation nextAnim) => nextAnim == this;
-
-  @override
-  bool expandIf(V before, _, V after, _2) => shouldRender(before, after);
+  bool needsRender(V before, V after) => shouldRender(before, after);
 
   // implement [CreateExpander].
   Template call() => this;
@@ -40,7 +37,7 @@ class _TemplateView extends Template<TemplateView> {
   const _TemplateView();
 
   @override
-  bool expandIf(TemplateView prev, _, TemplateView next, _2) => next.shouldRender(prev);
+  bool needsRender(TemplateView prev, TemplateView next) => next.shouldRender(prev);
 
   @override
   View render(input) => input.render();
