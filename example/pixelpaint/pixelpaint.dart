@@ -3,7 +3,7 @@ import 'package:tagtree/core.dart';
 
 /// A paint app implemented on top of an HTML table.
 ///
-/// Demonstrates how to get decent performance using a somewhat functional style,
+/// Demonstrates how to get decent performance using a mostly functional style,
 /// assuming that most pixels don't actually change in a single animation frame.
 /// The paint document is modelled as an immutable [Grid]. A top-level state
 /// machine in [_PixelPaintApp] reacts to document updates. We avoid unnecessary
@@ -32,26 +32,29 @@ class PixelPaintApp extends View {
   bool checked() => palette.length == 2;
 
   @override
-  get animation => new _PixelPaintApp();
+  get animator => const _PixelPaintApp();
 }
 
 /// The top-level state machine.
 /// There is state transition whenever a pixel changes, causing a re-render.
-class _PixelPaintApp extends Widget<PixelPaintApp, Grid> {
+class _PixelPaintApp extends Animator<PixelPaintApp, Grid> {
+
+  const _PixelPaintApp();
 
   @override
   firstState(PixelPaintApp view) => new Grid(view.width, view.height);
 
-  onPaint(int x, int y) {
-    var nextGrid = new Grid.withChangedPixel(state, x, y, 1);
-    if (nextGrid == state) {
-      return; // unchanged; don't need to render.
-    }
-    nextState = nextGrid; // This triggers a render.
-  }
-
   @override
-  render() => new GridView(grid: state, palette: view.palette, onPaint: onPaint);
+  renderFrame(Place p) {
+
+    onPaint(int x, int y) {
+      p.step((Grid prev) {
+        return new Grid.withChangedPixel(prev, x, y, 1);
+      });
+    }
+
+    return new GridView(grid: p.state, palette: p.view.palette, onPaint: onPaint);
+  }
 }
 
 /// The specification of a single animation frame that displays the grid of pixels.
@@ -64,7 +67,7 @@ class GridView extends View {
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
-  get animation => new _GridView();
+  get animator => const _GridView();
 }
 
 /// A handler that's called when the user paints a pixel.
@@ -73,38 +76,41 @@ typedef PixelHandler(int x, int y);
 /// Renders a stream of GridViews and converts mouse events into paint events.
 /// (This could be a template, except that we need to remember whether the mouse
 /// button is down. TODO: it might be nice if Dart or TagTree provided this.)
-class _GridView extends Widget<GridView, bool> {
+class _GridView extends Animator<GridView, bool> {
 
   // HTML5 makes keeping track of the mouse button surprisingly tricky!
   // This implementation usually works, but could be improved.
 
+  const _GridView();
+
   @override
-  firstState(_) => false; // assume mouse is up
+  makePlace(PlaceImpl impl, _) => new MousePlace(impl);
 
-  get mouseDown => nextState;
-  set mouseDown(bool pressed) => nextState = pressed;
+  @override
+  firstState(_) => throw "not used";
 
-  onMouseDown(int x, int y) {
-    view.onPaint(x, y);
-    mouseDown = true;
-  }
+  @override
+  View renderFrame(MousePlace p) {
 
-  onMouseOver(int x, int y) {
-    if (mouseDown) {
-      view.onPaint(x, y);
+    onMouseDown(int x, int y) {
+      p.view.onPaint(x, y);
+      p.isMouseDown = true;
     }
-  }
 
-  onMouseUp() {
-    mouseDown = false;
-  }
+    onMouseOver(int x, int y) {
+      if (p.isMouseDown) {
+        p.view.onPaint(x, y);
+      }
+    }
 
-  @override
-  View render() {
-    var palette = view.palette.asMap();
+    onMouseUp() {
+      p.isMouseDown = false;
+    }
+
+    var palette = p.view.palette.asMap();
     var rows = [];
-    for (int y = 0; y < view.grid.height; y++) {
-      rows.add(new RowView(y: y, row: view.grid.rows[y], palette: palette,
+    for (int y = 0; y < p.view.grid.height; y++) {
+      rows.add(new RowView(y: y, row: p.view.grid.rows[y], palette: palette,
                            onMouseDown: onMouseDown, onMouseOver: onMouseOver,
                            onMouseUp: onMouseUp));
     }
@@ -113,6 +119,12 @@ class _GridView extends Widget<GridView, bool> {
         onMouseOut: (_) => onMouseUp() // Try to avoid a "stuck" mouse button
     );
   }
+}
+
+class MousePlace extends Place {
+  // This variable is unused when rendering, so it shouldn't be stored as state.
+  bool isMouseDown = false;
+  MousePlace(PlaceImpl impl) : super(impl, false);
 }
 
 /// An animation frame for one row of the grid.

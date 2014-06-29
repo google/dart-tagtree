@@ -6,7 +6,7 @@ part of core;
 /// Views are normally immutable and their props should be final fields.
 ///
 /// A View's implementation is an animation. A View can be associated with
-/// its animation either by overriding [animation] to point to the first
+/// its animation either by overriding [animator] to point to the first
 /// frame of the animation, or by using a [Theme] to specify the first
 /// frame. (The Theme takes priority if both ways are used.)
 ///
@@ -29,8 +29,8 @@ abstract class View implements Jsonable {
   /// called before a View is rendered or sent over the network.
   bool checked() => true;
 
-  /// Returns the animation for this View when not overridden by a Theme.
-  Animation get animation;
+  /// Returns the animator for this View when not overridden by a Theme.
+  Animator get animator;
 
   /// Returns the view's props as a [PropsMap].
   ///

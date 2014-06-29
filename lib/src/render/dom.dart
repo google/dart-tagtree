@@ -14,7 +14,10 @@ abstract class DomUpdater {
   void mount(String html);
 
   /// Attaches the given ref to the DOM.
-  void mountRef(String path, ref);
+  void attachRef(String path, ref);
+
+  /// Detaches a ref from the DOM when it's no longer needed.
+  void detachRef(ref);
 
   /// Starts listening to form events.
   void mountForm(String path);

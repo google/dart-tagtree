@@ -19,25 +19,30 @@ class SunflowerApp extends View {
   const SunflowerApp({this.startSeeds, this.seedRadius});
 
   @override
-  get animation => new _SunflowerApp();
+  get animator => const _SunflowerApp();
 }
 
-class _SunflowerApp extends Widget<SunflowerApp, int> {
-  final canvas = new Ref<CanvasElement>();
+class _SunflowerApp extends Animator<SunflowerApp, int> {
 
-  // The slider controls the number of seeds.
-
-  @override
-  firstState(SunflowerApp view) => view.startSeeds;
-
-  get seeds => state;
-
-  void onSliderChange(HandlerEvent e) {
-    nextState = int.parse(e.value);
-  }
+  const _SunflowerApp();
 
   @override
-  View render() {
+  int firstState(SunflowerApp view) => view.startSeeds;
+
+  @override
+  View renderFrame(Place p) {
+    int seeds = p.state;
+
+    // The slider controls the number of seeds.
+    void onSliderChange(HandlerEvent e) {
+      int nextSeed = int.parse(e.value);
+      p.step((_) => nextSeed);
+    }
+
+    // Ask for a callback when the DOM is ready.
+    var canvas = new Ref<CanvasElement>();
+    p.onRendered = () => draw(canvas.elt.context2D, seeds, p.view.seedRadius);
+
     return $.Div(inner: [
 
         $.Div(id: "container", inner: [
@@ -53,38 +58,35 @@ class _SunflowerApp extends Widget<SunflowerApp, int> {
         ]),
     ]);
   }
+}
 
-  @override
-  OnRendered get onRendered => () => draw(canvas.elt.context2D);
+const num TAU = PI * 2;
+final num PHI = (sqrt(5) + 1) / 2;
+const maxD = 300;
+const centerX = maxD ~/ 2;
+const centerY = maxD ~/ 2;
 
-  static const num TAU = PI * 2;
-  static final num PHI = (sqrt(5) + 1) / 2;
-  static const maxD = 300;
-  static const centerX = maxD ~/ 2;
-  static const centerY = maxD ~/ 2;
-
-  /// Draw the complete figure for the current number of seeds.
-  void draw(CanvasRenderingContext2D context) {
-    num scaleFactor = view.seedRadius * 2;
-    context.clearRect(0, 0, maxD, maxD);
-    for (var i = 0; i < seeds; i++) {
-      final num theta = i * TAU / PHI;
-      final num r = sqrt(i) * scaleFactor;
-      drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), view.seedRadius);
-    }
+/// Draw the complete figure for the current number of seeds.
+void draw(CanvasRenderingContext2D context, int seeds, int seedRadius) {
+  num scaleFactor = seedRadius * 2;
+  context.clearRect(0, 0, maxD, maxD);
+  for (var i = 0; i < seeds; i++) {
+    final num theta = i * TAU / PHI;
+    final num r = sqrt(i) * scaleFactor;
+    drawSeed(context, centerX + r * cos(theta), centerY - r * sin(theta), seedRadius);
   }
+}
 
-  /// Draw a small circle representing a seed centered at (x,y).
-  static void drawSeed(CanvasRenderingContext2D context, num x, num y, num radius) {
-    context..beginPath()
-           ..lineWidth = 2
-           ..fillStyle = "orange"
-           ..strokeStyle = "orange"
-           ..arc(x, y, radius, 0, TAU, false)
-           ..fill()
-           ..closePath()
-           ..stroke();
-  }
+/// Draw a small circle representing a seed centered at (x,y).
+void drawSeed(CanvasRenderingContext2D context, num x, num y, num radius) {
+  context..beginPath()
+         ..lineWidth = 2
+         ..fillStyle = "orange"
+         ..strokeStyle = "orange"
+         ..arc(x, y, radius, 0, TAU, false)
+         ..fill()
+         ..closePath()
+         ..stroke();
 }
 
 const app = const SunflowerApp(startSeeds: 500, seedRadius: 2);

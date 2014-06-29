@@ -1,4 +1,11 @@
-part of widget;
+part of core;
+
+/// A function that takes an old state and returns a new state.
+typedef Step(input);
+
+abstract class Cloneable<T> {
+  T clone();
+}
 
 /// StateMachineMixin implements automatic dirty tracking for a state machine
 /// that "ticks" according to an external schedule.
@@ -30,11 +37,17 @@ abstract class StateMachineMixin<S> {
   }
 
   /// Subclass hook to return a new copy of the state, given the previous version.
-  /// A default implementation is provided for bool, num, and String.
+  /// A default implementation is provided for bool, num, String, and Cloneable.
   S cloneState(S prev) {
-    assert(prev is bool || prev is num || prev is String);
-    return prev;
+    if (prev is Cloneable) {
+      return _cast(prev).clone();
+    } else if (prev is bool || prev is num || prev is String) {
+      return prev;
+    }
+    throw "not cloneable: {prev.runtimeType}";
   }
+
+  _cast(x) => x;
 
   /// Subclass hook that will be called whenever the state becomes dirty.
   void invalidate();
@@ -58,6 +71,17 @@ abstract class StateMachineMixin<S> {
   /// Automatically marks the state as dirty and calls invalidate().
   void set nextState(S s) {
     _nextState = s;
+    invalidate();
+  }
+
+  /// An alternate way to update the state.
+  void step(Step step) {
+    if (_nextState == null) {
+      _nextState = step(state);
+      assert(_nextState != null);
+    } else {
+      nextState = step(nextState);
+    }
     invalidate();
   }
 }

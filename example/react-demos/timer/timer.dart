@@ -6,25 +6,40 @@ class TimerApp extends View {
   const TimerApp();
 
   @override
-  get animation => new _TimerApp();
+  get animator => const _TimerApp();
 }
 
-class _TimerApp extends Widget<TimerApp, int> {
-  var timer;
+class _TimerApp extends Animator<TimerApp, int> {
+  const _TimerApp();
 
   @override
-  firstState(_) {
-    var timer = new Timer.periodic(new Duration(seconds: 1), tick);
-    addTearDown(() => timer.cancel());
-    return 0;
-  }
-
-  tick(_) {
-    nextState = state + 1;
-  }
+  makePlace(PlaceImpl impl, TimerApp app) => new TickerPlace(impl, firstState(app));
 
   @override
-  render() => $.Div(inner: "Seconds elapsed: ${state}");
+  firstState(_) => 0;
+
+  @override
+  renderFrame(Place p) => $.Div(inner: "Seconds elapsed: ${p.state}");
+
+  @override
+  onEnd(TickerPlace place) => place.stop();
 }
 
-main() => getRoot("#container").mount(const TimerApp());
+class TickerPlace extends Place<dynamic, int> {
+  Timer timer;
+  TickerPlace(PlaceImpl impl, int firstState) :
+    super(impl, firstState) {
+    timer = new Timer.periodic(new Duration(seconds: 1), tick);
+  }
+
+  tick(_) => step((seconds) => seconds + 1);
+
+  stop() {
+    timer.cancel();
+    timer = null;
+  }
+}
+
+main() =>
+    getRoot("#container")
+      .mount(const TimerApp());

@@ -38,8 +38,8 @@ class _Transaction extends _Update {
   }
 
   void _finish() {
-    for (_ElementNode n in _mountedRefs) {
-      dom.mountRef(n.path, n.view.ref);
+    for (_ElementNode n in _renderedRefs) {
+      dom.attachRef(n.path, n.view.ref);
     }
 
     for (_ElementNode form in _mountedForms) {

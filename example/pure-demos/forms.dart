@@ -30,27 +30,28 @@ class Menu extends View {
   @override
   bool checked() => items != null && items.length > 0;
 
-  get animation => new _Menu();
+  get animator => new _Menu();
 }
 
 // Keeps track of the currently selected item in the top menu.
-class _Menu extends Widget<Menu, String> {
+class _Menu extends Animator<Menu, String> {
 
   @override
   firstState(Menu view) =>
       view.defaultSelected == null ? view.items.first : view.defaultSelected;
 
-  String get selected => state;
-
-  onClick(String item) {
-    nextState = item;
-    if (view.onClick != null) {
-      view.onClick(item);
-    }
-  }
-
   @override
-  View render()  {
+  View renderFrame(Place p)  {
+
+    String selected = p.state;
+
+    onClick(String item) {
+      p.nextState = item;
+      if (p.view.onClick != null) {
+        p.view.onClick(item);
+      }
+    }
+
     renderItem(String item) {
       return $.Li(clazz: item==selected ? "pure-menu-selected" : "", inner:
         $.A(href: "#", onClick: (_) => onClick(item), inner: item)
@@ -58,10 +59,10 @@ class _Menu extends Widget<Menu, String> {
     };
 
     var items = [];
-    if (view.title != null) {
-      items.add($.A(href: "#", clazz: "pure-menu-heading", inner: view.title));
+    if (p.view.title != null) {
+      items.add($.A(href: "#", clazz: "pure-menu-heading", inner: p.view.title));
     }
-    items.add($.Ul(inner: view.items.map(renderItem)));
+    items.add($.Ul(inner: p.view.items.map(renderItem)));
 
     return $.Div(clazz: "pure-menu pure-menu-open pure-menu-horizontal", inner: items);
   }
@@ -74,7 +75,7 @@ class LoginView extends View {
   const LoginView({this.email: "", this.rememberMe: false});
 
   @override
-  get animation => null; // provided by theme
+  get animator => null; // provided by theme
 }
 
 class _LoginView extends Template {

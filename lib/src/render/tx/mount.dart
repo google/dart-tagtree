@@ -7,7 +7,7 @@ abstract class _Mount {
   _InvalidateFunc get invalidate;
 
   // What was mounted
-  final List<_ElementNode> _mountedRefs = [];
+  final List<_ElementNode> _renderedRefs = [];
   final List<_ElementNode> _mountedForms = [];
   void addRenderCallback(OnRendered callback);
   void addHandler(HandlerType type, String path, val);
@@ -32,33 +32,33 @@ abstract class _Mount {
       _expandElement(node, theme, html);
       return node;
     } else {
-      var node = new _AnimatedNode(path, depth, view, invalidate, anim);
+      var node = new _AnimatedNode(path, depth, view, anim, invalidate);
       var shadow = node.renderFrame(view);
 
       // Recurse.
       node.shadow = mountView(shadow, theme, html, node.path, node.depth + 1);
 
       // This is last so that the shadows' callbacks happen before the parent.
-      addRenderCallback(node.anim.onRendered);
+      addRenderCallback(node.onRendered);
 
       return node;
     }
   }
 
   /// Returns the animation to be used to display the given View.
-  Animation findAnimation(View view, Theme theme) {
+  Animator findAnimation(View view, Theme theme) {
     assert(view.checked());
 
     if (theme != null) {
       CreateExpander create = theme[view.runtimeType];
       if (create != null) {
-        Animation result = create();
+        Animator result = create();
         assert(result != null);
         return result;
       }
     }
 
-    Animation animation = view.animation;
+    Animator animation = view.animator;
     if (animation == null) {
       if (theme == null) {
         throw "There is no animation for ${view.runtimeType} and no theme is installed";
@@ -88,7 +88,7 @@ abstract class _Mount {
     out.write("</${view.htmlTag}>");
 
     if (view.ref != null) {
-      _mountedRefs.add(elt);
+      _renderedRefs.add(elt);
     }
     if (view.htmlTag == "form") {
       _mountedForms.add(elt);

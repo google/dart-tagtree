@@ -1,7 +1,7 @@
 part of server;
 
 /// A Session renders its UI remotely, via a web socket.
-abstract class Session<S> extends StateMachineMixin<S> {
+abstract class Session<S> extends core.StateMachineMixin<S> {
   WebSocketRoot _root;
 
   S getFirstState();

@@ -1,7 +1,7 @@
 part of core;
 
 /// A Template renders a view by substituting another View.
-abstract class Template<V extends View> extends Animation<V,dynamic> {
+abstract class Template<V extends View> extends Animator<V,dynamic> {
   const Template();
 
   render(V view);
@@ -9,7 +9,7 @@ abstract class Template<V extends View> extends Animation<V,dynamic> {
   shouldRender(V before, V after) => true;
 
   @override
-  firstState(_) => null; // stateless
+  firstState(_) => false; // stateless
 
   @override
   View renderFrame(Place p) => render(p.view);
@@ -26,7 +26,7 @@ abstract class Template<V extends View> extends Animation<V,dynamic> {
 abstract class TemplateView extends View {
   const TemplateView();
 
-  Animation get animation => const _TemplateView();
+  Animator get animator => const _TemplateView();
 
   bool shouldRender(View prev) => true;
 

@@ -26,7 +26,7 @@ abstract class _Unmount {
       throw "unknown node type";
     }
 
-    node._unmount();
+    node.unmount();
   }
 
   void unmountInner(_ElementNode node ) {

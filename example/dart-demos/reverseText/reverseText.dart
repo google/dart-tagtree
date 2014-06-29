@@ -9,10 +9,10 @@ class ReversableText extends View {
   final String text;
   const ReversableText(this.text);
   @override
-  get animation => const _ReversableText();
+  get animator => const _ReversableText();
 }
 
-class _ReversableText extends Animation<ReversableText, int> {
+class _ReversableText extends Animator<ReversableText, int> {
   const _ReversableText();
 
   @override
@@ -20,7 +20,7 @@ class _ReversableText extends Animation<ReversableText, int> {
 
   @override
   View renderFrame(Place p) {
-    onClick(event) => p.nextFrame(increment);
+    onClick(event) => p.step(increment);
 
     bool isReversed = (p.state % 2) == 1;
 
@@ -34,7 +34,7 @@ class _ReversableText extends Animation<ReversableText, int> {
 
   static increment(int count) => count + 1;
 
-  static reverse(text) {
+  static reverse(String text) {
     var buffer = new StringBuffer();
     for (int i = text.length - 1; i >= 0; i--) {
       buffer.write(text[i]);

@@ -6,27 +6,22 @@ typedef void _InvalidateFunc(_AnimatedNode node);
 ///
 /// Each [RenderRoot] has a tree of nodes that records how the DOM was last rendered.
 /// Between animation frames, the tree should match the DOM. When rendering an
-/// animation frame, a Transaction updates the tree (in place) to the new state
+/// animation frame, a [Transaction] updates the tree (in place) to the new state
 /// of the DOM.
 ///
 /// Performing this update is a way of calculating all the changes that need to be made
 /// to the DOM. See Transaction and its mixins for the update calculation and
 /// [DomUpdater] for the API used to send a stream of updates to the DOM.
 ///
-/// Nodes that have been expanded have shadow trees recording the output of their
-/// expand methods. To calculate the current state of the DOM, we could recursively
-/// replace each _Node with its shadow, resulting in a tree containing only element
-/// and text nodes.
+/// There are two subclasses, [_AnimatedNode] and [_ElementNode]. An animated node has
+/// a shadow tree recording the output from the last time it was rendered. To calculate
+/// the current state of the DOM, we could recursively replace each animated node with its
+/// shadow, resulting in a tree containing only element nodes.
 ///
-/// Each _Node conceptually has an owner that rendered the corresponding View. For top-level
+/// Each node conceptually has an owner that rendered its input View. For top-level
 /// nodes that aren't in a shadow tree, the owner is outside the framework and makes changes
-/// by calling Root.mount(). For nodes inside a shadow tree, the owner is the expander that
-/// created the shadow tree.
-///
-/// Most expanders have no state of their own; all their state is copied from the corresponding
-/// View. Therefore, they only need to be updated when their owner is rendered. Widgets
-/// are an exception; they can call invalidate() to add the Widget as a root for the
-/// next render.
+/// by calling Root.mount(). For nodes inside a shadow tree, the owner is the [Animator] that
+/// rendered the shadow tree.
 abstract class _Node {
   /// The unique id used to find the node's HTML element.
   final String path;
@@ -37,37 +32,55 @@ abstract class _Node {
   _Node(this.path, this.depth);
 
   bool get isMounted;
-  void _unmount();
+  void unmount();
 }
 
-class _AnimatedNode extends _Node {
-  View view;
-  _InvalidateFunc invalidate;
+class _AnimatedNode extends _Node implements PlaceImpl {
+  _InvalidateFunc _invalidate;
   bool _isDirty = true;
-  Animation anim;
-  Animation nextAnim;
+  Animator anim;
   _Node shadow;
-  var _state;
-  PlaceImpl _place;
 
-  _AnimatedNode(String path, int depth, View view, this.invalidate, this.anim)
-      : super(path, depth) {
-    nextAnim = anim;
-    _state = anim.firstState(view);
-    _place = new PlaceImpl(this);
+  @override
+  View view;
+
+  @override
+  OnRendered onRendered;
+
+  @override
+  Animator nextAnimator;
+
+  Place _place;
+
+  _AnimatedNode(String path, int depth, View view, Animator anim, this._invalidate) :
+    super(path, depth) {
+
+    this.view = view;
+    this.anim = anim;
+    _place = anim.makePlace(this, view);
+    assert(_place != null);
   }
 
-  bool get isMounted => view != null;
+  @override
+  void invalidate() {
+    if (isMounted) {
+      _invalidate(this);
+      _isDirty = true;
+    }
+  }
+
+  bool get isMounted => _place != null;
 
   View renderFrame(View nextView) {
+    _place.commitState();
     view = nextView;
     View out = anim.renderFrame(_place);
     _isDirty = false;
     return out;
   }
 
-  bool playWhile(Animation next) {
-    nextAnim = next;
+  bool playWhile(Animator next) {
+    nextAnimator = next;
     return anim.playWhile(_place);
   }
 
@@ -76,37 +89,15 @@ class _AnimatedNode extends _Node {
     return _isDirty;
   }
 
-  void nextFrame(Step step) {
-    if (isMounted) {
-      _state = step(_state);
-      invalidate(this);
-    }
-  }
+  void unmount() {
+    anim.onEnd(_place);
 
-  void _unmount() {
     view = null;
-    invalidate = null;
-    anim.willUnmount();
+    _invalidate = null;
     anim = null;
+    _place = null;
     shadow = null;
   }
-}
-
-class PlaceImpl implements Place {
-  _AnimatedNode _node;
-  PlaceImpl(this._node);
-
-  @override
-  View get view => _node.view;
-
-  @override
-  get state => _node._state;
-
-  @override
-  Animation get nextAnimation => _node.nextAnim;
-
-  @override
-  void nextFrame(Step step) => _node.nextFrame(step);
 }
 
 /// A node for a rendered HTML element.
@@ -120,10 +111,10 @@ class _ElementNode extends _Node {
   bool get isMounted => view != null;
 
   PropsMap get props => view.props;
-  Animation get anim => view.type;
-  Animation get reloadExpander => view.type;
+  Animator get anim => view.type;
+  Animator get reloadExpander => view.type;
 
-  void _unmount() {
+  void unmount() {
     view = null;
     children = null;
   }

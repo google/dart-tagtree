@@ -7,10 +7,10 @@ class MarkdownEditor extends View {
   const MarkdownEditor(this.defaultText);
 
   @override
-  get animation => const _MarkdownEditor();
+  get animator => const _MarkdownEditor();
 }
 
-class _MarkdownEditor extends Animation<MarkdownEditor, String> {
+class _MarkdownEditor extends Animator<MarkdownEditor, String> {
   const _MarkdownEditor();
 
   @override
@@ -18,7 +18,7 @@ class _MarkdownEditor extends Animation<MarkdownEditor, String> {
 
   View renderFrame(Place p) {
     String text = p.state;
-    onChange(e) => p.nextFrame((_) => e.value);
+    onChange(e) => p.step((_) => e.value);
     return $.Div(clazz: "MarkdownEditor", inner: [
       $.H3(inner: "Input"),
       $.TextArea(onChange: onChange, defaultValue: text),

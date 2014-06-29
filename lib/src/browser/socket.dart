@@ -10,22 +10,43 @@ class Slot extends View {
   const Slot({this.src, this.export});
 
   @override
-  get animation => new SlotWidget();
-
-  @override
   bool checked() {
     assert(src != null);
     assert(export != null);
     return true;
   }
-}
-
-class SlotWidget extends Widget<Slot, View> {
-  String src;
-  HtmlTagSet $;
-  _Connection conn;
 
   @override
+  get animator => const _Slot();
+}
+
+class _Slot extends Animator<Slot, View> {
+
+  const _Slot();
+
+  @override
+  Place makePlace(PlaceImpl impl, Slot view) =>
+      new SlotPlace(impl, view, firstState(view));
+
+  @override
+  firstState(Slot view) => view.export.Div(inner: "Loading...");
+
+  @override
+  View renderFrame(SlotPlace p) {
+    p.configure(p.view);
+    return p.state;
+  }
+}
+
+class SlotPlace extends Place {
+  HtmlTagSet $;
+  String src;
+  _Connection conn;
+
+  SlotPlace(PlaceImpl impl, Slot slot, View firstState) : super(impl, firstState) {
+    configure(slot);
+  }
+
   void configure(Slot newSlot) {
     if ($ != newSlot.export) {
       $ = newSlot.export;
@@ -44,12 +65,6 @@ class SlotWidget extends Widget<Slot, View> {
     }
   }
 
-  @override
-  firstState(Slot view) => view.export.Div(inner: "Loading...");
-
-  @override
-  View render() => state;
-
   void showServerAnimationFrame(View tagTree) {
     nextState = tagTree;
   }
@@ -63,7 +78,7 @@ class SlotWidget extends Widget<Slot, View> {
 class _Connection {
   final String url;
   final WebSocket ws;
-  final SlotWidget slot;
+  final SlotPlace slot;
 
   bool opened = false;
   TaggedJsonCodec codec;

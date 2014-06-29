@@ -51,10 +51,18 @@ class _DomUpdater implements render.DomUpdater {
   }
 
   @override
-  void mountRef(String refPath, ref) {
+  void attachRef(String refPath, ref) {
     if (ref is Ref) {
       ref._path = refPath;
       ref._cache = cache;
+    }
+  }
+
+  @override
+  void detachRef(ref) {
+    if (ref is Ref) {
+      ref._path = null;
+      ref._cache = null;
     }
   }
 

@@ -5,12 +5,11 @@
  * A [Session] is a server-side object that has a TagTree-based user interface.
  * A [WebSocketRoot] runs a Session with its input and output connected to a WebSocket.
  * It can then send tag trees over the socket and recieve events in response.
- * (The web page should use a Slot and SlotWidget for its end of the connection.)
+ * (The web page should use a Slot for its end of the connection.)
  */
 library server;
 
 import 'package:tagtree/core.dart' as core;
-import 'package:tagtree/widget.dart' show StateMachineMixin;
 
 import 'dart:async' show scheduleMicrotask;
 import 'dart:convert' show Codec;

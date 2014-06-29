@@ -4,8 +4,8 @@ part of core;
 class HandlerEvent implements Jsonable {
   final HandlerType type;
 
-  /// The path in the rendered tag tree to the node that should handle this event.
-  /// (It's always an ElementTag since templates and widgets have been expanded.)
+  /// The path in the rendered tag tree to the element node that should handle this event.
+  /// (It's always an element since animated nodes have been expanded.)
   final String elementPath;
 
   /// The value to be delivered. (It should be serializable for remote handlers.)

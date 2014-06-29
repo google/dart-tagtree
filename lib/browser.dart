@@ -6,7 +6,7 @@
  *
  * The [Ref] class can be used to get a reference to the HTML element where a View was rendered.
  *
- * A [Slot] and its implementation, [SlotWidget], can be used to display a stream of tag trees
+ * A [Slot] and its implementation, [_Slot], can be used to display a stream of tag trees
  * loaded from a WebSocket and send events. (The server should use a WebSocketRoot and a Session
  * for its end of the connection.)
  */
@@ -20,9 +20,7 @@ import 'package:tagtree/core.dart';
 import 'package:tagtree/html.dart';
 import 'package:tagtree/json.dart' show TaggedJsonCodec;
 import 'package:tagtree/render.dart' as render;
-import 'package:tagtree/widget.dart';
 
-export 'package:tagtree/widget.dart';
 export 'package:tagtree/html.dart';
 
 part 'src/browser/dom.dart';

@@ -30,8 +30,8 @@ class _HandlerMap {
 bool _inViewEvent = false;
 
 /// Calls any event handlers in this tree.
-/// On return, there may be some dirty widgets to be re-rendered.
-/// Note: widgets may also change state outside any event handler;
+/// On return, there may be some dirty nodes to be re-rendered.
+/// Note: nodes may also change state outside any event handler;
 /// for example, due to a timer.
 /// TODO: bubbling. For now, just exact match.
 void _dispatch(HandlerEvent e, _HandlerMap handlers) {

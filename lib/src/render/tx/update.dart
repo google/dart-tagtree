@@ -15,7 +15,7 @@ abstract class _Update extends _Mount with _Unmount {
   /// unmounted and a new subtree will be created.
   /// Either way, updates the DOM and returns the root node of the new subtree.
   _Node updateOrReplace(_Node node, View nextView, Theme oldTheme, Theme newTheme) {
-    Animation nextAnim = findAnimation(nextView, newTheme);
+    Animator nextAnim = findAnimation(nextView, newTheme);
 
     if (node is _AnimatedNode) {
       if (!node.playWhile(nextAnim)) {
@@ -65,7 +65,7 @@ abstract class _Update extends _Mount with _Unmount {
     node.shadow = updateOrReplace(node.shadow, shadowView, oldTheme, newTheme);
 
     // This is last so that the shadow's callbacks fire before the parent.
-    addRenderCallback(node.anim.onRendered);
+    addRenderCallback(node.onRendered);
   }
 
   /// Recursively updates an HTML element and its children to match the given view.
@@ -100,6 +100,11 @@ abstract class _Update extends _Mount with _Unmount {
       }
     }
 
+    var ref = oldView.ref;
+    if (ref != null) {
+      dom.detachRef(ref);
+    }
+
     // Update any new or changed props
     for (String key in newProps.keys) {
       var oldVal = oldProps[key];
@@ -116,6 +121,11 @@ abstract class _Update extends _Mount with _Unmount {
         String val = _makeDomVal(key, newVal);
         dom.setAttribute(path, type.propKey, val);
       }
+    }
+
+    ref = newView.ref;
+    if (ref != null) {
+      dom.attachRef(path, ref);
     }
   }
 

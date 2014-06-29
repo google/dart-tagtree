@@ -19,7 +19,7 @@ class TextFile extends View {
   }
 
   @override
-  get animation => null; // theme must provide
+  get animator => null; // theme must provide
 
   @override
   get propsImpl => {"lines": lines};

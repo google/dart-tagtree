@@ -74,7 +74,7 @@ abstract class RenderRoot {
       installEventListeners();
     }
 
-    // No widgets should be invalidated while rendering.
+    // No nodes should be invalidated while rendering.
     assert(_nodesToUpdate.isEmpty);
   }
 }
