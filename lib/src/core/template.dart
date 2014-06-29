@@ -9,7 +9,7 @@ abstract class Template<V extends View> extends Animator<V,dynamic> {
   shouldRender(V before, V after) => true;
 
   @override
-  firstState(_) => false; // stateless
+  Place makePlace(V firstView) => new Place(false);
 
   @override
   View renderFrame(Place p) => render(p.view);

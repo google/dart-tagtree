@@ -87,13 +87,10 @@ class ElementType extends Animator {
   }
 
   @override
-  firstState(_) => null; // stateless
+  makePlace(_) => throw "not implemented"; // (Special case for renderer)
 
   @override
-  renderFrame(place) {
-    // Elements don't have a shadow. (Special case handled by the renderer.)
-    throw "not implemented";
-  }
+  renderFrame(place) => throw "not implemented"; // (Special case for renderer)
 
   @override
   playWhile(Place p) => (p.view is ElementView) && p.view.type == this;

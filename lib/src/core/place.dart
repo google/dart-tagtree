@@ -6,15 +6,14 @@ part of core;
 typedef OnRendered();
 
 /// The place where an animation runs.
-/// The default implementation delegates to another Place.
 class Place<V extends View, S> extends StateMachineMixin<S> {
-  PlaceImpl _delegate;
+  PlaceDelegate _delegate;
 
   Place(S firstState) {
     initStateMachine(firstState);
   }
 
-  void mount(PlaceImpl delegate) {
+  void mount(PlaceDelegate delegate) {
     this._delegate = delegate;
   }
 
@@ -34,9 +33,15 @@ class Place<V extends View, S> extends StateMachineMixin<S> {
   void set onRendered(OnRendered callback) {
     _delegate.onRendered = callback;
   }
+
+  /// Called when an animation ends at a place.
+  /// The DOM hasn't been removed yet.
+  void unmount() {
+    _delegate = null;
+  }
 }
 
-abstract class PlaceImpl {
+abstract class PlaceDelegate {
   View get view;
   Animator get nextAnimator;
   void invalidate();

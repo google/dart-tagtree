@@ -46,9 +46,10 @@ class PixelPaintApp extends AnimatedView<Grid> {
 /// A handler that's called when the user paints a pixel.
 typedef PixelHandler(int x, int y);
 
-/// The specification of a single animation frame that displays the grid of pixels.
-/// It expands to a <table> element.
-class GridView extends View {
+/// Renders a stream of grids into a <table> and converts mouse events into paint events.
+/// (This could be a template, except that we need to remember whether the mouse
+/// button is down.)
+class GridView extends AnimatedView<bool> {
   final Grid grid;
   final List<String> palette;
   final PixelHandler onPaint;
@@ -56,27 +57,16 @@ class GridView extends View {
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
-  get animator => const _GridView();
-}
-
-/// Renders a stream of GridViews and converts mouse events into paint events.
-/// (This could be a template, except that we need to remember whether the mouse
-/// button is down. TODO: it might be nice if Dart or TagTree provided this.)
-class _GridView extends Animator<GridView, bool> {
-
-  // HTML5 makes keeping track of the mouse button surprisingly tricky!
-  // This implementation usually works, but could be improved.
-
-  const _GridView();
+  makePlace() => new MousePlace();
 
   @override
-  makePlace(PlaceImpl impl, _) => new MousePlace(impl);
-
-  @override
-  firstState(_) => throw "not used";
+  get firstState => throw "not used";
 
   @override
   View renderFrame(MousePlace p) {
+
+    // HTML5 makes keeping track of the mouse button surprisingly tricky!
+    // This implementation usually works, but could be improved.
 
     onMouseDown(int x, int y) {
       p.view.onPaint(x, y);
@@ -109,8 +99,9 @@ class _GridView extends Animator<GridView, bool> {
 
 class MousePlace extends Place {
   // This variable is unused when rendering, so it shouldn't be stored as state.
+  // TODO: it might be nice if Dart or TagTree provided mouse button tracking.
   bool isMouseDown = false;
-  MousePlace(PlaceImpl impl) : super(false);
+  MousePlace() : super(false);
 }
 
 /// An animation frame for one row of the grid.

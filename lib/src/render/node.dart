@@ -35,7 +35,7 @@ abstract class _Node {
   void unmount();
 }
 
-class _AnimatedNode extends _Node implements PlaceImpl {
+class _AnimatedNode extends _Node implements PlaceDelegate {
   _InvalidateFunc _invalidate;
   bool _isDirty = true;
   Animator anim;
@@ -57,7 +57,7 @@ class _AnimatedNode extends _Node implements PlaceImpl {
 
     this.view = view;
     this.anim = anim;
-    _place = anim.makePlace(this, view);
+    _place = anim.makePlace(view);
     _place.mount(this);
   }
 
@@ -90,7 +90,7 @@ class _AnimatedNode extends _Node implements PlaceImpl {
   }
 
   void unmount() {
-    anim.onEnd(_place);
+    _place.unmount();
 
     view = null;
     _invalidate = null;

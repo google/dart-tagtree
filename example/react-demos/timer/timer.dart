@@ -2,40 +2,34 @@ import 'dart:async' show Timer;
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class TimerApp extends View {
+class TimerApp extends AnimatedView<int> {
   const TimerApp();
 
   @override
-  get animator => const _TimerApp();
-}
-
-class _TimerApp extends Animator<TimerApp, int> {
-  const _TimerApp();
+  makePlace() => new Ticker(firstState);
 
   @override
-  makePlace(PlaceImpl impl, TimerApp app) => new TickerPlace(firstState(app));
-
-  @override
-  firstState(_) => 0;
+  get firstState => 0;
 
   @override
   renderFrame(Place p) => $.Div(inner: "Seconds elapsed: ${p.state}");
-
-  @override
-  onEnd(TickerPlace place) => place.stop();
 }
 
-class TickerPlace extends Place<dynamic, int> {
+class Ticker extends Place {
   Timer timer;
-  TickerPlace(int firstState) : super(firstState) {
+  Ticker(int firstTick) : super(firstTick) {
     timer = new Timer.periodic(new Duration(seconds: 1), tick);
   }
 
-  tick(_) => step((seconds) => seconds + 1);
+  tick(_) {
+    nextState += 1;
+  }
 
-  stop() {
+  @override
+  unmount() {
     timer.cancel();
     timer = null;
+    super.unmount();
   }
 }
 
