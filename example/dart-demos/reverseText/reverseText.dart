@@ -1,46 +1,31 @@
 import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
-// This example shows a very simple animation that displays some text.
-// It runs forever and renders a new animation frame whenever the user clicks on it.
-// There are only two frames, forward and reversed.
-
-class ReversableText extends View {
+class ReversableText extends AnimatedView<bool> {
   final String text;
   const ReversableText(this.text);
-  @override
-  get animator => const _ReversableText();
-}
-
-class _ReversableText extends Animator<ReversableText, int> {
-  const _ReversableText();
 
   @override
-  firstState(view) => 0;
+  get firstState => false;
 
   @override
   View renderFrame(Place p) {
-    onClick(event) => p.step(increment);
-
-    bool isReversed = (p.state % 2) == 1;
-
-    var text = p.view.text;
-    if (isReversed) {
-      text = reverse(text);
+    onClick(event) {
+      p.nextState = !p.nextState;
     }
 
-    return $.Div(clazz: "sample_text", onClick: onClick, inner: text);
-  }
+    var renderedText = p.state ? reverse(text) : text;
 
-  static increment(int count) => count + 1;
-
-  static reverse(String text) {
-    var buffer = new StringBuffer();
-    for (int i = text.length - 1; i >= 0; i--) {
-      buffer.write(text[i]);
-    }
-    return buffer.toString();
+    return $.Div(clazz: "sample_text", onClick: onClick, inner: renderedText);
   }
+}
+
+String reverse(String text) {
+  var buffer = new StringBuffer();
+  for (int i = text.length - 1; i >= 0; i--) {
+    buffer.write(text[i]);
+  }
+  return buffer.toString();
 }
 
 main() =>

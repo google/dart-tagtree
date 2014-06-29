@@ -12,22 +12,14 @@ import 'dart:math';
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class SunflowerApp extends View {
+class SunflowerApp extends AnimatedView<int> {
   final int startSeeds;
   final int seedRadius;
 
   const SunflowerApp({this.startSeeds, this.seedRadius});
 
   @override
-  get animator => const _SunflowerApp();
-}
-
-class _SunflowerApp extends Animator<SunflowerApp, int> {
-
-  const _SunflowerApp();
-
-  @override
-  int firstState(SunflowerApp view) => view.startSeeds;
+  int get firstState => startSeeds;
 
   @override
   View renderFrame(Place p) {
@@ -35,13 +27,12 @@ class _SunflowerApp extends Animator<SunflowerApp, int> {
 
     // The slider controls the number of seeds.
     void onSliderChange(HandlerEvent e) {
-      int nextSeed = int.parse(e.value);
-      p.step((_) => nextSeed);
+      p.nextState = int.parse(e.value);
     }
 
     // Ask for a callback when the DOM is ready.
     var canvas = new Ref<CanvasElement>();
-    p.onRendered = () => draw(canvas.elt.context2D, seeds, p.view.seedRadius);
+    p.onRendered = () => draw(canvas.elt.context2D, seeds, seedRadius);
 
     return $.Div(inner: [
 
@@ -89,7 +80,6 @@ void drawSeed(CanvasRenderingContext2D context, num x, num y, num radius) {
          ..stroke();
 }
 
-const app = const SunflowerApp(startSeeds: 500, seedRadius: 2);
-
 main() =>
-    getRoot("#sunflower").mount(app);
+    getRoot("#sunflower")
+      .mount(const SunflowerApp(startSeeds: 500, seedRadius: 2));

@@ -22,7 +22,7 @@ library core;
 import 'dart:collection';
 import 'package:tagtree/json.dart';
 
-part 'src/core/animation.dart';
+part 'src/core/animator.dart';
 part 'src/core/element.dart';
 part 'src/core/handler.dart';
 part 'src/core/json.dart';

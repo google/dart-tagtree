@@ -19,7 +19,8 @@ class Page extends TemplateView {
 
 typedef void OnMenuClick(String item);
 
-class Menu extends View {
+// Keeps track of the currently selected item in the top menu.
+class Menu extends AnimatedView<String> {
   final String title;
   final List<String> items;
   final String defaultSelected;
@@ -30,31 +31,24 @@ class Menu extends View {
   @override
   bool checked() => items != null && items.length > 0;
 
-  get animator => new _Menu();
-}
-
-// Keeps track of the currently selected item in the top menu.
-class _Menu extends Animator<Menu, String> {
-
   @override
-  firstState(Menu view) =>
-      view.defaultSelected == null ? view.items.first : view.defaultSelected;
+  get firstState => defaultSelected == null ? items.first : defaultSelected;
 
   @override
   View renderFrame(Place p)  {
 
     String selected = p.state;
 
-    onClick(String item) {
+    itemClick(String item) {
       p.nextState = item;
-      if (p.view.onClick != null) {
-        p.view.onClick(item);
+      if (onClick != null) {
+        onClick(item);
       }
     }
 
     renderItem(String item) {
       return $.Li(clazz: item==selected ? "pure-menu-selected" : "", inner:
-        $.A(href: "#", onClick: (_) => onClick(item), inner: item)
+        $.A(href: "#", onClick: (_) => itemClick(item), inner: item)
       );
     };
 

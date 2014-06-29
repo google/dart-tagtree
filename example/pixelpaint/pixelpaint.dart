@@ -6,18 +6,16 @@ import 'package:tagtree/core.dart';
 /// Demonstrates how to get decent performance using a mostly functional style,
 /// assuming that most pixels don't actually change in a single animation frame.
 /// The paint document is modelled as an immutable [Grid]. A top-level state
-/// machine in [_PixelPaintApp] reacts to document updates. We avoid unnecessary
+/// machine in [PixelPaintApp] reacts to document updates. We avoid unnecessary
 /// renders by dividing up the Grid and [GridView] by row and only rendering a
 /// [RowView] if there is a change to the underlying [Row]. (A more sophisticated
 /// paint program would probably divide up the grid into tiles.)
 
 //
-// Views (which are also controllers)
+// Views
 //
 
-/// The configuration properties of the app ("props").
-/// It displays only two colors and displays fat pixels.
-class PixelPaintApp extends View {
+class PixelPaintApp extends AnimatedView<Grid> {
   final int width; // in fat pixels
   final int height; // in fat pixels
   final List<String> palette; // The CSS style for each color
@@ -32,30 +30,21 @@ class PixelPaintApp extends View {
   bool checked() => palette.length == 2;
 
   @override
-  get animator => const _PixelPaintApp();
-}
-
-/// The top-level state machine.
-/// There is state transition whenever a pixel changes, causing a re-render.
-class _PixelPaintApp extends Animator<PixelPaintApp, Grid> {
-
-  const _PixelPaintApp();
-
-  @override
-  firstState(PixelPaintApp view) => new Grid(view.width, view.height);
+  get firstState => new Grid(width, height);
 
   @override
   renderFrame(Place p) {
 
     onPaint(int x, int y) {
-      p.step((Grid prev) {
-        return new Grid.withChangedPixel(prev, x, y, 1);
-      });
+      p.nextState = new Grid.withChangedPixel(p.nextState, x, y, 1);
     }
 
     return new GridView(grid: p.state, palette: p.view.palette, onPaint: onPaint);
   }
 }
+
+/// A handler that's called when the user paints a pixel.
+typedef PixelHandler(int x, int y);
 
 /// The specification of a single animation frame that displays the grid of pixels.
 /// It expands to a <table> element.
@@ -69,9 +58,6 @@ class GridView extends View {
   @override
   get animator => const _GridView();
 }
-
-/// A handler that's called when the user paints a pixel.
-typedef PixelHandler(int x, int y);
 
 /// Renders a stream of GridViews and converts mouse events into paint events.
 /// (This could be a template, except that we need to remember whether the mouse
@@ -163,7 +149,7 @@ class RowView extends TemplateView {
 //
 
 /// A immutable rectangle of integers.
-class Grid {
+class Grid implements Cloneable {
   final List<Row> rows;
   Grid._raw(this.rows);
 
@@ -191,6 +177,9 @@ class Grid {
 
   int get width => rows[0].width;
   int get height => rows.length;
+
+  @override
+  clone() => this;
 }
 
 /// An immutable array of integers, representing a row of pixels.

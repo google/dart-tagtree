@@ -3,7 +3,7 @@ import 'package:tagtree/browser.dart';
 
 class TodoList extends TemplateView {
   final List<String> items;
-  const TodoList({this.items});
+  const TodoList(this.items);
 
   @override
   render() {
@@ -12,26 +12,11 @@ class TodoList extends TemplateView {
   }
 }
 
-class TodoApp extends View {
+class TodoApp extends AnimatedView<_TodoState> {
   const TodoApp();
 
   @override
-  get animator => const _TodoApp();
-}
-
-class _TodoState implements Cloneable {
-  List<String> items;
-  String text;
-  _TodoState(this.items, this.text);
-  _TodoState clone() => new _TodoState(items, text);
-}
-
-class _TodoApp extends Animator<TodoApp, _TodoState> {
-
-  const _TodoApp();
-
-  @override
-  firstState(_) => new _TodoState([], '');
+  get firstState => new _TodoState([], '');
 
   @override
   renderFrame(Place p) {
@@ -41,20 +26,27 @@ class _TodoApp extends Animator<TodoApp, _TodoState> {
     }
 
     handleSubmit(HandlerEvent e) {
-      p.nextState
-        ..items = (new List.from(p.state.items)..add(p.state.text))
-        ..text = "";
+      var nextItems = new List.from(p.state.items)..add(p.state.text);
+      var nextText = "";
+      p.nextState = new _TodoState(nextItems, nextText);
     }
 
     return $.Div(inner: [
       $.H3(inner: "TODO"),
-      new TodoList(items: p.state.items),
+      new TodoList(p.state.items),
       $.Form(onSubmit: handleSubmit, inner: [
         $.Input(onChange: onChange, value: p.state.text),
         $.Button(inner: "Add # ${p.state.items.length + 1}")
       ])
     ]);
   }
+}
+
+class _TodoState implements Cloneable {
+  List<String> items;
+  String text;
+  _TodoState(this.items, this.text);
+  _TodoState clone() => new _TodoState(items, text);
 }
 
 main() => getRoot("#container").mount(const TodoApp());

@@ -48,3 +48,25 @@ abstract class Animator<V extends View, S> {
   /// update will be skipped.
   bool needsRender(View previousView, View nextView) => true;
 }
+
+abstract class AnimatedView<S> extends View {
+  const AnimatedView();
+
+  @override
+  get animator => const _AnimatedView();
+
+  S get firstState;
+
+  View renderFrame(Place p);
+}
+
+class _AnimatedView<V extends AnimatedView, S> extends Animator<V, S> {
+  const _AnimatedView();
+
+  @override
+  firstState(V view) => view.firstState;
+
+  @override
+  renderFrame(Place p) => p.view.renderFrame(p);
+}
+
