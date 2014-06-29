@@ -8,10 +8,14 @@ typedef OnRendered();
 /// The place where an animation runs.
 /// The default implementation delegates to another Place.
 class Place<V extends View, S> extends StateMachineMixin<S> {
-  final PlaceImpl _delegate;
+  PlaceImpl _delegate;
 
-  Place(this._delegate, S firstState) {
+  Place(S firstState) {
     initStateMachine(firstState);
+  }
+
+  void mount(PlaceImpl delegate) {
+    this._delegate = delegate;
   }
 
   V get view => _delegate.view;

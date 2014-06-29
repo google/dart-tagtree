@@ -43,7 +43,7 @@ class SlotPlace extends Place {
   String src;
   _Connection conn;
 
-  SlotPlace(PlaceImpl impl, Slot slot, View firstState) : super(impl, firstState) {
+  SlotPlace(PlaceImpl impl, Slot slot, View firstState) : super(firstState) {
     configure(slot);
   }
 

@@ -58,7 +58,7 @@ class _AnimatedNode extends _Node implements PlaceImpl {
     this.view = view;
     this.anim = anim;
     _place = anim.makePlace(this, view);
-    assert(_place != null);
+    _place.mount(this);
   }
 
   @override

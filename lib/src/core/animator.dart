@@ -22,7 +22,7 @@ abstract class Animator<V extends View, S> {
     if (first == null) {
       throw "firstState returned null for ${runtimeType}";
     }
-    return new Place(impl, first);
+    return new Place(first);
   }
 
   /// Returns the animation's state for rendering its first frame.

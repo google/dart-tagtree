@@ -110,7 +110,7 @@ class _GridView extends Animator<GridView, bool> {
 class MousePlace extends Place {
   // This variable is unused when rendering, so it shouldn't be stored as state.
   bool isMouseDown = false;
-  MousePlace(PlaceImpl impl) : super(impl, false);
+  MousePlace(PlaceImpl impl) : super(false);
 }
 
 /// An animation frame for one row of the grid.

@@ -13,7 +13,7 @@ class _TimerApp extends Animator<TimerApp, int> {
   const _TimerApp();
 
   @override
-  makePlace(PlaceImpl impl, TimerApp app) => new TickerPlace(impl, firstState(app));
+  makePlace(PlaceImpl impl, TimerApp app) => new TickerPlace(firstState(app));
 
   @override
   firstState(_) => 0;
@@ -27,8 +27,7 @@ class _TimerApp extends Animator<TimerApp, int> {
 
 class TickerPlace extends Place<dynamic, int> {
   Timer timer;
-  TickerPlace(PlaceImpl impl, int firstState) :
-    super(impl, firstState) {
+  TickerPlace(int firstState) : super(firstState) {
     timer = new Timer.periodic(new Duration(seconds: 1), tick);
   }
 
