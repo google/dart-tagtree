@@ -19,7 +19,7 @@ class TodoApp extends AnimatedView<_TodoState> {
   get firstState => new _TodoState([], '');
 
   @override
-  renderFrame(Place p) {
+  renderFrame(Place<_TodoState> p) {
 
     onChange(HandlerEvent e) {
       p.nextState.text = e.value;

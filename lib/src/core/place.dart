@@ -6,7 +6,7 @@ part of core;
 typedef OnRendered();
 
 /// The place where an animation runs.
-class Place<V extends View, S> extends StateMachineMixin<S> {
+class Place<S> extends StateMachineMixin<S> {
   PlaceDelegate _delegate;
 
   Place(S firstState) {
@@ -16,8 +16,6 @@ class Place<V extends View, S> extends StateMachineMixin<S> {
   void mount(PlaceDelegate delegate) {
     this._delegate = delegate;
   }
-
-  V get view => _delegate.view;
 
   /// The animation that the renderer will cut to after [Animation.playWhile]
   /// returns false. This will be different from the current animation when
@@ -42,7 +40,6 @@ class Place<V extends View, S> extends StateMachineMixin<S> {
 }
 
 abstract class PlaceDelegate {
-  View get view;
   Animator get nextAnimator;
   void invalidate();
   void set onRendered(OnRendered callback);

@@ -90,10 +90,10 @@ class ElementType extends Animator {
   makePlace(_) => throw "not implemented"; // (Special case for renderer)
 
   @override
-  renderFrame(place) => throw "not implemented"; // (Special case for renderer)
+  renderFrame(_, place) => throw "not implemented"; // (Special case for renderer)
 
   @override
-  playWhile(Place p) => (p.view is ElementView) && p.view.type == this;
+  playWhile(View view, Place p) => (view is ElementView) && view.type == this;
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

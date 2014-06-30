@@ -35,7 +35,7 @@ class Menu extends AnimatedView<String> {
   get firstState => defaultSelected == null ? items.first : defaultSelected;
 
   @override
-  View renderFrame(Place p)  {
+  View renderFrame(Place<String> p)  {
 
     String selected = p.state;
 
@@ -52,13 +52,13 @@ class Menu extends AnimatedView<String> {
       );
     };
 
-    var items = [];
-    if (p.view.title != null) {
-      items.add($.A(href: "#", clazz: "pure-menu-heading", inner: p.view.title));
+    var itemList = [];
+    if (title != null) {
+      itemList.add($.A(href: "#", clazz: "pure-menu-heading", inner: title));
     }
-    items.add($.Ul(inner: p.view.items.map(renderItem)));
+    itemList.add($.Ul(inner: items.map(renderItem)));
 
-    return $.Div(clazz: "pure-menu pure-menu-open pure-menu-horizontal", inner: items);
+    return $.Div(clazz: "pure-menu pure-menu-open pure-menu-horizontal", inner: itemList);
   }
 }
 

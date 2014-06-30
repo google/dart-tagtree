@@ -20,13 +20,13 @@ abstract class Animator<V extends View, S> {
   Place makePlace(V firstView);
 
   /// Returns the shadow view to be rendered in the given place.
-  View renderFrame(Place<V,S> place);
+  View renderFrame(V view, Place<S> place);
 
   /// Returns true if the animation should continue to play.
   /// Otherwise, the renderer will cut to the next animation.
   /// (The current animation will stop and the next animation will
   /// start from the beginning.)
-  bool playWhile(Place p) => p.nextAnimator == this;
+  bool playWhile(V view, Place p) => p.nextAnimator == this;
 
   // Performance hooks for avoiding unnecessary rendering.
 
@@ -62,6 +62,6 @@ class _AnimatedView<V extends AnimatedView, S> extends Animator<V, S> {
   Place makePlace(V firstView) => firstView.makePlace();
 
   @override
-  renderFrame(Place p) => p.view.renderFrame(p);
+  renderFrame(V outer, Place p) => outer.renderFrame(p);
 }
 

@@ -74,14 +74,14 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
   View renderFrame(View nextView) {
     _place.commitState();
     view = nextView;
-    View out = anim.renderFrame(_place);
+    View out = anim.renderFrame(view, _place);
     _isDirty = false;
     return out;
   }
 
   bool playWhile(Animator next) {
     nextAnimator = next;
-    return anim.playWhile(_place);
+    return anim.playWhile(view, _place);
   }
 
   bool isDirty(View next) {

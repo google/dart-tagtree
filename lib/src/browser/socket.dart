@@ -24,7 +24,7 @@ class Slot extends AnimatedView<View> {
 
   @override
   View renderFrame(SlotPlace p) {
-    p.configure(p.view);
+    p.configure(this);
     return p.state;
   }
 }

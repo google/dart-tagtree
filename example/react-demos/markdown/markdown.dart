@@ -9,7 +9,7 @@ class MarkdownEditor extends AnimatedView<String> {
   @override
   get firstState => defaultText;
 
-  View renderFrame(Place p) {
+  View renderFrame(Place<String> p) {
     String text = p.state;
 
     onChange(e) {

@@ -22,7 +22,7 @@ class SunflowerApp extends AnimatedView<int> {
   int get firstState => startSeeds;
 
   @override
-  View renderFrame(Place p) {
+  View renderFrame(Place<int> p) {
     int seeds = p.state;
 
     // The slider controls the number of seeds.

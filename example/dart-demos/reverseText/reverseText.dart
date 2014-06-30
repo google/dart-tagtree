@@ -9,7 +9,7 @@ class ReversableText extends AnimatedView<bool> {
   get firstState => false;
 
   @override
-  View renderFrame(Place p) {
+  View renderFrame(Place<bool> p) {
     onClick(event) {
       p.nextState = !p.nextState;
     }

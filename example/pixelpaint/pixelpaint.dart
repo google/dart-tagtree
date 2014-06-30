@@ -33,13 +33,13 @@ class PixelPaintApp extends AnimatedView<Grid> {
   get firstState => new Grid(width, height);
 
   @override
-  renderFrame(Place p) {
+  renderFrame(Place<Grid> p) {
 
     onPaint(int x, int y) {
       p.nextState = new Grid.withChangedPixel(p.nextState, x, y, 1);
     }
 
-    return new GridView(grid: p.state, palette: p.view.palette, onPaint: onPaint);
+    return new GridView(grid: p.state, palette: palette, onPaint: onPaint);
   }
 }
 
@@ -69,13 +69,13 @@ class GridView extends AnimatedView<bool> {
     // This implementation usually works, but could be improved.
 
     onMouseDown(int x, int y) {
-      p.view.onPaint(x, y);
+      onPaint(x, y);
       p.isMouseDown = true;
     }
 
     onMouseOver(int x, int y) {
       if (p.isMouseDown) {
-        p.view.onPaint(x, y);
+        onPaint(x, y);
       }
     }
 
@@ -83,10 +83,10 @@ class GridView extends AnimatedView<bool> {
       p.isMouseDown = false;
     }
 
-    var palette = p.view.palette.asMap();
+    var paletteMap = palette.asMap();
     var rows = [];
-    for (int y = 0; y < p.view.grid.height; y++) {
-      rows.add(new RowView(y: y, row: p.view.grid.rows[y], palette: palette,
+    for (int y = 0; y < grid.height; y++) {
+      rows.add(new RowView(y: y, row: grid.rows[y], palette: paletteMap,
                            onMouseDown: onMouseDown, onMouseOver: onMouseOver,
                            onMouseUp: onMouseUp));
     }
