@@ -19,10 +19,10 @@ class SunflowerApp extends AnimatedView<int> {
   const SunflowerApp({this.startSeeds, this.seedRadius});
 
   @override
-  makePlace() => new Place(startSeeds);
+  start() => new Place(startSeeds);
 
   @override
-  View renderFrame(Place<int> p) {
+  View renderAt(Place<int> p) {
     int seeds = p.state;
 
     // The slider controls the number of seeds.

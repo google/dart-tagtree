@@ -6,7 +6,7 @@ part of core;
 ///
 /// Some animators just substitute values into a template.
 /// (See the [Template] subclass.) Stateful animations can be
-/// implemented by storing and updating state in each Place.
+/// implemented by reading and updating the state in a Place.
 ///
 /// The Animator to use is chosen based on a View and sometimes a Theme.
 /// Whenever the View or Theme changes, the renderer checks whether it
@@ -17,7 +17,8 @@ abstract class Animator<V extends View, S> {
   /// Animators are stateless and should be const.
   const Animator();
 
-  Place makePlace(V firstView);
+  /// Creates the Place that will hold the animation's state.
+  Place start(V firstView);
 
   /// Returns the shadow view to be rendered in the given place.
   View renderAt(V view, Place<S> place);
@@ -26,14 +27,12 @@ abstract class Animator<V extends View, S> {
   /// Otherwise, the renderer will cut to the next animation.
   /// (The current animation will stop and the next animation will
   /// start from the beginning.)
-  bool playWhile(V view, Place p) => p.nextAnimator == this;
-
-  // Performance hooks for avoiding unnecessary rendering.
+  bool playWhile(V nextView, Animator nextAnim, Place<S> place) => nextAnim == this;
 
   /// Returns true if [renderAt] should be called after a view change.
   /// Otherwise, the previous shadow will be reused, the possibly the DOM
   /// update will be skipped.
-  bool needsRender(View previousView, View nextView) => true;
+  bool shouldRender(View previousView, View nextView) => true;
 }
 
 abstract class AnimatedView<S> extends View {
@@ -42,18 +41,18 @@ abstract class AnimatedView<S> extends View {
   @override
   get animator => const _AnimatedView();
 
-  Place makePlace();
+  Place start();
 
-  View renderFrame(Place p);
+  View renderAt(Place p);
 }
 
 class _AnimatedView<V extends AnimatedView, S> extends Animator<V, S> {
   const _AnimatedView();
 
   @override
-  Place makePlace(V firstView) => firstView.makePlace();
+  Place start(V firstView) => firstView.start();
 
   @override
-  renderAt(V outer, Place p) => outer.renderFrame(p);
+  renderAt(V outer, Place p) => outer.renderAt(p);
 }
 

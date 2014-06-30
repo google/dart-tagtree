@@ -6,10 +6,10 @@ class TimerApp extends AnimatedView<int> {
   const TimerApp();
 
   @override
-  makePlace() => new Ticker(new Duration(seconds: 1));
+  start() => new Ticker(new Duration(seconds: 1));
 
   @override
-  renderFrame(Ticker p) => $.Div(inner: "Seconds elapsed: ${p.state}");
+  renderAt(Ticker p) => $.Div(inner: "Seconds elapsed: ${p.state}");
 }
 
 class Ticker extends Place<int> {

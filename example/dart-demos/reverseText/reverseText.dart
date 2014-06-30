@@ -6,14 +6,14 @@ class ReversableText extends AnimatedView<bool> {
   const ReversableText(this.text);
 
   @override
-  makePlace() => new Place(false);
+  start() => new Place(false);
 
   @override
-  View renderFrame(Place<bool> p) {
+  View renderAt(Place<bool> p) {
+
     onClick(event) {
       p.nextState = !p.nextState;
     }
-
     var renderedText = p.state ? reverse(text) : text;
 
     return $.Div(clazz: "sample_text", onClick: onClick, inner: renderedText);

@@ -47,12 +47,9 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
   @override
   OnRendered onRendered;
 
-  @override
-  Animator nextAnimator;
-
   _AnimatedNode(String path, int depth, View view, this.anim, this._invalidate) :
     super(path, depth) {
-    _place = anim.makePlace(view);
+    _place = anim.start(view);
     _place.mount(this);
   }
 
@@ -74,13 +71,12 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
     return shadow;
   }
 
-  bool playWhile(Animator next) {
-    nextAnimator = next;
-    return anim.playWhile(renderedView, _place);
+  bool playWhile(View nextView, Animator nextAnim) {
+    return anim.playWhile(nextView, nextAnim, _place);
   }
 
   bool isDirty(View next) {
-    _isDirty = _isDirty || anim.needsRender(renderedView, next);
+    _isDirty = _isDirty || anim.shouldRender(renderedView, next);
     return _isDirty;
   }
 

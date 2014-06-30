@@ -32,10 +32,13 @@ class Menu extends AnimatedView<String> {
   bool checked() => items != null && items.length > 0;
 
   @override
-  makePlace() => new Place<String>(defaultSelected == null ? items.first : defaultSelected);
+  start() {
+    var selected = defaultSelected == null ? items.first : defaultSelected;
+    return new Place<String>(selected);
+  }
 
   @override
-  View renderFrame(Place<String> p)  {
+  View renderAt(Place<String> p)  {
 
     String selected = p.state;
 

@@ -30,10 +30,10 @@ class PixelPaintApp extends AnimatedView<Grid> {
   bool checked() => palette.length == 2;
 
   @override
-  makePlace() => new Place(new Grid(width, height));
+  start() => new Place(new Grid(width, height));
 
   @override
-  renderFrame(Place<Grid> p) {
+  renderAt(Place<Grid> p) {
 
     onPaint(int x, int y) {
       p.nextState = new Grid.withChangedPixel(p.nextState, x, y, 1);
@@ -57,10 +57,10 @@ class GridView extends AnimatedView<bool> {
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
-  makePlace() => new MousePlace();
+  start() => new MousePlace();
 
   @override
-  View renderFrame(MousePlace p) {
+  View renderAt(MousePlace p) {
 
     // HTML5 makes keeping track of the mouse button surprisingly tricky!
     // This implementation usually works, but could be improved.
@@ -95,7 +95,7 @@ class GridView extends AnimatedView<bool> {
 }
 
 class MousePlace extends Place {
-  // This variable is unused when rendering, so it shouldn't be stored as state.
+  // This variable isn't used when rendering, so it shouldn't be stored as state.
   // TODO: it might be nice if Dart or TagTree provided mouse button tracking.
   bool isMouseDown = false;
   MousePlace() : super(false);

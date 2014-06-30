@@ -6,16 +6,11 @@ abstract class Template<V extends View> extends Animator<V,dynamic> {
 
   render(V view);
 
-  shouldRender(V before, V after) => true;
-
   @override
-  Place makePlace(V firstView) => new Place(false);
+  Place start(V firstView) => new Place(false);
 
   @override
   View renderAt(V view, Place p) => render(view);
-
-  @override
-  bool needsRender(V before, V after) => shouldRender(before, after);
 
   // implement [CreateExpander].
   Template call() => this;
@@ -37,7 +32,7 @@ class _TemplateView extends Template<TemplateView> {
   const _TemplateView();
 
   @override
-  bool needsRender(TemplateView prev, TemplateView next) => next.shouldRender(prev);
+  bool shouldRender(TemplateView prev, TemplateView next) => next.shouldRender(prev);
 
   @override
   View render(input) => input.render();

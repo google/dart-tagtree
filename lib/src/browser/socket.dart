@@ -17,10 +17,10 @@ class Slot extends AnimatedView<View> {
   }
 
   @override
-  Place makePlace() => new SlotPlace(this, export.Div(inner: "Loading..."));
+  Place start() => new SlotPlace(this, export.Div(inner: "Loading..."));
 
   @override
-  View renderFrame(SlotPlace p) {
+  View renderAt(SlotPlace p) {
     p.configure(this);
     return p.state;
   }

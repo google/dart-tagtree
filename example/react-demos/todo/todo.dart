@@ -16,10 +16,10 @@ class TodoApp extends AnimatedView<_TodoState> {
   const TodoApp();
 
   @override
-  makePlace() => new Place(new _TodoState([], ''));
+  start() => new Place(new _TodoState([], ''));
 
   @override
-  renderFrame(Place<_TodoState> p) {
+  renderAt(Place<_TodoState> p) {
 
     onChange(HandlerEvent e) {
       p.nextState.text = e.value;
