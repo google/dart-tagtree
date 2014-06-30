@@ -12,7 +12,7 @@ abstract class Template<V extends View> extends Animator<V,dynamic> {
   Place makePlace(V firstView) => new Place(false);
 
   @override
-  View renderFrame(V view, Place p) => render(view);
+  View renderAt(V view, Place p) => render(view);
 
   @override
   bool needsRender(V before, V after) => shouldRender(before, after);

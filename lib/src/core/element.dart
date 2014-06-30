@@ -90,7 +90,7 @@ class ElementType extends Animator {
   makePlace(_) => throw "not implemented"; // (Special case for renderer)
 
   @override
-  renderFrame(_, place) => throw "not implemented"; // (Special case for renderer)
+  renderAt(_, place) => throw "not implemented"; // (Special case for renderer)
 
   @override
   playWhile(View view, Place p) => (view is ElementView) && view.type == this;

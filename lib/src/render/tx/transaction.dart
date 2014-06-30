@@ -30,7 +30,7 @@ class _Transaction extends _Update {
     for (_AnimatedNode n in _nodesToUpdate) {
       if (n.isMounted) {
         // Re-render using the same view.
-        updateOrReplace(n, n.view, root._renderedTheme, nextTheme);
+        updateOrReplace(n, n.renderedView, root._renderedTheme, nextTheme);
       }
     }
 

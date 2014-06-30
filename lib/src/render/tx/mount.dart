@@ -33,7 +33,7 @@ abstract class _Mount {
       return node;
     } else {
       var node = new _AnimatedNode(path, depth, view, anim, invalidate);
-      var shadow = node.renderFrame(view);
+      var shadow = node.render(view);
 
       // Recurse.
       node.shadow = mountView(shadow, theme, html, node.path, node.depth + 1);

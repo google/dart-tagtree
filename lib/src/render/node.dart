@@ -36,13 +36,13 @@ abstract class _Node {
 }
 
 class _AnimatedNode extends _Node implements PlaceDelegate {
-  _InvalidateFunc _invalidate;
-  bool _isDirty = true;
   Animator anim;
-  _Node shadow;
+  _InvalidateFunc _invalidate;
+  Place _place;
 
-  @override
-  View view;
+  View renderedView;
+  _Node shadow;
+  bool _isDirty = true;
 
   @override
   OnRendered onRendered;
@@ -50,13 +50,8 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
   @override
   Animator nextAnimator;
 
-  Place _place;
-
-  _AnimatedNode(String path, int depth, View view, Animator anim, this._invalidate) :
+  _AnimatedNode(String path, int depth, View view, this.anim, this._invalidate) :
     super(path, depth) {
-
-    this.view = view;
-    this.anim = anim;
     _place = anim.makePlace(view);
     _place.mount(this);
   }
@@ -71,32 +66,32 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
 
   bool get isMounted => _place != null;
 
-  View renderFrame(View nextView) {
+  View render(View nextView) {
     _place.commitState();
-    view = nextView;
-    View out = anim.renderFrame(view, _place);
+    View shadow = anim.renderAt(nextView, _place);
+    renderedView = nextView;
     _isDirty = false;
-    return out;
+    return shadow;
   }
 
   bool playWhile(Animator next) {
     nextAnimator = next;
-    return anim.playWhile(view, _place);
+    return anim.playWhile(renderedView, _place);
   }
 
   bool isDirty(View next) {
-    _isDirty = _isDirty || anim.needsRender(view, next);
+    _isDirty = _isDirty || anim.needsRender(renderedView, next);
     return _isDirty;
   }
 
   void unmount() {
-    _place.unmount();
+    renderedView = null;
+    shadow = null;
 
-    view = null;
+    _place.unmount();
+    _place = null;
     _invalidate = null;
     anim = null;
-    _place = null;
-    shadow = null;
   }
 }
 

@@ -59,7 +59,7 @@ abstract class _Update extends _Mount with _Unmount {
       return; // Performance shortcut.
     }
 
-    View shadowView = node.renderFrame(nextView);
+    View shadowView = node.render(nextView);
 
     // Recurse.
     node.shadow = updateOrReplace(node.shadow, shadowView, oldTheme, newTheme);

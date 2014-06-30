@@ -17,14 +17,14 @@ class Place<S> extends StateMachineMixin<S> {
     this._delegate = delegate;
   }
 
-  /// The animation that the renderer will cut to after [Animation.playWhile]
+  /// The animation that the renderer will cut to after [Animator.playWhile]
   /// returns false. This will be different from the current animation when
   /// the View or Theme for this place has changed.
   Animator get nextAnimator => _delegate.nextAnimator;
 
   void invalidate() => _delegate.invalidate();
 
-  /// If this property is set when [Animator.renderFrame] returns, the renderer will call
+  /// If this property is set when [Animator.renderAt] returns, the renderer will call
   /// the given function after updating the DOM.
   /// The callback can be used along with [DomPlace.ref] and [ElementView.ref] to
   /// get direct access to a DOM node.
