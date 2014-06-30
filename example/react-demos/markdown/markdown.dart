@@ -7,7 +7,7 @@ class MarkdownEditor extends AnimatedView<String> {
   const MarkdownEditor(this.defaultText);
 
   @override
-  get firstState => defaultText;
+  makePlace() => new Place<String>(defaultText);
 
   View renderFrame(Place<String> p) {
     String text = p.state;

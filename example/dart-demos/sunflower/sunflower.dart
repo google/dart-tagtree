@@ -19,7 +19,7 @@ class SunflowerApp extends AnimatedView<int> {
   const SunflowerApp({this.startSeeds, this.seedRadius});
 
   @override
-  int get firstState => startSeeds;
+  makePlace() => new Place(startSeeds);
 
   @override
   View renderFrame(Place<int> p) {

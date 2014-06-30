@@ -42,15 +42,7 @@ abstract class AnimatedView<S> extends View {
   @override
   get animator => const _AnimatedView();
 
-  Place makePlace() {
-    S first = firstState;
-    if (first == null) {
-      throw "firstState returned null for ${runtimeType}";
-    }
-    return new Place(first);
-  }
-
-  S get firstState;
+  Place makePlace();
 
   View renderFrame(Place p);
 }

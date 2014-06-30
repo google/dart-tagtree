@@ -6,7 +6,7 @@ class ReversableText extends AnimatedView<bool> {
   const ReversableText(this.text);
 
   @override
-  get firstState => false;
+  makePlace() => new Place(false);
 
   @override
   View renderFrame(Place<bool> p) {

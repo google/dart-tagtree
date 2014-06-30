@@ -17,10 +17,7 @@ class Slot extends AnimatedView<View> {
   }
 
   @override
-  Place makePlace() => new SlotPlace(this, firstState);
-
-  @override
-  View get firstState => export.Div(inner: "Loading...");
+  Place makePlace() => new SlotPlace(this, export.Div(inner: "Loading..."));
 
   @override
   View renderFrame(SlotPlace p) {
@@ -29,7 +26,7 @@ class Slot extends AnimatedView<View> {
   }
 }
 
-class SlotPlace extends Place {
+class SlotPlace extends Place<View> {
   HtmlTagSet $;
   String src;
   _Connection conn;
@@ -48,10 +45,7 @@ class SlotPlace extends Place {
 
     if (src != newSlot.src) {
       src = newSlot.src;
-      if (conn != null) {
-        conn.close();
-        conn = null;
-      }
+      _close();
       conn = new _Connection(src, this, $);
     }
   }
@@ -63,6 +57,19 @@ class SlotPlace extends Place {
   void showStatus(String message) {
     print(message);
     nextState = $.Div(inner: message);
+  }
+
+  @override
+  unmount() {
+    _close();
+    super.unmount();
+  }
+
+  void _close() {
+    if (conn != null) {
+      conn.close();
+      conn = null;
+    }
   }
 }
 

@@ -6,10 +6,7 @@ class TimerApp extends AnimatedView<int> {
   const TimerApp();
 
   @override
-  makePlace() => new Ticker(firstState);
-
-  @override
-  get firstState => 0;
+  makePlace() => new Ticker(new Duration(seconds: 1));
 
   @override
   renderFrame(Ticker p) => $.Div(inner: "Seconds elapsed: ${p.state}");
@@ -17,8 +14,8 @@ class TimerApp extends AnimatedView<int> {
 
 class Ticker extends Place<int> {
   Timer timer;
-  Ticker(int firstTick) : super(firstTick) {
-    timer = new Timer.periodic(new Duration(seconds: 1), tick);
+  Ticker(Duration period) : super(0) {
+    timer = new Timer.periodic(period, tick);
   }
 
   tick(_) {
@@ -28,7 +25,6 @@ class Ticker extends Place<int> {
   @override
   unmount() {
     timer.cancel();
-    timer = null;
     super.unmount();
   }
 }

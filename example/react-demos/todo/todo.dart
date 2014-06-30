@@ -16,7 +16,7 @@ class TodoApp extends AnimatedView<_TodoState> {
   const TodoApp();
 
   @override
-  get firstState => new _TodoState([], '');
+  makePlace() => new Place(new _TodoState([], ''));
 
   @override
   renderFrame(Place<_TodoState> p) {

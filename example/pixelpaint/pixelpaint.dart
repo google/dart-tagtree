@@ -30,7 +30,7 @@ class PixelPaintApp extends AnimatedView<Grid> {
   bool checked() => palette.length == 2;
 
   @override
-  get firstState => new Grid(width, height);
+  makePlace() => new Place(new Grid(width, height));
 
   @override
   renderFrame(Place<Grid> p) {
@@ -58,9 +58,6 @@ class GridView extends AnimatedView<bool> {
 
   @override
   makePlace() => new MousePlace();
-
-  @override
-  get firstState => throw "not used";
 
   @override
   View renderFrame(MousePlace p) {
