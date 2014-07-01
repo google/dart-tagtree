@@ -1,18 +1,16 @@
 part of core;
 
-typedef Animator CreateExpander();
-
-/// A Theme maps Views to Expanders.
+/// A Theme maps Tag types to Animators.
 class Theme {
   final String name;
-  final _bindings = <dynamic, CreateExpander>{};
+  final _bindings = <dynamic, Animator>{};
 
-  Theme(Map<dynamic, CreateExpander> bindings, {String name}) :
+  Theme(Map<dynamic, Animator> bindings, {String name}) :
     this.name = _chooseThemeName(name) {
     _bindings.addAll(bindings);
   }
 
-  Theme._extend(Theme parent, Map<dynamic, CreateExpander> bindings, {String name}) :
+  Theme._extend(Theme parent, Map<dynamic, Animator> bindings, {String name}) :
     this.name = _chooseThemeName(name) {
     _bindings.addAll(parent._bindings);
     _bindings.addAll(bindings);
@@ -20,10 +18,10 @@ class Theme {
 
   Iterable get keys => _bindings.keys;
 
-  CreateExpander operator [](Object key) => _bindings[key];
+  Animator operator [](Object key) => _bindings[key];
 
   /// Returns a new theme with additional tags defined.
-  Theme extend(Map<dynamic, CreateExpander> bindings) =>
+  Theme extend(Map<dynamic, Animator> bindings) =>
       new Theme._extend(this,  bindings);
 
   @override

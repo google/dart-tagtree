@@ -7,7 +7,7 @@ class _Transaction extends _Update {
   final _HandlerMap handlers;
 
   // What to do
-  final View nextTagTree;
+  final Tag nextTagTree;
   final Theme nextTheme;
   final List<_AnimatedNode> _nodesToUpdate;
 
@@ -30,7 +30,7 @@ class _Transaction extends _Update {
     for (_AnimatedNode n in _nodesToUpdate) {
       if (n.isMounted) {
         // Re-render using the same view.
-        updateOrReplace(n, n.renderedView, root._renderedTheme, nextTheme);
+        updateOrReplace(n, n.renderedTag, root._renderedTheme, nextTheme);
       }
     }
 
@@ -39,7 +39,7 @@ class _Transaction extends _Update {
 
   void _finish() {
     for (_ElementNode n in _renderedRefs) {
-      dom.attachRef(n.path, n.view.ref);
+      dom.attachRef(n.path, n.tag.ref);
     }
 
     for (_ElementNode form in _mountedForms) {
@@ -54,7 +54,7 @@ class _Transaction extends _Update {
   }
 
   /// Renders a tag tree and returns the new view tree.
-  _Node _replaceTree(String path, _Node current, View next) {
+  _Node _replaceTree(String path, _Node current, Tag next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
       _Node view = mountView(next, nextTheme, html, path, 0);

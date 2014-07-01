@@ -1,7 +1,7 @@
 import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
-class ReversableText extends AnimatedView<bool> {
+class ReversableText extends AnimatedTag<bool> {
   final String text;
   const ReversableText(this.text);
 
@@ -9,7 +9,7 @@ class ReversableText extends AnimatedView<bool> {
   start() => new Place(false);
 
   @override
-  View renderAt(Place<bool> p) {
+  Tag renderAt(Place<bool> p) {
 
     onClick(event) {
       p.nextState = !p.nextState;

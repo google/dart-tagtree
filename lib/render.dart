@@ -1,5 +1,5 @@
 /**
- * Renders a [View] to HTML.
+ * Renders a [Tag] to HTML.
  * (Most programs shouldn't need to use this library directly.)
  *
  * This library implements an algorithm for efficiently updating the DOM

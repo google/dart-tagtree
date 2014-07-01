@@ -16,7 +16,7 @@ abstract class Session<S> extends core.StateMachineMixin<S> {
     _root._requestFrame();
   }
 
-  core.View render();
+  core.Tag render();
 
   /// Wraps an event callback so that it can be sent over the WebSocket.
   /// This method may only be called during render.

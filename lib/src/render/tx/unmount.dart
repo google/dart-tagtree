@@ -20,7 +20,7 @@ abstract class _Unmount {
       // Recurse.
       unmountInner(node);
 
-      releaseElement(node.path, node.view.ref, willReplace: willReplace);
+      releaseElement(node.path, node.tag.ref, willReplace: willReplace);
 
     } else {
       throw "unknown node type";

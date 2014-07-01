@@ -1,7 +1,7 @@
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class TodoList extends TemplateView {
+class TodoList extends TemplateTag {
   final List<String> items;
   const TodoList(this.items);
 
@@ -12,7 +12,7 @@ class TodoList extends TemplateView {
   }
 }
 
-class TodoApp extends AnimatedView<_TodoState> {
+class TodoApp extends AnimatedTag<_TodoState> {
   const TodoApp();
 
   @override

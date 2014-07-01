@@ -10,7 +10,7 @@ final $ = new HtmlTagSet();
 
 main(List<String> args) {
 
-  HttpServer.bind("localhost", 8080).then((server) {
+  HttpServer.bind("localhost", 8081).then((server) {
 
     print("\nThe server is ready.");
     print("Please run web/client.html in Dartium\n");
@@ -40,7 +40,7 @@ class ButtonSession extends Session<int> {
   }
 
   @override
-  View render() {
+  Tag render() {
     return $.Div(inner: [
                  $.Div(inner: "Clicks: ${clicks}"),
                  $.Button(onClick: remote(onClick), inner: "Click to log a message"),

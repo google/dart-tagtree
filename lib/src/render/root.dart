@@ -8,7 +8,7 @@ abstract class RenderRoot {
   Theme _renderedTheme;
 
   bool _frameRequested = false;
-  View _nextTagTree;
+  Tag _nextTagTree;
   Theme _nextTheme;
   final Set<_AnimatedNode> _nodesToUpdate = new Set();
 
@@ -27,7 +27,7 @@ abstract class RenderRoot {
   /// Sets the tag tree to be rendered on the next animation frame.
   /// (If called more than once between two frames, only the last call will
   /// have any effect.)
-  void mount(View nextTagTree, [Theme nextTheme]) {
+  void mount(Tag nextTagTree, [Theme nextTheme]) {
     assert(nextTagTree != null);
     if (nextTheme == null) {
       nextTheme = new Theme(const {});

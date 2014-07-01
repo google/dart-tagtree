@@ -43,7 +43,7 @@ start(File tailFile) {
 
   var watcher = new TailWatcher(tailFile, 50);
 
-  HttpServer.bind("localhost", 8080).then((server) {
+  HttpServer.bind("localhost", 8081).then((server) {
 
     print("\nThe server is ready.");
     print("Please run web/client.html in Dartium\n");
@@ -76,7 +76,7 @@ class TailSession extends Session<Tail> {
   getFirstState() => watcher.currentValue;
 
   @override
-  View render() {
+  Tag render() {
     if (state == null) {
       return $.Div(inner: "Loading...");
     }

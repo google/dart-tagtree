@@ -2,7 +2,7 @@ part of render;
 
 typedef void _InvalidateFunc(_AnimatedNode node);
 
-/// A _Node records how a [View] was rendered in the most recent animation frame.
+/// A _Node records how a [Tag] was rendered in the most recent animation frame.
 ///
 /// Each [RenderRoot] has a tree of nodes that records how the DOM was last rendered.
 /// Between animation frames, the tree should match the DOM. When rendering an
@@ -40,14 +40,14 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
   _InvalidateFunc _invalidate;
   Place _place;
 
-  View renderedView;
+  Tag renderedTag;
   _Node shadow;
   bool _isDirty = true;
 
   @override
   OnRendered onRendered;
 
-  _AnimatedNode(String path, int depth, View view, this.anim, this._invalidate) :
+  _AnimatedNode(String path, int depth, Tag view, this.anim, this._invalidate) :
     super(path, depth) {
     _place = anim.start(view);
     _place.mount(this);
@@ -63,25 +63,25 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
 
   bool get isMounted => _place != null;
 
-  View render(View nextView) {
+  Tag render(Tag currentTag) {
     _place.commitState();
-    View shadow = anim.renderAt(nextView, _place);
-    renderedView = nextView;
+    Tag shadow = anim.renderAt(_place, currentTag);
+    renderedTag = currentTag;
     _isDirty = false;
     return shadow;
   }
 
-  bool playWhile(View nextView, Animator nextAnim) {
-    return anim.playWhile(nextView, nextAnim, _place);
+  bool playWhile(Tag nextTag, Animator nextAnim) {
+    return anim.playWhile(_place, nextTag, nextAnim);
   }
 
-  bool isDirty(View next) {
-    _isDirty = _isDirty || anim.shouldRender(renderedView, next);
+  bool isDirty(Tag next) {
+    _isDirty = _isDirty || anim.shouldRender(renderedTag, next);
     return _isDirty;
   }
 
   void unmount() {
-    renderedView = null;
+    renderedTag = null;
     shadow = null;
 
     _place.unmount();
@@ -93,18 +93,18 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
 
 /// A node for a rendered HTML element.
 class _ElementNode extends _Node {
-  ElementView view;
+  ElementTag tag;
   // May be a List<_Node>, String, or RawHtml.
   var children;
 
-  _ElementNode(String path, int depth, this.view) : super(path, depth);
+  _ElementNode(String path, int depth, this.tag) : super(path, depth);
 
-  bool get isMounted => view != null;
+  bool get isMounted => tag != null;
 
-  PropsMap get props => view.props;
+  PropsMap get props => tag.props;
 
   void unmount() {
-    view = null;
+    tag = null;
     children = null;
   }
 }

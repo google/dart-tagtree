@@ -16,69 +16,69 @@ class HtmlTagSet extends TagSet with HtmlTags {
 /// TODO: implement more elements and attributes.
 abstract class HtmlTags {
 
-  View Div({id, clazz, ref,
+  Tag Div({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-  View Span({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-
-  View Header({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-  View Footer({id, clazz, ref,
+  Tag Span({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
-  View H1({id, clazz, ref,
+  Tag Header({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-  View H2({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-  View H3({id, clazz, ref,
+  Tag Footer({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
-  View P({id, clazz, ref,
+  Tag H1({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-  View Pre({id, clazz, ref,
+  Tag H2({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-
-  View Ul({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-  View Li({id, clazz, ref,
+  Tag H3({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
-  View Table({id, clazz, ref,
+  Tag P({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-  View Tr({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
-  View Td({id, clazz, ref,
+  Tag Pre({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
 
-  View A({id, clazz, ref,
+  Tag Ul({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+  Tag Li({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+
+  Tag Table({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+  Tag Tr({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+  Tag Td({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+
+  Tag A({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner,
     href});
-  View Img({id, clazz, ref,
+  Tag Img({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height, src});
-  View Canvas({id, clazz, ref,
+  Tag Canvas({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height});
 
-  View Form({id, clazz, ref,
+  Tag Form({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
     inner});
-  View FieldSet({id, clazz, ref,
+  Tag FieldSet({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner});
-  View Legend({id, clazz, ref,
+  Tag Legend({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     inner});
-  View Label({id, clazz, ref,
+  Tag Label({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, forr,
     inner});
-  View Input({id, clazz, ref,
+  Tag Input({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue, placeholder, type, min, max});
-  View TextArea({id, clazz, ref,
+  Tag TextArea({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
     value, defaultValue});
-  View Button({id, clazz, ref,
+  Tag Button({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, type,
     inner});
 }

@@ -1,9 +1,9 @@
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class Page extends TemplateView {
+class Page extends TemplateTag {
   final Menu menu;
-  final List<View> content;
+  final List<Tag> content;
   const Page({this.menu, this.content});
 
   @override
@@ -20,7 +20,7 @@ class Page extends TemplateView {
 typedef void OnMenuClick(String item);
 
 // Keeps track of the currently selected item in the top menu.
-class Menu extends AnimatedView<String> {
+class Menu extends AnimatedTag<String> {
   final String title;
   final List<String> items;
   final String defaultSelected;
@@ -38,7 +38,7 @@ class Menu extends AnimatedView<String> {
   }
 
   @override
-  View renderAt(Place<String> p)  {
+  Tag renderAt(Place<String> p)  {
 
     String selected = p.state;
 
@@ -65,22 +65,22 @@ class Menu extends AnimatedView<String> {
   }
 }
 
-class LoginView extends View {
+class LoginForm extends Tag {
   final String email;
   final bool rememberMe;
 
-  const LoginView({this.email: "", this.rememberMe: false});
+  const LoginForm({this.email: "", this.rememberMe: false});
 
   @override
   get animator => null; // provided by theme
 }
 
-class _LoginView extends Template {
+class _LoginForm extends Template {
   final String formClasses;
-  const _LoginView(this.formClasses);
+  const _LoginForm(this.formClasses);
 
   @override
-  render(LoginView v) =>
+  render(LoginForm v) =>
     $.Form(clazz: formClasses, inner:
       $.FieldSet(inner: [
         $.Input(type: "email", placeholder: "Email", defaultValue: v.email), " ",
@@ -96,16 +96,9 @@ class _LoginView extends Template {
     );
 }
 
-Theme makeTheme(String name, String loginClasses) {
-    var _loginView = new _LoginView(loginClasses);
-    return new Theme({
-        LoginView: _loginView
-    });
-}
-
 final themes = {
-  "Default": makeTheme("Default", "pure-form"),
-  "Stacked": makeTheme("Stacked", "pure-form pure-form-stacked")
+  "Default": new Theme(const {LoginForm: const _LoginForm("pure-form")}),
+  "Stacked": new Theme(const {LoginForm: const _LoginForm("pure-form pure-form-stacked")})
 };
 
 final frontPage = new Page(
@@ -117,7 +110,7 @@ final frontPage = new Page(
     ),
     content: [
       $.P(inner: "Use the above menu to change the appearance of this (non-working) form."),
-      const LoginView()
+      const LoginForm()
     ]);
 
 render(theme) => getRoot("#container").mount(frontPage, theme);

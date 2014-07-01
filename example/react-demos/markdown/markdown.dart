@@ -2,14 +2,14 @@ import 'package:markdown/markdown.dart' show markdownToHtml;
 import 'package:tagtree/browser.dart';
 import 'package:tagtree/core.dart';
 
-class MarkdownEditor extends AnimatedView<String> {
+class MarkdownEditor extends AnimatedTag<String> {
   final String defaultText;
   const MarkdownEditor(this.defaultText);
 
   @override
   start() => new Place<String>(defaultText);
 
-  View renderAt(Place<String> p) {
+  Tag renderAt(Place<String> p) {
     String text = p.state;
 
     onChange(e) {

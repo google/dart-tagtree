@@ -24,7 +24,7 @@ abstract class _Mount {
   /// The depth is used to sort updates at render time. It's the depth in the
   /// view tree, not the depth in the DOM tree (like the path). An expanded node
   /// has a lower depth than its shadow.
-  _Node mountView(View view, Theme theme, StringBuffer html, String path, int depth) {
+  _Node mountView(Tag view, Theme theme, StringBuffer html, String path, int depth) {
 
     var anim = findAnimation(view, theme);
     if (anim == null) {
@@ -47,21 +47,19 @@ abstract class _Mount {
 
   /// Returns the animation to be used to display the given View,
   /// or null if it should be handled as an HTML element.
-  Animator findAnimation(View view, Theme theme) {
+  Animator findAnimation(Tag view, Theme theme) {
     assert(view.checked());
 
     if (theme != null) {
-      CreateExpander create = theme[view.runtimeType];
-      if (create != null) {
-        Animator result = create();
-        assert(result != null);
-        return result;
+      Animator anim = theme[view.runtimeType];
+      if (anim != null) {
+        return anim;
       }
     }
 
-    Animator animation = view.animator;
-    if (animation == null) {
-      if (view is ElementView) {
+    Animator anim = view.animator;
+    if (anim == null) {
+      if (view is ElementTag) {
         return null;
       } else if (theme == null) {
         throw "There is no animation for ${view.runtimeType} and no theme is installed";
@@ -69,39 +67,39 @@ abstract class _Mount {
         throw "Theme ${theme.name} has no animation for ${runtimeType}";
       }
     }
-    return animation;
+    return anim;
   }
 
   /// Render an HTML element by recursively expanding its children.
   void _expandElement(_ElementNode elt, Theme theme, StringBuffer out) {
-    var view = elt.view;
+    var tag = elt.tag;
 
     _writeStartTag(out, elt);
 
-    if (view.htmlTag == "textarea") {
+    if (tag.htmlTag == "textarea") {
       String val = elt.props["defaultValue"];
       if (val != null) {
         out.write(HTML_ESCAPE.convert(val));
       }
       // TODO: other cases?
     } else {
-      elt.children = expandInner(elt, theme, out, view.inner);
+      elt.children = expandInner(elt, theme, out, tag.inner);
     }
 
-    out.write("</${view.htmlTag}>");
+    out.write("</${tag.htmlTag}>");
 
-    if (view.ref != null) {
+    if (tag.ref != null) {
       _renderedRefs.add(elt);
     }
-    if (view.htmlTag == "form") {
+    if (tag.htmlTag == "form") {
       _mountedForms.add(elt);
     }
   }
 
   void _writeStartTag(StringBuffer out, _ElementNode elt) {
-    out.write("<${elt.view.htmlTag} data-path=\"${elt.path}\"");
-    ElementType eltType = elt.view.type;
-    for (String key in elt.view.props.keys) {
+    out.write("<${elt.tag.htmlTag} data-path=\"${elt.path}\"");
+    ElementType eltType = elt.tag.type;
+    for (String key in elt.tag.props.keys) {
       var propType = eltType.propsByName[key];
       var val = elt.props[key];
       if (propType is HandlerType) {
@@ -112,7 +110,7 @@ abstract class _Mount {
         out.write(" ${propType.propKey}=\"${escaped}\"");
       }
     }
-    if (elt.view.htmlTag == "input") {
+    if (elt.tag.htmlTag == "input") {
       String val = elt.props["defaultValue"];
       if (val != null) {
         String escaped = HTML_ESCAPE.convert(val);
@@ -133,14 +131,14 @@ abstract class _Mount {
       // Assumes we are using a sanitizer. (Otherwise it would be unsafe!)
       out.write(inner.html);
       return inner;
-    } else if (inner is View) {
+    } else if (inner is Tag) {
       return _mountChildren(out, elt.path, elt.depth, [inner], theme);
     } else if (inner is Iterable) {
-      List<View> children = [];
+      List<Tag> children = [];
       for (var item in inner) {
         if (item is String) {
-          children.add(_textType.makeView({"inner": item}));
-        } else if (item is View) {
+          children.add(_textType.makeTag({"inner": item}));
+        } else if (item is Tag) {
           children.add(item);
         } else {
           throw "bad item in inner: ${item}";
@@ -152,7 +150,7 @@ abstract class _Mount {
   }
 
   List<_Node> _mountChildren(StringBuffer out, String parentPath, int parentDepth,
-      List<View> children, Theme theme) {
+      List<Tag> children, Theme theme) {
     if (children.isEmpty) {
       return null;
     }

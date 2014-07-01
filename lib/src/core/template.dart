@@ -1,41 +1,36 @@
 part of core;
 
-/// A Template renders a view by substituting another View.
-abstract class Template<V extends View> extends Animator<V,dynamic> {
+/// A Template renders a tag as a "shadow" tag tree.
+abstract class Template<T extends Tag> extends Animator<T,dynamic> {
   const Template();
 
-  render(V view);
+  render(T currentTag);
 
   @override
-  Place start(V firstView) => new Place(false);
+  Place start(T firstTag) => new Place(false);
 
   @override
-  View renderAt(V view, Place p) => render(view);
-
-  // implement [CreateExpander].
-  Template call() => this;
+  Tag renderAt(Place p, T currentTag) => render(currentTag);
 }
 
-/// A view that renders itself using a template.
-/// (It should be stateless; otherwise, use a regular View and a separate Expander for the state.)
-abstract class TemplateView extends View {
-  const TemplateView();
+/// A tag that acts as a template, rendering a single frame.
+abstract class TemplateTag extends Tag {
+  const TemplateTag();
 
-  Animator get animator => const _TemplateView();
+  get animator => const _TemplateTag();
+  shouldRender(Tag prev) => true;
 
-  bool shouldRender(View prev) => true;
-
-  View render();
+  Tag render();
 }
 
-class _TemplateView extends Template<TemplateView> {
-  const _TemplateView();
+class _TemplateTag extends Template<TemplateTag> {
+  const _TemplateTag();
 
   @override
-  bool shouldRender(TemplateView prev, TemplateView next) => next.shouldRender(prev);
+  bool shouldRender(TemplateTag prev, TemplateTag next) => next.shouldRender(prev);
 
   @override
-  View render(input) => input.render();
+  Tag render(input) => input.render();
 
-  toString() => "_TemplateView";
+  toString() => "_TemplateTag";
 }

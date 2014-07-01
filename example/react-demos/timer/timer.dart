@@ -2,7 +2,7 @@ import 'dart:async' show Timer;
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class TimerApp extends AnimatedView<int> {
+class TimerApp extends AnimatedTag<int> {
   const TimerApp();
 
   @override

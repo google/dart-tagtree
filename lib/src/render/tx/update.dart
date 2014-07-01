@@ -14,7 +14,7 @@ abstract class _Update extends _Mount with _Unmount {
   /// The node subtree will either be updated in place, or it will
   /// unmounted and a new subtree will be created.
   /// Either way, updates the DOM and returns the root node of the new subtree.
-  _Node updateOrReplace(_Node node, View nextView, Theme oldTheme, Theme newTheme) {
+  _Node updateOrReplace(_Node node, Tag nextView, Theme oldTheme, Theme newTheme) {
     Animator nextAnim = findAnimation(nextView, newTheme);
 
     if (node is _AnimatedNode) {
@@ -37,7 +37,7 @@ abstract class _Update extends _Mount with _Unmount {
   }
 
   /// Replace a node by unmounting and remounting. Any view state is lost.
-  _Node _replace(_Node node, View nextView, Theme newTheme) {
+  _Node _replace(_Node node, Tag nextView, Theme newTheme) {
 
     // cannot expand in place; unmount and remount
     String path = node.path;
@@ -54,12 +54,12 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Views
   /// and the DOM has been updated.
-  void _updateShadow(_AnimatedNode node, View nextView, Theme oldTheme, Theme newTheme) {
+  void _updateShadow(_AnimatedNode node, Tag nextView, Theme oldTheme, Theme newTheme) {
     if (oldTheme == newTheme && !node.isDirty(nextView)) {
       return; // Performance shortcut.
     }
 
-    View shadowView = node.render(nextView);
+    Tag shadowView = node.render(nextView);
 
     // Recurse.
     node.shadow = updateOrReplace(node.shadow, shadowView, oldTheme, newTheme);
@@ -70,17 +70,17 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Recursively updates an HTML element and its children to match the given view.
   /// (The new view must have the same ElementType as the old.)
-  void _updateElement(_ElementNode node, ElementView newView, Theme oldTheme, Theme newTheme) {
-    assert(node.view.type == newView.type);
+  void _updateElement(_ElementNode node, ElementTag newView, Theme oldTheme, Theme newTheme) {
+    assert(node.tag.type == newView.type);
 
-    _updateDomProperties(node.path, node.view, newView);
+    _updateDomProperties(node.path, node.tag, newView);
 
     // Recurse.
     _updateInner(node, newView, oldTheme, newTheme);
   }
 
   /// Updates the DOM attributes and event handlers of an element to match the node's view.
-  void _updateDomProperties(String path, ElementView oldView, ElementView newView) {
+  void _updateDomProperties(String path, ElementTag oldView, ElementTag newView) {
 
     ElementType eltType = newView.type;
     PropsMap oldProps = oldView.props;
@@ -132,8 +132,8 @@ abstract class _Update extends _Mount with _Unmount {
   /// Updates an element's inner HTML to match the given view's inner property.
   /// Recursively updates the children in the node tree as necessary.
   /// (Postcondition: _children and _childText are updated.)
-  void _updateInner(_ElementNode elt, ElementView newView, Theme oldTheme, Theme newTheme) {
-    elt.view = newView;
+  void _updateInner(_ElementNode elt, ElementTag newView, Theme oldTheme, Theme newTheme) {
+    elt.tag = newView;
 
     String path = elt.path;
     var newInner = newView.inner;
@@ -158,16 +158,16 @@ abstract class _Update extends _Mount with _Unmount {
       dom.setInnerHtml(path, newInner.html);
       elt.children = newInner;
 
-    } else if (newInner is View) {
+    } else if (newInner is Tag) {
       // Recurse.
       _updateChildren(elt, path, [newInner], oldTheme, newTheme);
 
     } else if (newInner is Iterable) {
-      List<View> children = [];
+      List<Tag> children = [];
       for (var item in newInner) {
         if (item is String) {
-          children.add(_textType.makeView({"inner": item}));
-        } else if (item is View) {
+          children.add(_textType.makeTag({"inner": item}));
+        } else if (item is Tag) {
           children.add(item);
         } else {
           throw "bad item in inner: ${item}";
@@ -184,7 +184,7 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Recursively updates the inner DOM and mounts/unmounts children when needed.
   /// (Postcondition: _children,  _childText, and _childHtml are updated.)
-  void _updateChildren(_ElementNode elt, String path, List<View> newChildren,
+  void _updateChildren(_ElementNode elt, String path, List<Tag> newChildren,
                        Theme oldTheme, Theme newTheme) {
 
     if (!(elt.children is List)) {
@@ -203,7 +203,7 @@ abstract class _Update extends _Mount with _Unmount {
     int endBoth = addedChildCount < 0 ? newLength  : oldLength;
     for (int i = 0; i < endBoth; i++) {
       _Node before = elt.children[i];
-      View after = newChildren[i];
+      Tag after = newChildren[i];
       assert(before != null && before.isMounted);
       assert(after != null);
 
@@ -226,7 +226,7 @@ abstract class _Update extends _Mount with _Unmount {
     elt.children = updatedChildren;
   }
 
-  _Node _mountNewChild(_ElementNode parent, View child, int childIndex, Theme newTheme) {
+  _Node _mountNewChild(_ElementNode parent, Tag child, int childIndex, Theme newTheme) {
     var html = new StringBuffer();
     _Node view = mountView(child, newTheme, html,
         "${parent.path}/${childIndex}", parent.depth + 1);

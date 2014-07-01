@@ -15,7 +15,7 @@ import 'package:tagtree/core.dart';
 // Views
 //
 
-class PixelPaintApp extends AnimatedView<Grid> {
+class PixelPaintApp extends AnimatedTag<Grid> {
   final int width; // in fat pixels
   final int height; // in fat pixels
   final List<String> palette; // The CSS style for each color
@@ -49,7 +49,7 @@ typedef PixelHandler(int x, int y);
 /// Renders a stream of grids into a <table> and converts mouse events into paint events.
 /// (This could be a template, except that we need to remember whether the mouse
 /// button is down.)
-class GridView extends AnimatedView<bool> {
+class GridView extends AnimatedTag<bool> {
   final Grid grid;
   final List<String> palette;
   final PixelHandler onPaint;
@@ -60,7 +60,7 @@ class GridView extends AnimatedView<bool> {
   start() => new MousePlace();
 
   @override
-  View renderAt(MousePlace p) {
+  Tag renderAt(MousePlace p) {
 
     // HTML5 makes keeping track of the mouse button surprisingly tricky!
     // This implementation usually works, but could be improved.
@@ -103,7 +103,7 @@ class MousePlace extends Place {
 
 /// An animation frame for one row of the grid.
 /// Expands to a <tr> tag.
-class RowView extends TemplateView {
+class RowView extends TemplateTag {
   final int y;
   final Row row;
   final Map<int, String> palette;

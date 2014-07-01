@@ -25,16 +25,16 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   return new TaggedJsonCodec(rules, [const JsonableFinder()]);
 }
 
-class ViewRule extends JsonRule<View> {
+class ViewRule extends JsonRule<Tag> {
   final ViewDecodeFunc maker;
 
   ViewRule(String tag, this.maker) : super(tag);
 
   @override
-  bool appliesTo(View instance) => instance is View && instance.jsonTag == tagName;
+  bool appliesTo(Tag instance) => instance is Tag && instance.jsonTag == tagName;
 
   @override
-  encode(View view) {
+  encode(Tag view) {
     assert(view.checked()); // don't send malformed Views over the network.
     var map = view.props._map;
     assert(map != null);
@@ -42,7 +42,7 @@ class ViewRule extends JsonRule<View> {
   }
 
   @override
-  View decode(Map<String, dynamic> propsMap) => maker(propsMap);
+  Tag decode(Map<String, dynamic> propsMap) => maker(propsMap);
 }
 
 class _HandlerIdRule extends JsonRule<HandlerId> {

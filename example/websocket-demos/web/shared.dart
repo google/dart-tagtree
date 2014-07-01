@@ -2,7 +2,7 @@ library shared;
 
 import "package:tagtree/core.dart";
 
-class TextFile extends View {
+class TextFile extends Tag {
   @override
   get jsonTag => tag;
 

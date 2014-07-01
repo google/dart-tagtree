@@ -12,7 +12,7 @@ import 'dart:math';
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class SunflowerApp extends AnimatedView<int> {
+class SunflowerApp extends AnimatedTag<int> {
   final int startSeeds;
   final int seedRadius;
 
@@ -22,7 +22,7 @@ class SunflowerApp extends AnimatedView<int> {
   start() => new Place(startSeeds);
 
   @override
-  View renderAt(Place<int> p) {
+  Tag renderAt(Place<int> p) {
     int seeds = p.state;
 
     // The slider controls the number of seeds.

@@ -1,7 +1,7 @@
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class HelloMessage extends TemplateView {
+class HelloMessage extends TemplateTag {
   final String name;
   const HelloMessage({this.name});
 

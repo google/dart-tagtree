@@ -4,7 +4,7 @@ part of browser;
 /// The server responds with a stream of tag trees that will be displayed in the slot.
 /// [src] is the URL of the websocket to open and [export] contains the tags that
 /// may sent over the network.
-class Slot extends AnimatedView<View> {
+class Slot extends AnimatedTag<Tag> {
   final String src;
   final HtmlTagSet export;
   const Slot({this.src, this.export});
@@ -20,18 +20,18 @@ class Slot extends AnimatedView<View> {
   Place start() => new SlotPlace(this, export.Div(inner: "Loading..."));
 
   @override
-  View renderAt(SlotPlace p) {
+  Tag renderAt(SlotPlace p) {
     p.configure(this);
     return p.state;
   }
 }
 
-class SlotPlace extends Place<View> {
+class SlotPlace extends Place<Tag> {
   HtmlTagSet $;
   String src;
   _Connection conn;
 
-  SlotPlace(Slot slot, View firstState) : super(firstState) {
+  SlotPlace(Slot slot, Tag firstState) : super(firstState) {
     configure(slot);
   }
 
@@ -50,7 +50,7 @@ class SlotPlace extends Place<View> {
     }
   }
 
-  void showServerAnimationFrame(View tagTree) {
+  void showServerAnimationFrame(Tag tagTree) {
     nextState = tagTree;
   }
 

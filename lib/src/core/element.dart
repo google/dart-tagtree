@@ -1,14 +1,14 @@
 part of core;
 
-/// A view that TagTree will render to a single HTML element.
-/// Constructed via [ElementType.makeView].
-class ElementView implements View {
+/// A tag that's normally rendered as a single HTML element.
+/// Constructed via [ElementType.makeTag].
+class ElementTag implements Tag {
   final ElementType type;
 
   @override
   final PropsMap props;
 
-  const ElementView._raw(this.type, this.props);
+  const ElementTag._raw(this.type, this.props);
 
   @override
   bool checked() => true; // already done in ElementType.makeView.
@@ -22,16 +22,17 @@ class ElementView implements View {
   @override
   get propsImpl => throw "not implemented"; // not needed
 
-  /// If non-null, the DOM element corresponding to this view will be placed
-  /// in the ref when it's first rendered.
-  /// (Only works client-side; see browser.Ref).
-  get ref => props["ref"];
-
   String get htmlTag => type.htmlTag;
 
   /// The children of this element, or null if none.
-  /// (May be an Iterator<View>, a View, a String, or a RawHtml.)
+  /// (May be an Iterable<Tag>, a Tag, a String, or a RawHtml.)
   get inner => props[innerType.propKey];
+
+  /// If non-null, the DOM element corresponding to this ElementTag
+  /// will be placed in the given ref before calling
+  /// [Place.onRendered].
+  /// (Only works client-side; see browser.Ref).
+  get ref => props["ref"];
 }
 
 /// Represents raw (unsanitized) HTML.
@@ -44,7 +45,7 @@ class RawHtml implements Jsonable {
   String get jsonTag => "rawHtml";
 }
 
-/// The structure of an HTML element, as represented by an [ElementView].
+/// The structure of an HTML element, as represented by an [ElementTag].
 class ElementType {
 
   /// The name of the [TagSet] method that will create this element.
@@ -78,15 +79,15 @@ class ElementType {
     return true;
   }
 
-  /// Creates a view that will render as this HTML element.
+  /// Creates a tag that will render as this HTML element.
   /// The map must only contain properties listed in [propTypes].
-  View makeView(Map<String, dynamic> propMap) {
-    var v = new ElementView._raw(this, new PropsMap(propMap));
-    assert(checkView(v));
+  Tag makeTag(Map<String, dynamic> propMap) {
+    var v = new ElementTag._raw(this, new PropsMap(propMap));
+    assert(checkTag(v));
     return v;
   }
 
-  /// A description of each property that may be passed to [makeView].
+  /// A description of each property that may be passed to [makeTag].
   /// This includes regular HTML attributes, handler properties,
   /// and special properties used to hold the element's children.
   List<PropType> get propTypes {
@@ -119,7 +120,7 @@ class ElementType {
   /// The description of each property that stores a handler.
   Iterable<HandlerType> get handlerTypes => propTypes.where((t) => t is HandlerType);
 
-  /// A map from a named parameter to the property key to use with [makeView].
+  /// A map from a named parameter to the property key to use with [makeTag].
   /// There is one entry for each property.
   Map<Symbol, String> get namedParamToKey {
     var out = <Symbol, String>{};
@@ -129,9 +130,9 @@ class ElementType {
     return out;
   }
 
-  /// Checks that a new ElementView only has the properties that it's allowed.
+  /// Checks that a new ElementTag only has the properties that it's allowed.
   /// (Called automatically on view creation when Dart is running in checked mode.)
-  bool checkView(ElementView v) {
+  bool checkTag(ElementTag v) {
     assert(v != null);
     PropsMap props = v.props;
 
@@ -153,7 +154,7 @@ class ElementType {
   static final _propsByName = new Expando<Map<String, PropType>>();
 }
 
-/// A description of one property of an [ElementView].
+/// A description of one property of an [ElementTag].
 class PropType {
   /// The named parameter that holds this property in a method
   /// call that creates an ElementView. (Used in a [TagSet].)
@@ -183,7 +184,7 @@ class MixedContentType extends PropType {
   @override
   bool checkValue(inner) {
     assert(inner == null || inner is String || inner is RawHtml ||
-        inner is View || inner is Iterable);
+        inner is Tag || inner is Iterable);
     return true;
   }
 }

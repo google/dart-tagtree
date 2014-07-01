@@ -19,4 +19,4 @@ final theme = new Theme(const {
 
 main() =>
     getRoot("#view")
-        ..mount(new Slot(src: "ws://localhost:8080/ws", export: exportedTags), theme);
+        ..mount(new Slot(src: "ws://localhost:8081/ws", export: exportedTags), theme);

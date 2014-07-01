@@ -1,7 +1,7 @@
 part of core;
 
 /// A function for creating a View from its JSON properties.
-typedef View ViewDecodeFunc(Map<String, dynamic> propsMap);
+typedef Tag ViewDecodeFunc(Map<String, dynamic> propsMap);
 
 /// A TagSet creates views from tags and properties.
 /// It defines a set of View classes and HandlerTypes that may be sent
@@ -18,7 +18,7 @@ class TagSet {
   /// Defines the tag and method for creating an HTML element.
   void defineElement(ElementType type) {
     _elementTypes[type.htmlTag] = type;
-    export(type.htmlTag, type.makeView, handlerTypes: type.handlerTypes);
+    export(type.htmlTag, type.makeTag, handlerTypes: type.handlerTypes);
     defineMethod(type.method, type.namedParamToKey, type.htmlTag);
   }
 
@@ -49,7 +49,7 @@ class TagSet {
   /// Returns the JSON decoder for a tag.
   ViewDecodeFunc getDecoder(String jsonTag) => _decoders[jsonTag];
 
-  /// Creates a codec for sending and receiving [View]s and
+  /// Creates a codec for sending and receiving [Tag]s and
   /// [HandlerCall]s. Whenever a Handler is received,
   /// it will be replaced with a [HandlerFunc] that calls
   /// the given onEvent function.
