@@ -13,24 +13,26 @@ abstract class _Mount {
   void addHandler(HandlerType type, String path, val);
 
   /// Recursively expands a [Tag] to find the underlying HTML elements to render.
-  /// Appends the HTML to a buffer and returns a tree data structure corresponding to it.
+  /// Appends the HTML to a buffer and returns a tree of nodes corresponding to it.
   ///
   /// The path is a string starting with "/" and using "/" as a separator, for example
-  /// "/asdf/1/2/3", chosen to ensure uniqueness in the DOM. An expanded node and its
+  /// "/asdf/1/2/3", chosen to ensure uniqueness in the DOM. An animated node and its
   /// shadow(s) have the same path. An element's children have a path that's a suffix
   /// of the parent's path. When rendered to HTML, an element's path shows up in the
   /// data-path attribute.
   ///
   /// The depth is used to sort updates at render time. It's the depth in the
-  /// tag tree, not the depth in the DOM tree (like the path). An expanded node
-  /// has a lower depth than its shadow.
+  /// tag tree, not the depth in the DOM tree (like the path). An animated node
+  /// has a lower depth than its shadow tree.
   _Node mountTag(Tag tag, Theme theme, StringBuffer html, String path, int depth) {
 
-    var anim = findAnimation(tag, theme);
+    var anim = findAnimator(tag, theme);
+
     if (anim == null) {
       var node = new _ElementNode(path, depth, tag);
       _expandElement(node, theme, html);
       return node;
+
     } else {
       var node = new _AnimatedNode(path, depth, tag, anim, invalidate);
       var shadow = node.render(tag);
@@ -45,11 +47,12 @@ abstract class _Mount {
     }
   }
 
-  /// Returns the animation to be used to display the given Tag,
+  /// Returns the animator to be used to display the given Tag,
   /// or null if it should be handled as an HTML element.
-  Animator findAnimation(Tag tag, Theme theme) {
+  Animator findAnimator(Tag tag, Theme theme) {
     assert(tag.checked());
 
+    // Does the theme have an animator?
     if (theme != null) {
       Animator anim = theme[tag.runtimeType];
       if (anim != null) {
@@ -57,17 +60,23 @@ abstract class _Mount {
       }
     }
 
+    // Does the tag have an animator?
     Animator anim = tag.animator;
-    if (anim == null) {
-      if (tag is ElementTag) {
-        return null;
-      } else if (theme == null) {
-        throw "There is no animation for ${tag.runtimeType} and no theme is installed";
-      } else {
-        throw "Theme ${theme.name} has no animation for ${runtimeType}";
-      }
+    if (anim != null) {
+      return anim;
     }
-    return anim;
+
+    // Is it an element?
+    if (tag is ElementTag) {
+      return null;
+    }
+
+    // Lookup failed.
+    if (theme == null) {
+      throw "There is no animator for ${tag.runtimeType} and no theme is installed";
+    } else {
+      throw "Theme ${theme.name} has no animator for ${runtimeType}";
+    }
   }
 
   /// Render an HTML element by recursively expanding its children.
@@ -82,7 +91,10 @@ abstract class _Mount {
         out.write(HTML_ESCAPE.convert(val));
       }
       // TODO: other cases?
+
     } else {
+
+      // Recurse.
       elt.children = expandInner(elt, theme, out, tag.inner);
     }
 
@@ -132,8 +144,12 @@ abstract class _Mount {
       out.write(inner.html);
       return inner;
     } else if (inner is Tag) {
+
+      // Recurse.
       return _mountChildren(out, elt.path, elt.depth, [inner], theme);
+
     } else if (inner is Iterable) {
+
       List<Tag> children = [];
       for (var item in inner) {
         if (item is String) {
@@ -144,6 +160,8 @@ abstract class _Mount {
           throw "bad item in inner: ${item}";
         }
       }
+
+      // Recurse.
       return _mountChildren(out, elt.path, elt.depth, children, theme);
     }
     throw "unexpected type for an element's inner field: ${inner.runtimeType}";
@@ -158,6 +176,7 @@ abstract class _Mount {
     int childDepth = parentDepth + 1;
     var result = <_Node>[];
     for (int i = 0; i < children.length; i++) {
+      // Recurse.
       result.add(mountTag(children[i], theme, out, "${parentPath}/${i}", childDepth));
     }
     return result;

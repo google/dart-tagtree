@@ -12,12 +12,11 @@ abstract class _Update extends _Mount with _Unmount {
 
   /// Renders the next animation frame for the given node, if needed.
   /// Cuts to a new animation if needed, otherwise continues the current animation.
-  /// Recursively renders the node subtree as far as needed.
   /// The node subtree will either be updated in place (if the animation continues),
   /// or it will unmounted and a new subtree will be created (if there is a cut).
   /// Either way, updates the DOM and returns the root node of the new subtree.
   _Node updateOrReplace(_Node node, Tag nextTag, Theme oldTheme, Theme newTheme) {
-    Animator nextAnim = findAnimation(nextTag, newTheme);
+    Animator nextAnim = findAnimator(nextTag, newTheme);
 
     if (node is _AnimatedNode) {
       if (node.shouldCut(nextTag, nextAnim)) {
@@ -42,11 +41,12 @@ abstract class _Update extends _Mount with _Unmount {
   /// so any animation-specific state is lost.
   _Node _replace(_Node node, Tag nextTag, Theme newTheme) {
 
-    // cannot expand in place; unmount and remount
+    // unmount old animation
     String path = node.path;
     int depth = node.depth;
     unmount(node, willReplace: true);
 
+    // render new animation
     var html = new StringBuffer();
     _Node nextNode = mountTag(nextTag, newTheme, html, path, depth);
     dom.replaceElement(path, html.toString());
@@ -60,7 +60,7 @@ abstract class _Update extends _Mount with _Unmount {
   /// and the DOM has been updated.
   void _updateShadow(_AnimatedNode node, Tag nextTag, Theme oldTheme, Theme newTheme) {
     if (oldTheme == newTheme && !node.isDirty(nextTag)) {
-      return; // Performance shortcut.
+      return; // Skip this frame. (Performance shortcut.)
     }
 
     Tag shadowTree = node.render(nextTag);
