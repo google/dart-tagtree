@@ -14,7 +14,7 @@ class ElementView implements View {
   bool checked() => true; // already done in ElementType.makeView.
 
   @override
-  Animator get animator => type;
+  Animator get animator => null;
 
   @override
   get jsonTag => type.htmlTag;
@@ -45,7 +45,7 @@ class RawHtml implements Jsonable {
 }
 
 /// The structure of an HTML element, as represented by an [ElementView].
-class ElementType extends Animator {
+class ElementType {
 
   /// The name of the [TagSet] method that will create this element.
   /// (See [namedParamToKey] for the named parameters it will have.)
@@ -85,15 +85,6 @@ class ElementType extends Animator {
     assert(checkView(v));
     return v;
   }
-
-  @override
-  start(_) => throw "not implemented"; // (Special case for renderer)
-
-  @override
-  renderAt(_, place) => throw "not implemented"; // (Special case)
-
-  @override
-  playWhile(View v, Animator a, Place p) => throw "not implemented"; // (Special case)
 
   /// A description of each property that may be passed to [makeView].
   /// This includes regular HTML attributes, handler properties,

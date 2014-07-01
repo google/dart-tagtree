@@ -102,8 +102,6 @@ class _ElementNode extends _Node {
   bool get isMounted => view != null;
 
   PropsMap get props => view.props;
-  Animator get anim => view.type;
-  Animator get reloadExpander => view.type;
 
   void unmount() {
     view = null;

@@ -27,7 +27,7 @@ abstract class _Mount {
   _Node mountView(View view, Theme theme, StringBuffer html, String path, int depth) {
 
     var anim = findAnimation(view, theme);
-    if (anim is ElementType) {
+    if (anim == null) {
       var node = new _ElementNode(path, depth, view);
       _expandElement(node, theme, html);
       return node;
@@ -45,7 +45,8 @@ abstract class _Mount {
     }
   }
 
-  /// Returns the animation to be used to display the given View.
+  /// Returns the animation to be used to display the given View,
+  /// or null if it should be handled as an HTML element.
   Animator findAnimation(View view, Theme theme) {
     assert(view.checked());
 
@@ -60,7 +61,9 @@ abstract class _Mount {
 
     Animator animation = view.animator;
     if (animation == null) {
-      if (theme == null) {
+      if (view is ElementView) {
+        return null;
+      } else if (theme == null) {
         throw "There is no animation for ${view.runtimeType} and no theme is installed";
       } else {
         throw "Theme ${theme.name} has no animation for ${runtimeType}";

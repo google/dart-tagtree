@@ -24,7 +24,7 @@ abstract class _Update extends _Mount with _Unmount {
       _updateShadow(node, nextView, oldTheme, newTheme);
 
     } else if (node is _ElementNode) {
-      if (node.view.type != nextAnim) {
+      if (nextAnim != null) {
         return _replace(node, nextView, newTheme);
       }
       _updateElement(node, nextView, oldTheme, newTheme);
