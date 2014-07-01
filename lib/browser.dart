@@ -4,11 +4,11 @@
  *
  * The [getRoot] method returns a [RenderRoot] for installing tag trees under a given HTML element.
  *
- * The [Ref] class can be used to get a reference to the HTML element where a View was rendered.
+ * The [Ref] class is used to get a reference to the HTML element where an ElementTag was rendered.
  *
- * A [Slot] and its implementation, [_Slot], can be used to display a stream of tag trees
- * loaded from a WebSocket and send events. (The server should use a WebSocketRoot and a Session
- * for its end of the connection.)
+ * A [Slot] can be used to display a stream of tag trees loaded from a WebSocket, and send events
+ * back to the server.
+ * (The server should use a WebSocketRoot and a Session for its end of the connection.)
  */
 library browser;
 

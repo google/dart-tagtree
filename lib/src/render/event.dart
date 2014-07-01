@@ -27,7 +27,7 @@ class _HandlerMap {
   }
 }
 
-bool _inViewEvent = false;
+bool _inEvent = false;
 
 /// Calls any event handlers in this tree.
 /// On return, there may be some dirty nodes to be re-rendered.
@@ -35,12 +35,12 @@ bool _inViewEvent = false;
 /// for example, due to a timer.
 /// TODO: bubbling. For now, just exact match.
 void _dispatch(HandlerEvent e, _HandlerMap handlers) {
-  if (_inViewEvent) {
+  if (_inEvent) {
     // React does this too; see EVENT_SUPPRESSION
     print("ignored ${e.type.propKey} received while processing another event");
     return;
   }
-  _inViewEvent = true;
+  _inEvent = true;
   try {
     if (e.elementPath != null) {
       HandlerFunc h = handlers.getHandler(e.type, e.elementPath);
@@ -54,6 +54,6 @@ void _dispatch(HandlerEvent e, _HandlerMap handlers) {
       debugLog("\n (${e.type.propKey})");
     }
   } finally {
-    _inViewEvent = false;
+    _inEvent = false;
   }
 }

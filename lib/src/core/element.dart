@@ -11,7 +11,7 @@ class ElementTag implements Tag {
   const ElementTag._raw(this.type, this.props);
 
   @override
-  bool checked() => true; // already done in ElementType.makeView.
+  bool checked() => true; // already done in ElementType.makeTag.
 
   @override
   Animator get animator => null;
@@ -131,7 +131,7 @@ class ElementType {
   }
 
   /// Checks that a new ElementTag only has the properties that it's allowed.
-  /// (Called automatically on view creation when Dart is running in checked mode.)
+  /// (Called automatically on tag creation when Dart is running in checked mode.)
   bool checkTag(ElementTag v) {
     assert(v != null);
     PropsMap props = v.props;
@@ -157,10 +157,10 @@ class ElementType {
 /// A description of one property of an [ElementTag].
 class PropType {
   /// The named parameter that holds this property in a method
-  /// call that creates an ElementView. (Used in a [TagSet].)
+  /// call that creates an ElementTag. (Used in a [TagSet].)
   final Symbol namedParam;
 
-  /// The property key to use with [ElementType#makeView].
+  /// The property key to use with [ElementType#makeTag].
   final String propKey;
 
   const PropType(this.namedParam, this.propKey);

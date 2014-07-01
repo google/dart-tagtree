@@ -12,7 +12,7 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   var rules = <JsonRule>[];
 
   for (String tag in tags.jsonTags) {
-      rules.add(new ViewRule(tag, tags.getDecoder(tag)));
+      rules.add(new TagRule(tag, tags.getDecoder(tag)));
   }
 
   rules.add(new _HandlerIdRule(onEvent));
@@ -25,18 +25,18 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
   return new TaggedJsonCodec(rules, [const JsonableFinder()]);
 }
 
-class ViewRule extends JsonRule<Tag> {
-  final ViewDecodeFunc maker;
+class TagRule extends JsonRule<Tag> {
+  final TagDecodeFunc maker;
 
-  ViewRule(String tag, this.maker) : super(tag);
+  TagRule(String tag, this.maker) : super(tag);
 
   @override
   bool appliesTo(Tag instance) => instance is Tag && instance.jsonTag == tagName;
 
   @override
-  encode(Tag view) {
-    assert(view.checked()); // don't send malformed Views over the network.
-    var map = view.props._map;
+  encode(Tag tag) {
+    assert(tag.checked()); // don't send malformed Tags over the network.
+    var map = tag.props._map;
     assert(map != null);
     return map;
   }

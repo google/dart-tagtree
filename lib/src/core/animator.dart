@@ -17,7 +17,7 @@ part of core;
 ///
 /// Whenever a Tag or Theme changes, the renderer needs to decide
 /// whether to continue playing the same animation or cut to a new
-/// animation. The animator makes this decision in [playWhile].
+/// animation. The animator makes this decision in [shouldCut].
 abstract class Animator<T extends Tag, S> {
 
   /// Animators are stateless and should be const.
@@ -34,14 +34,16 @@ abstract class Animator<T extends Tag, S> {
   /// Returns the shadow tag tree to be rendered.
   Tag renderAt(Place<S> place, T currentTag);
 
-  /// Returns true if the animation should continue to play.
-  /// Otherwise, the renderer will cut to the next animation.
-  /// (The current Place will be unmounted and a new Place created
-  /// for the next animation.)
+  /// Returns true if the renderer should cut to a new animation.
+  /// stop playing this animation
+  /// and cut to the next one. (The current Place will be unmounted and a
+  /// new Place created for the next animation.)
   ///
-  /// The default implementation will work if subclass implements the '==' operator
-  /// or if the animator is always constructed using a const constructor.
-  bool playWhile(Place<S> place, T nextTag, Animator nextAnim) => nextAnim == this;
+  /// Otherwise, the current animation will continue playing.
+  ///
+  /// The default implementation cuts to the new animation if it's different,
+  /// according to the '==' operator.
+  bool shouldCut(Place<S> place, T nextTag, Animator nextAnim) => nextAnim != this;
 
   /// Returns true if [renderAt] should be called after a tag change.
   /// Otherwise, the previous shadow will be reused, the possibly the DOM
@@ -61,7 +63,12 @@ abstract class AnimatedTag<S> extends Tag {
 
   Tag renderAt(Place p);
 
-  bool canRenderAt(Place p) => true;
+  /// Returns true if the renderer shold cut to a new animation.
+  /// If so, this tag will construct the new Place and render the new
+  /// animation's first frame.
+  /// Otherwise, the previous animation will continue and this
+  /// tag will render the next frame.
+  bool shouldCut(Place p) => false;
 }
 
 class _AnimatedTag<T extends AnimatedTag, S> extends Animator<T, S> {
@@ -74,6 +81,6 @@ class _AnimatedTag<T extends AnimatedTag, S> extends Animator<T, S> {
   renderAt(Place p, T currentTag) => currentTag.renderAt(p);
 
   @override
-  bool playWhile(Place<S> place, T nextTag, Animator nextAnim) =>
-      nextAnim == this && nextTag.canRenderAt(place);
+  bool shouldCut(Place<S> place, T nextTag, Animator nextAnim) =>
+      nextAnim != this || nextTag.shouldCut(place);
 }

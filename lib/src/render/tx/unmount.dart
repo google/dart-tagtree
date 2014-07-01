@@ -1,6 +1,6 @@
 part of render;
 
-/// A Transaction mixin that implements unmounting views.
+/// A Transaction mixin that implements unmounting nodes.
 abstract class _Unmount {
 
   // What was unmounted

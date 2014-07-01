@@ -29,7 +29,7 @@ class _Transaction extends _Update {
 
     for (_AnimatedNode n in _nodesToUpdate) {
       if (n.isMounted) {
-        // Re-render using the same view.
+        // Re-render using the same Tag.
         updateOrReplace(n, n.renderedTag, root._renderedTheme, nextTheme);
       }
     }
@@ -53,13 +53,13 @@ class _Transaction extends _Update {
     root._renderedTheme = nextTheme;
   }
 
-  /// Renders a tag tree and returns the new view tree.
+  /// Renders a tag tree and returns the new node tree.
   _Node _replaceTree(String path, _Node current, Tag next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
-      _Node view = mountView(next, nextTheme, html, path, 0);
+      _Node node = mountTag(next, nextTheme, html, path, 0);
       dom.mount(html.toString());
-      return view;
+      return node;
     } else {
       return updateOrReplace(current, next, root._renderedTheme, nextTheme);
     }

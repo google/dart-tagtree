@@ -4,16 +4,15 @@
  *
  * Tag trees are built out of [Tag] nodes. A Tag's fields can often be
  * inspected by converting it to a [PropsMap]. Some fields may hold
- * a [HandlerFunc], which which will be called when a rendered View fires
+ * a [HandlerFunc], which which will be called when a rendered Tag fires
  * a [HandlerEvent].
  *
- * An [ElementTag] is a View that renders to an HTML element. Its structure is
+ * An [ElementTag] is a tag that renders to an HTML element. Its structure is
  * defined by an [ElementType].
  *
- * A [Animator] implements a [Tag]. The [ElementType] and [Template] viewers are
- * included in core. Viewers for multiple kinds of views are collected into a [Theme].
+ * A [Animator] implements a [Tag]. A [Theme] is a mapping from Tags to Animators.
  *
- * A [TagSet] can create the corresponding View for each of a set of tags.
+ * A [TagSet] is a factory object for creating Tags.
  * The [TagSet.makeCodec] function returns a codec that can convert trees
  * to and from JSON strings.
  */

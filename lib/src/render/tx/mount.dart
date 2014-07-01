@@ -1,6 +1,6 @@
 part of render;
 
-/// A Transaction mixin that implements mounting a view.
+/// A Transaction mixin that implements mounting a Tag.
 abstract class _Mount {
 
   // Dependencies
@@ -12,7 +12,7 @@ abstract class _Mount {
   void addRenderCallback(OnRendered callback);
   void addHandler(HandlerType type, String path, val);
 
-  /// Recursively expands a view to find the underlying HTML elements to render.
+  /// Recursively expands a [Tag] to find the underlying HTML elements to render.
   /// Appends the HTML to a buffer and returns a tree data structure corresponding to it.
   ///
   /// The path is a string starting with "/" and using "/" as a separator, for example
@@ -22,21 +22,21 @@ abstract class _Mount {
   /// data-path attribute.
   ///
   /// The depth is used to sort updates at render time. It's the depth in the
-  /// view tree, not the depth in the DOM tree (like the path). An expanded node
+  /// tag tree, not the depth in the DOM tree (like the path). An expanded node
   /// has a lower depth than its shadow.
-  _Node mountView(Tag view, Theme theme, StringBuffer html, String path, int depth) {
+  _Node mountTag(Tag tag, Theme theme, StringBuffer html, String path, int depth) {
 
-    var anim = findAnimation(view, theme);
+    var anim = findAnimation(tag, theme);
     if (anim == null) {
-      var node = new _ElementNode(path, depth, view);
+      var node = new _ElementNode(path, depth, tag);
       _expandElement(node, theme, html);
       return node;
     } else {
-      var node = new _AnimatedNode(path, depth, view, anim, invalidate);
-      var shadow = node.render(view);
+      var node = new _AnimatedNode(path, depth, tag, anim, invalidate);
+      var shadow = node.render(tag);
 
       // Recurse.
-      node.shadow = mountView(shadow, theme, html, node.path, node.depth + 1);
+      node.shadow = mountTag(shadow, theme, html, node.path, node.depth + 1);
 
       // This is last so that the shadows' callbacks happen before the parent.
       addRenderCallback(node.onRendered);
@@ -45,24 +45,24 @@ abstract class _Mount {
     }
   }
 
-  /// Returns the animation to be used to display the given View,
+  /// Returns the animation to be used to display the given Tag,
   /// or null if it should be handled as an HTML element.
-  Animator findAnimation(Tag view, Theme theme) {
-    assert(view.checked());
+  Animator findAnimation(Tag tag, Theme theme) {
+    assert(tag.checked());
 
     if (theme != null) {
-      Animator anim = theme[view.runtimeType];
+      Animator anim = theme[tag.runtimeType];
       if (anim != null) {
         return anim;
       }
     }
 
-    Animator anim = view.animator;
+    Animator anim = tag.animator;
     if (anim == null) {
-      if (view is ElementTag) {
+      if (tag is ElementTag) {
         return null;
       } else if (theme == null) {
-        throw "There is no animation for ${view.runtimeType} and no theme is installed";
+        throw "There is no animation for ${tag.runtimeType} and no theme is installed";
       } else {
         throw "Theme ${theme.name} has no animation for ${runtimeType}";
       }
@@ -158,7 +158,7 @@ abstract class _Mount {
     int childDepth = parentDepth + 1;
     var result = <_Node>[];
     for (int i = 0; i < children.length; i++) {
-      result.add(mountView(children[i], theme, out, "${parentPath}/${i}", childDepth));
+      result.add(mountTag(children[i], theme, out, "${parentPath}/${i}", childDepth));
     }
     return result;
   }

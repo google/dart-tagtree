@@ -22,7 +22,7 @@ class Place<S> extends StateMachineMixin<S> {
 
   /// If this property is set when [Animator.renderAt] returns, the renderer will call
   /// the given function after updating the DOM.
-  /// The callback can be used along with [DomPlace.ref] and [ElementView.ref] to
+  /// The callback can be used along with browser.Ref and [ElementTag.ref] to
   /// get direct access to a DOM node.
   void set onRendered(OnRendered callback) {
     _delegate.onRendered = callback;

@@ -18,7 +18,7 @@ typedef void _InvalidateFunc(_AnimatedNode node);
 /// the current state of the DOM, we could recursively replace each animated node with its
 /// shadow, resulting in a tree containing only element nodes.
 ///
-/// Each node conceptually has an owner that rendered its input View. For top-level
+/// Each node conceptually has an owner that rendered its input Tag. For top-level
 /// nodes that aren't in a shadow tree, the owner is outside the framework and makes changes
 /// by calling Root.mount(). For nodes inside a shadow tree, the owner is the [Animator] that
 /// rendered the shadow tree.
@@ -47,9 +47,9 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
   @override
   OnRendered onRendered;
 
-  _AnimatedNode(String path, int depth, Tag view, this.anim, this._invalidate) :
+  _AnimatedNode(String path, int depth, Tag tag, this.anim, this._invalidate) :
     super(path, depth) {
-    _place = anim.start(view);
+    _place = anim.start(tag);
     _place.mount(this);
   }
 
@@ -71,8 +71,8 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
     return shadow;
   }
 
-  bool playWhile(Tag nextTag, Animator nextAnim) {
-    return anim.playWhile(_place, nextTag, nextAnim);
+  bool shouldCut(Tag nextTag, Animator nextAnim) {
+    return anim.shouldCut(_place, nextTag, nextAnim);
   }
 
   bool isDirty(Tag next) {

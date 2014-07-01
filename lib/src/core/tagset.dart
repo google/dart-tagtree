@@ -1,13 +1,13 @@
 part of core;
 
-/// A function for creating a View from its JSON properties.
-typedef Tag ViewDecodeFunc(Map<String, dynamic> propsMap);
+/// A function for creating a Tag from its JSON properties.
+typedef Tag TagDecodeFunc(Map<String, dynamic> propsMap);
 
-/// A TagSet creates views from tags and properties.
-/// It defines a set of View classes and HandlerTypes that may be sent
+/// A TagSet is a factory for Tags.
+/// It defines a set of Tag types and HandlerTypes that may be sent
 /// over the network.
 class TagSet {
-  final _decoders = <String, ViewDecodeFunc>{};
+  final _decoders = <String, TagDecodeFunc>{};
 
   final _methodToJsonTag = <Symbol, String>{};
   final _paramToPropKey = <Symbol, Map<Symbol, String>>{};
@@ -23,21 +23,21 @@ class TagSet {
   }
 
   /// Exports a tag so that it can be transmitted as JSON.
-  void export(String jsonTag, ViewDecodeFunc decode, {Iterable<HandlerType> handlerTypes: const []}) {
+  void export(String jsonTag, TagDecodeFunc decode, {Iterable<HandlerType> handlerTypes: const []}) {
     _decoders[jsonTag] = decode;
     for (HandlerType t in handlerTypes) {
       _handlerTypes[t.propKey] = t;
     }
   }
 
-  /// Defines a method so that it will create the View with the given tag.
+  /// Defines a method so that it will create the Tag with the given JSON tag.
   /// (The tag must already be defined.)
-  void defineMethod(Symbol method, Map<Symbol, String> namedParams, String tagToCreate) {
+  void defineMethod(Symbol method, Map<Symbol, String> namedParams, String jsonTag) {
    assert(method != null);
    assert(namedParams != null);
-   assert(tagToCreate != null);
-   assert(_decoders[tagToCreate] != null);
-    _methodToJsonTag[method] = tagToCreate;
+   assert(jsonTag != null);
+   assert(_decoders[jsonTag] != null);
+    _methodToJsonTag[method] = jsonTag;
     _paramToPropKey[method] = namedParams;
   }
 
@@ -47,7 +47,7 @@ class TagSet {
   Iterable<HandlerType> get handlerTypes => _handlerTypes.values;
 
   /// Returns the JSON decoder for a tag.
-  ViewDecodeFunc getDecoder(String jsonTag) => _decoders[jsonTag];
+  TagDecodeFunc getDecoder(String jsonTag) => _decoders[jsonTag];
 
   /// Creates a codec for sending and receiving [Tag]s and
   /// [HandlerCall]s. Whenever a Handler is received,
