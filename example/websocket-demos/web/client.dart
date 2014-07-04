@@ -10,7 +10,7 @@ class _TextFile extends Template {
   render(TextFile tag) => $.Pre(inner: tag.lines.join("\n"));
 }
 
-final $ = new HtmlTagSet().extend([$TextFile]);
+final $ = new HtmlTagSet.withTags([$TextFile]);
 
 final theme = new Theme(const {
   TextFile: const _TextFile(),

@@ -2,13 +2,9 @@ part of html;
 
 /// A TagSet that includes HTML tags and events.
 class HtmlTagSet extends TagSet with HtmlTags {
-  HtmlTagSet() : super(_htmlTags.map((e) => e.meta));
+  HtmlTagSet() : super(_htmlTagMakers);
 
-  HtmlTagSet._raw(Iterable<TagMaker> metas) : super(metas);
-
-  @override
-  HtmlTagSet extend(Iterable<TagMaker> moreMetas) =>
-      new HtmlTagSet._raw(new List<TagMaker>.from(makers)..addAll(moreMetas));
+  HtmlTagSet.withTags(Iterable<TagMaker> moreMakers) : super.concat(_htmlTagMakers, moreMakers);
 
   // Suppress warnings
   noSuchMethod(Invocation inv) => super.noSuchMethod(inv);
@@ -84,6 +80,8 @@ abstract class HtmlTags {
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, type,
     inner});
 }
+
+final List<TagMaker> _htmlTagMakers = _htmlTags.map((e) => e.tagMaker).toList();
 
 final List<ElementType> _htmlTags = () {
 

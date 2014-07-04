@@ -9,8 +9,8 @@ class TagSet {
 
   const TagSet(this.makers);
 
-  TagSet extend(Iterable<TagMaker> moreMakers) =>
-      new TagSet(new List<TagMaker>.from(makers)..addAll(moreMakers));
+  TagSet.concat(Iterable<TagMaker> makers1, Iterable<TagMaker> makers2) :
+    this.makers = new List<TagMaker>.from(makers1)..addAll(makers2);
 
   bool checked() => _init();
 

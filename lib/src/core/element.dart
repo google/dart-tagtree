@@ -79,7 +79,7 @@ class ElementType {
     return true;
   }
 
-  TagMaker get meta => new TagMaker(
+  TagMaker get tagMaker => new TagMaker(
       jsonTag: htmlTag,
       fromMap: makeTag,
       handlers: handlerTypes,

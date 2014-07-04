@@ -11,7 +11,7 @@ import "package:tagtree/server.dart";
 
 import "web/shared.dart";
 
-final $ = new HtmlTagSet().extend([$TextFile]);
+final $ = new HtmlTagSet.withTags([$TextFile]);
 
 main(List<String> args) {
   if (args.length == 0) {
