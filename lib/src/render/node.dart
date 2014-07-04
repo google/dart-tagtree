@@ -41,6 +41,7 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
   Place _place;
 
   Tag renderedTag;
+  Theme renderedTheme;
   _Node shadow;
   bool _isDirty = true;
 
@@ -63,10 +64,11 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
 
   bool get isMounted => _place != null;
 
-  Tag render(Tag currentTag) {
+  Tag render(Tag currentTag, Theme currentTheme) {
     _place.commitState();
     Tag shadow = anim.renderAt(_place, currentTag);
     renderedTag = currentTag;
+    renderedTheme = currentTheme;
     _isDirty = false;
     return shadow;
   }
@@ -82,12 +84,27 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
 
   void unmount() {
     renderedTag = null;
+    renderedTheme = null;
     shadow = null;
 
     _place.unmount();
     _place = null;
     _invalidate = null;
     anim = null;
+  }
+}
+
+class _ThemeNode extends _Node {
+  ThemeTag tag;
+  _Node shadow;
+  _ThemeNode(String path, int depth, this.tag) : super(path, depth);
+
+  @override
+  bool get isMounted => tag != null;
+
+  @override
+  void unmount() {
+    tag = null;
   }
 }
 

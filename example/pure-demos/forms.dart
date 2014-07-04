@@ -1,49 +1,48 @@
 import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
-class Page extends TemplateTag {
-  final Menu menu;
+class ThemeDemo extends AnimatedTag<String> {
+  final Map<String, Theme> themes;
   final List<Tag> content;
-  const Page({this.menu, this.content});
+  const ThemeDemo({this.themes, this.content});
 
   @override
-  render() {
-    var items = [];
-    if (menu != null) {
-      items.add(menu);
+  start() => new Place(themes.keys.first);
+
+  @override
+  renderAt(Place<String> p) {
+    var selected = p.state;
+
+    onClick(String item) {
+      p.nextState = item;
     }
-    items.add($.Div(clazz: "content", inner: content));
-    return $.Div(clazz: "main", inner: items);
+
+    TopMenu menu = new TopMenu(items: themes.keys.toList(), selected: selected, onClick: onClick);
+    Theme theme = themes[selected];
+
+    return $.Div(clazz: "main", inner: [
+      menu,
+      new ThemeTag(theme, $.Div(clazz: "content", inner: content))
+    ]);
   }
 }
 
 typedef void OnMenuClick(String item);
 
-// Keeps track of the currently selected item in the top menu.
-class Menu extends AnimatedTag<String> {
+class TopMenu extends TemplateTag {
   final String title;
   final List<String> items;
-  final String defaultSelected;
+  final String selected;
   final OnMenuClick onClick;
 
-  const Menu({this.title, this.items, this.defaultSelected, this.onClick});
+  const TopMenu({this.title, this.items, this.selected, this.onClick});
 
   @override
   bool checked() => items != null && items.length > 0;
 
   @override
-  start() {
-    var selected = defaultSelected == null ? items.first : defaultSelected;
-    return new Place<String>(selected);
-  }
-
-  @override
-  Tag renderAt(Place<String> p)  {
-
-    String selected = p.state;
-
+  Tag render()  {
     itemClick(String item) {
-      p.nextState = item;
       if (onClick != null) {
         onClick(item);
       }
@@ -96,22 +95,14 @@ class _LoginForm extends Template {
     );
 }
 
-final themes = {
-  "Default": new Theme(const {LoginForm: const _LoginForm("pure-form")}),
-  "Stacked": new Theme(const {LoginForm: const _LoginForm("pure-form pure-form-stacked")})
-};
-
-final frontPage = new Page(
-    menu: new Menu(
-        items: themes.keys.toList(),
-        onClick: (String key) {
-          render(themes[key]);
-        }
-    ),
+final themeDemo = new ThemeDemo(
+    themes: {
+      "Default": new Theme(const {LoginForm: const _LoginForm("pure-form")}),
+      "Stacked": new Theme(const {LoginForm: const _LoginForm("pure-form pure-form-stacked")})
+    },
     content: [
       $.P(inner: "Use the above menu to change the appearance of this (non-working) form."),
       const LoginForm()
     ]);
 
-render(theme) => getRoot("#container").mount(frontPage, theme);
-main() => render(themes["Default"]);
+main() => getRoot("#container").mount(themeDemo);

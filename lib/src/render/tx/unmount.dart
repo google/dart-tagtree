@@ -22,6 +22,11 @@ abstract class _Unmount {
 
       releaseElement(node.path, node.tag.ref, willReplace: willReplace);
 
+    } else if (node is _ThemeNode) {
+
+      // Recurse.
+      unmount(node.shadow, willReplace: willReplace);
+
     } else {
       throw "unknown node type";
     }

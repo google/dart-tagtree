@@ -8,18 +8,16 @@ class _Transaction extends _Update {
 
   // What to do
   final Tag nextTagTree;
-  final Theme nextTheme;
   final List<_AnimatedNode> _nodesToUpdate;
 
   // What was done
   final List<OnRendered> _renderCallbacks = [];
 
-  _Transaction(this.root, this.dom, this.handlers, this.nextTagTree, this.nextTheme,
+  _Transaction(this.root, this.dom, this.handlers, this.nextTagTree,
       Iterable<_AnimatedNode> nodesToUpdate)
       : _nodesToUpdate = new List.from(nodesToUpdate);
 
   void run() {
-    assert(nextTheme != null);
     if (nextTagTree != null) {
       root._renderedTree = _replaceTree(root.path, root._renderedTree, nextTagTree);
     }
@@ -30,7 +28,7 @@ class _Transaction extends _Update {
     for (_AnimatedNode n in _nodesToUpdate) {
       if (n.isMounted) {
         // Re-render using the same Tag.
-        updateOrReplace(n, n.renderedTag, root._renderedTheme, nextTheme);
+        updateOrReplace(n, n.renderedTag, n.renderedTheme, n.renderedTheme);
       }
     }
 
@@ -49,19 +47,17 @@ class _Transaction extends _Update {
     for (OnRendered callback in _renderCallbacks) {
       callback();
     }
-
-    root._renderedTheme = nextTheme;
   }
 
   /// Renders a tag tree and returns the new node tree.
   _Node _replaceTree(String path, _Node current, Tag next) {
     if (current == null) {
       StringBuffer html = new StringBuffer();
-      _Node node = mountTag(next, nextTheme, html, path, 0);
+      _Node node = mountTag(next, Theme.EMPTY, html, path, 0);
       dom.mount(html.toString());
       return node;
     } else {
-      return updateOrReplace(current, next, root._renderedTheme, nextTheme);
+      return updateOrReplace(current, next, Theme.EMPTY, Theme.EMPTY);
     }
   }
 

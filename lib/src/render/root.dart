@@ -5,11 +5,9 @@ abstract class RenderRoot {
   final int id;
   final _handlers = new _HandlerMap();
   _Node _renderedTree;
-  Theme _renderedTheme;
 
   bool _frameRequested = false;
   Tag _nextTagTree;
-  Theme _nextTheme;
   final Set<_AnimatedNode> _nodesToUpdate = new Set();
 
   RenderRoot(this.id);
@@ -27,13 +25,9 @@ abstract class RenderRoot {
   /// Sets the tag tree to be rendered on the next animation frame.
   /// (If called more than once between two frames, only the last call will
   /// have any effect.)
-  void mount(Tag nextTagTree, [Theme nextTheme]) {
+  void mount(Tag nextTagTree) {
     assert(nextTagTree != null);
-    if (nextTheme == null) {
-      nextTheme = new Theme(const {});
-    }
     _nextTagTree = nextTagTree;
-    _nextTheme = nextTheme;
     _requestAnimationFrame();
   }
 
@@ -57,15 +51,11 @@ abstract class RenderRoot {
   }
 
   void _render(DomUpdater dom) {
-    if (_nextTheme == null) {
-      _nextTheme = _renderedTheme;
-    }
     _Transaction tx =
-        new _Transaction(this, dom, _handlers, _nextTagTree, _nextTheme, _nodesToUpdate);
+        new _Transaction(this, dom, _handlers, _nextTagTree, _nodesToUpdate);
 
     _frameRequested = false;
     _nextTagTree = null;
-    _nextTheme = null;
     _nodesToUpdate.clear();
 
     bool wasEmpty = _renderedTree == null;

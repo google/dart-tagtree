@@ -8,7 +8,8 @@ class Slot extends AnimatedTag<Tag> {
   final Tag placeholder;
   final String src;
   final HtmlTagSet exportedTags;
-  const Slot({this.placeholder, this.src, this.exportedTags});
+  final Theme theme;
+  const Slot({this.placeholder, this.src, this.exportedTags, this.theme});
 
   @override
   bool checked() {
@@ -24,7 +25,11 @@ class Slot extends AnimatedTag<Tag> {
   @override
   Tag renderAt(SlotPlace p) {
     p.configure(this);
-    return p.state;
+    if (theme != null) {
+      return new ThemeTag(theme, p.state);
+    } else {
+      return p.state;
+    }
   }
 }
 

@@ -23,18 +23,27 @@ abstract class _Update extends _Mount with _Unmount {
         return _replace(node, nextTag, newTheme);
       }
       _updateShadow(node, nextTag, oldTheme, newTheme);
+      return node;
 
     } else if (node is _ElementNode) {
-      if (nextAnim != null) {
+      if (nextAnim == null && nextTag is ElementTag) {
+        _updateElement(node, nextTag, oldTheme, newTheme);
+        return node;
+      } else {
         return _replace(node, nextTag, newTheme);
       }
-      _updateElement(node, nextTag, oldTheme, newTheme);
 
+    } else if (node is _ThemeNode) {
+      if (nextAnim == null && nextTag is ThemeTag) {
+        _updateThemeNode(node, nextTag);
+        return node;
+      } else {
+        return _replace(node, nextTag, newTheme);
+      }
     } else {
       throw "unknown node type: ${node.runtimeType}";
     }
 
-    return node;
   }
 
   /// Replace a node and cut to a new animation. This replaces the Place,
@@ -63,13 +72,24 @@ abstract class _Update extends _Mount with _Unmount {
       return; // Skip this frame. (Performance shortcut.)
     }
 
-    Tag shadowTree = node.render(nextTag);
+    Tag shadowTree = node.render(nextTag, newTheme);
 
     // Recurse.
     node.shadow = updateOrReplace(node.shadow, shadowTree, oldTheme, newTheme);
 
     // This is last so that the shadow's callbacks fire before the parent.
     addRenderCallback(node.onRendered);
+  }
+
+  void _updateThemeNode(_ThemeNode node, ThemeTag next) {
+    ThemeTag prev = node.tag;
+    if (prev.theme == next.theme && prev.shadow == next.shadow) {
+      return; // Nothing to do
+    }
+
+    // Recurse.
+    node.tag = next;
+    node.shadow = updateOrReplace(node.shadow, next.shadow, prev.theme, next.theme);
   }
 
   /// Recursively updates an HTML element and its children to match the given tag.

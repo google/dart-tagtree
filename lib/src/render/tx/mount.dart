@@ -25,17 +25,13 @@ abstract class _Mount {
   /// tag tree, not the depth in the DOM tree (like the path). An animated node
   /// has a lower depth than its shadow tree.
   _Node mountTag(Tag tag, Theme theme, StringBuffer html, String path, int depth) {
+    assert(tag != null);
 
     var anim = findAnimator(tag, theme);
 
-    if (anim == null) {
-      var node = new _ElementNode(path, depth, tag);
-      _expandElement(node, theme, html);
-      return node;
-
-    } else {
+    if (anim != null) {
       var node = new _AnimatedNode(path, depth, tag, anim, invalidate);
-      var shadow = node.render(tag);
+      var shadow = node.render(tag, theme);
 
       // Recurse.
       node.shadow = mountTag(shadow, theme, html, node.path, node.depth + 1);
@@ -44,6 +40,21 @@ abstract class _Mount {
       addRenderCallback(node.onRendered);
 
       return node;
+
+    } else if (tag is ElementTag) {
+      var node = new _ElementNode(path, depth, tag);
+      _expandElement(node, theme, html);
+      return node;
+
+    } else if (tag is ThemeTag) {
+      var node = new _ThemeNode(path, depth, tag);
+
+      // Recurse.
+      node.shadow = mountTag(node.tag.shadow, node.tag.theme, html, node.path, node.depth + 1);
+
+      return node;
+    } else {
+      throw "Unknown tag type: ${tag.runtimeType}";
     }
   }
 
@@ -66,8 +77,8 @@ abstract class _Mount {
       return anim;
     }
 
-    // Is it an element?
-    if (tag is ElementTag) {
+    // Special forms.
+    if (tag is ElementTag || tag is ThemeTag) {
       return null;
     }
 

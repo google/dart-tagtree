@@ -16,10 +16,12 @@ final theme = new Theme(const {
   TextFile: const _TextFile(),
 });
 
+final slot = new Slot(
+    src: "ws://localhost:8081/ws",
+    placeholder: $.Div(inner: "Loading..."),
+    exportedTags: $,
+    theme: theme);
+
 main() =>
     getRoot("#view")
-        ..mount(new Slot(
-            src: "ws://localhost:8081/ws",
-            placeholder: $.Div(inner: "Loading..."),
-            exportedTags: $),
-            theme);
+        ..mount(slot);

@@ -2,6 +2,8 @@ part of core;
 
 /// A Theme maps Tag types to Animators.
 class Theme {
+  static final EMPTY = new Theme(const {});
+
   final String name;
   final _bindings = <dynamic, Animator>{};
 
@@ -28,6 +30,20 @@ class Theme {
   String toString() => "Theme(${name})";
 }
 
+/// A tag that set the theme to be used for rendering its shadow.
+class ThemeTag extends Tag {
+  final Theme theme;
+  final Tag shadow;
+  ThemeTag(this.theme, this.shadow);
+
+  checked() {
+    assert(theme != null);
+    return true;
+  }
+
+  get animator => null; // special case
+}
+
 int _untitledCount = 0;
 
 _chooseThemeName(String name) {
@@ -37,5 +53,3 @@ _chooseThemeName(String name) {
   }
   return name;
 }
-
-
