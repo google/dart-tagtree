@@ -79,6 +79,14 @@ class ElementType {
     return true;
   }
 
+  TagMaker get meta => new TagMaker(
+      jsonTag: htmlTag,
+      fromMap: makeTag,
+      handlers: handlerTypes,
+      method: method,
+      params: namedParamToKey
+  );
+
   /// Creates a tag that will render as this HTML element.
   /// The map must only contain properties listed in [propTypes].
   Tag makeTag(Map<String, dynamic> propMap) {

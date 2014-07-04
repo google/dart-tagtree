@@ -2,11 +2,13 @@ part of html;
 
 /// A TagSet that includes HTML tags and events.
 class HtmlTagSet extends TagSet with HtmlTags {
-  HtmlTagSet() {
-    for (ElementType type in _htmlTags) {
-      defineElement(type);
-    }
-  }
+  HtmlTagSet() : super(_htmlTags.map((e) => e.meta));
+
+  HtmlTagSet._raw(Iterable<TagMaker> metas) : super(metas);
+
+  @override
+  HtmlTagSet extend(Iterable<TagMaker> moreMetas) =>
+      new HtmlTagSet._raw(new List<TagMaker>.from(makers)..addAll(moreMetas));
 
   // Suppress warnings
   noSuchMethod(Invocation inv) => super.noSuchMethod(inv);

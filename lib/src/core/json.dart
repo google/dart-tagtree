@@ -11,8 +11,8 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
 
   var rules = <JsonRule>[];
 
-  for (String tag in tags.jsonTags) {
-      rules.add(new TagRule(tag, tags.getDecoder(tag)));
+  for (TagMaker meta in tags.makers) {
+    rules.add(new TagRule(meta));
   }
 
   rules.add(new _HandlerIdRule(onEvent));
@@ -26,9 +26,11 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
 }
 
 class TagRule extends JsonRule<Tag> {
-  final TagDecodeFunc maker;
+  final TagMaker meta;
 
-  TagRule(String tag, this.maker) : super(tag);
+  TagRule(TagMaker meta) : this.meta = meta, super(meta.jsonTag) {
+    assert(meta.canDecodeJson);
+  }
 
   @override
   bool appliesTo(Tag instance) => instance is Tag && instance.jsonTag == tagName;
@@ -42,7 +44,7 @@ class TagRule extends JsonRule<Tag> {
   }
 
   @override
-  Tag decode(Map<String, dynamic> propsMap) => maker(propsMap);
+  Tag decode(Map<String, dynamic> propsMap) => meta.fromMap(propsMap);
 }
 
 class _HandlerIdRule extends JsonRule<HandlerId> {

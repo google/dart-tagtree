@@ -1,53 +1,68 @@
 part of core;
 
-/// A function for creating a Tag from its JSON properties.
-typedef Tag TagDecodeFunc(Map<String, dynamic> propsMap);
-
 /// A TagSet is a factory for Tags.
-/// It defines a set of Tag types and HandlerTypes that may be sent
-/// over the network.
+///
+/// Tags can be created in two ways: with a method call (using noSuchMethod),
+/// or from JSON, using the codec returned by [makeCodec]).
 class TagSet {
-  final _decoders = <String, TagDecodeFunc>{};
+  final Iterable<TagMaker> makers;
 
-  final _methodToJsonTag = <Symbol, String>{};
-  final _paramToPropKey = <Symbol, Map<Symbol, String>>{};
+  const TagSet(this.makers);
 
-  final _elementTypes = <String, ElementType>{};
-  final _handlerTypes = <String, HandlerType>{};
+  TagSet extend(Iterable<TagMaker> moreMakers) =>
+      new TagSet(new List<TagMaker>.from(makers)..addAll(moreMakers));
 
-  /// Defines the tag and method for creating an HTML element.
-  void defineElement(ElementType type) {
-    _elementTypes[type.htmlTag] = type;
-    export(type.htmlTag, type.makeTag, handlerTypes: type.handlerTypes);
-    defineMethod(type.method, type.namedParamToKey, type.htmlTag);
-  }
+  bool checked() => _init();
 
-  /// Exports a tag so that it can be transmitted as JSON.
-  void export(String jsonTag, TagDecodeFunc decode, {Iterable<HandlerType> handlerTypes: const []}) {
-    _decoders[jsonTag] = decode;
-    for (HandlerType t in handlerTypes) {
-      _handlerTypes[t.propKey] = t;
+  bool _init() {
+    if (_byJson[this] != null) {
+      return true;
     }
+
+    var byJson = <String, TagMaker>{};
+    var byMethod = <Symbol, TagMaker>{};
+    var handlerTypes = <String, HandlerType>{};
+
+    for (var meta in makers) {
+      assert(meta.checked());
+      if (meta.canDecodeJson) {
+        assert(byJson[meta.jsonTag] == null);
+        byJson[meta.jsonTag] = meta;
+        for (var handler in meta.handlers) {
+          var prev = handlerTypes[handler.propKey];
+          assert(prev == null || prev == handler);
+          handlerTypes[handler.propKey] = handler;
+        }
+      }
+      if (meta.canDecodeInvocation) {
+        assert(byMethod[meta.method] == null);
+        byMethod[meta.method] = meta;
+      }
+    }
+
+    _byJson[this] = byJson;
+    _byMethod[this] = byMethod;
+    _handlerTypes[this] = handlerTypes.values;
+    return true;
   }
 
-  /// Defines a method so that it will create the Tag with the given JSON tag.
-  /// (The tag must already be defined.)
-  void defineMethod(Symbol method, Map<Symbol, String> namedParams, String jsonTag) {
-   assert(method != null);
-   assert(namedParams != null);
-   assert(jsonTag != null);
-   assert(_decoders[jsonTag] != null);
-    _methodToJsonTag[method] = jsonTag;
-    _paramToPropKey[method] = namedParams;
+  Map<String, TagMaker> get byJson {
+    _init();
+    return _byJson[this];
   }
 
-  Iterable<String> get jsonTags => _decoders.keys;
+  Map<Symbol, TagMaker> get byMethod {
+    _init();
+    return _byMethod[this];
+  }
+
+  Iterable<String> get jsonTags => byJson.keys;
 
   /// Returns the types of all the handlers used by tags in this set.
-  Iterable<HandlerType> get handlerTypes => _handlerTypes.values;
-
-  /// Returns the JSON decoder for a tag.
-  TagDecodeFunc getDecoder(String jsonTag) => _decoders[jsonTag];
+  Iterable<HandlerType> get handlerTypes {
+    _init();
+    return _handlerTypes[this];
+  }
 
   /// Creates a codec for sending and receiving [Tag]s and
   /// [HandlerCall]s. Whenever a Handler is received,
@@ -56,26 +71,18 @@ class TagSet {
   TaggedJsonCodec makeCodec({OnEventFunc onEvent}) =>
       _makeCodec(this, onEvent: onEvent);
 
-  /// Tags may also be created by calling a method with the same name.
+  /// Creates Tags from method calls using the tag's method name.
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {
-      String tag = _methodToJsonTag[inv.memberName];
-      if (tag != null) {
-        if (!inv.positionalArguments.isEmpty) {
-          throw "positional arguments not supported when creating tags";
-        }
-        var toKey = _paramToPropKey[inv.memberName];
-        var propsMap = <String, dynamic>{};
-        for (Symbol name in inv.namedArguments.keys) {
-          var propKey = toKey[name];
-          if (propKey == null) {
-            throw "no property found for ${name} in ${tag}";
-          }
-          propsMap[toKey[name]] = inv.namedArguments[name];
-        }
-        return getDecoder(tag)(propsMap);
+      TagMaker meta = byMethod[inv.memberName];
+      if (meta != null) {
+        return meta.fromInvocation(inv);
       }
     }
     return super.noSuchMethod(inv);
   }
+
+  static final _byJson = new Expando<Map<String, TagMaker>>();
+  static final _byMethod = new Expando<Map<Symbol, TagMaker>>();
+  static final _handlerTypes = new Expando<Iterable<HandlerType>>();
 }

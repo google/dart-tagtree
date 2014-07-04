@@ -11,8 +11,7 @@ import "package:tagtree/server.dart";
 
 import "web/shared.dart";
 
-final $ = new HtmlTagSet()
-  ..export(TextFile.tag, TextFile.fromMap);
+final $ = new HtmlTagSet().extend([$TextFile]);
 
 main(List<String> args) {
   if (args.length == 0) {
@@ -179,5 +178,3 @@ sendNotFound(HttpRequest request) {
       ..write('Not found')
       ..close();
 }
-
-

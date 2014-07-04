@@ -65,7 +65,67 @@ abstract class Tag implements Jsonable {
   static final _propsCache = new Expando<PropsMap>();
 }
 
-/// An alternate representation of a [Tag]'s fields.
+/// A function for creating a Tag from its JSON properties.
+typedef Tag MakeTagFunc(Map<String, dynamic> propsMap);
+
+/// A TagMaker provides other ways to create one type of Tag.
+///
+/// The [fromMap] method creates a tag from a map containing its properties.
+/// The [fromInvocation] method can be used to create a tag from within
+/// [noSuchMethod].
+///
+/// By convention, the TagMaker for "Foo" should be in a constant named "$Foo".
+/// (Perhaps someday this will be an annotation?)
+///
+/// Multiple TagMakers can be collected into a [TagSet].
+class TagMaker {
+  /// For decoding JSON
+  final String jsonTag;
+  final MakeTagFunc fromMap;
+  final Iterable<HandlerType> handlers;
+
+  /// For decoding an Invocation
+  final Symbol method;
+  final Map<Symbol, String> params;
+
+  const TagMaker({this.jsonTag, this.fromMap, this.handlers: const [],
+    this.method, this.params});
+
+  bool checked() {
+    assert(handlers != null);
+    if (canDecodeJson) {
+      assert(fromMap != null);
+    }
+    if (canDecodeInvocation) {
+      assert(jsonTag != null); // for error reporting
+      assert(params != null);
+      assert(fromMap != null);
+    }
+    return true;
+  }
+
+  bool get canDecodeJson => jsonTag != null;
+
+  bool get canDecodeInvocation => method != null;
+
+  Tag fromInvocation(Invocation inv) {
+    if (!inv.positionalArguments.isEmpty) {
+      throw "positional arguments not supported when creating tags";
+    }
+    assert(canDecodeInvocation);
+    var propsMap = <String, dynamic>{};
+    for (Symbol name in inv.namedArguments.keys) {
+      var propKey = params[name];
+      if (propKey == null) {
+        throw "no property found for ${name} in ${jsonTag}";
+      }
+      propsMap[propKey] = inv.namedArguments[name];
+    }
+    return fromMap(propsMap);
+  }
+}
+
+/// A PropsMap provides an alternate representation of a [Tag]'s fields.
 class PropsMap extends UnmodifiableMapBase<String, dynamic> {
   final Map<String, dynamic> _map;
 

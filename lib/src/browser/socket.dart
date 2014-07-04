@@ -2,22 +2,24 @@ part of browser;
 
 /// The Slot tag sends a TagNode to a server over a websocket.
 /// The server responds with a stream of tag trees that will be displayed in the slot.
-/// [src] is the URL of the websocket to open and [export] contains the tags that
+/// [src] is the URL of the websocket to open and [exportedTags] contains the tags that
 /// may sent over the network.
 class Slot extends AnimatedTag<Tag> {
+  final Tag placeholder;
   final String src;
-  final HtmlTagSet export;
-  const Slot({this.src, this.export});
+  final HtmlTagSet exportedTags;
+  const Slot({this.placeholder, this.src, this.exportedTags});
 
   @override
   bool checked() {
     assert(src != null);
-    assert(export != null);
+    assert(placeholder != null);
+    assert(exportedTags != null);
     return true;
   }
 
   @override
-  Place start() => new SlotPlace(this, export.Div(inner: "Loading..."));
+  Place start() => new SlotPlace(this, placeholder);
 
   @override
   Tag renderAt(SlotPlace p) {
@@ -36,8 +38,8 @@ class SlotPlace extends Place<Tag> {
   }
 
   void configure(Slot newSlot) {
-    if ($ != newSlot.export) {
-      $ = newSlot.export;
+    if ($ != newSlot.exportedTags) {
+      $ = newSlot.exportedTags;
       if (conn != null) {
         conn.onTagSetChange($);
       }

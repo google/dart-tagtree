@@ -10,8 +10,7 @@ class _TextFile extends Template {
   render(TextFile tag) => $.Pre(inner: tag.lines.join("\n"));
 }
 
-final exportedTags = new HtmlTagSet()
-  ..export(TextFile.tag, TextFile.fromMap);
+final $ = new HtmlTagSet().extend([$TextFile]);
 
 final theme = new Theme(const {
   TextFile: const _TextFile(),
@@ -19,4 +18,8 @@ final theme = new Theme(const {
 
 main() =>
     getRoot("#view")
-        ..mount(new Slot(src: "ws://localhost:8081/ws", export: exportedTags), theme);
+        ..mount(new Slot(
+            src: "ws://localhost:8081/ws",
+            placeholder: $.Div(inner: "Loading..."),
+            exportedTags: $),
+            theme);
