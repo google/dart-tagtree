@@ -1,10 +1,10 @@
 part of core;
 
-typedef void OnEventFunc(HandlerCall call);
+typedef void OnRemoteEventFunc(HandlerEvent event, RemoteHandler handler);
 
-TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
+TaggedJsonCodec _makeCodec(TagSet tags, {OnRemoteEventFunc onEvent}) {
   if (onEvent == null) {
-    onEvent = (HandlerCall e) {
+    onEvent = (e, _) {
       print("ignored event to remote handler: ${e}");
     };
   }
@@ -15,7 +15,7 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
     rules.add(new TagRule(meta));
   }
 
-  rules.add(new _HandlerIdRule(onEvent));
+  rules.add(new _RemoteHandlerRule(onEvent));
   for (var type in tags.handlerTypes) {
     rules.add(new _HandlerEventRule(type));
   }
@@ -26,9 +26,9 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnEventFunc onEvent}) {
 }
 
 class TagRule extends JsonRule<Tag> {
-  final TagMaker meta;
+  final TagMaker maker;
 
-  TagRule(TagMaker meta) : this.meta = meta, super(meta.jsonTag) {
+  TagRule(TagMaker meta) : this.maker = meta, super(meta.jsonTag) {
     assert(meta.canDecodeJson);
   }
 
@@ -44,26 +44,26 @@ class TagRule extends JsonRule<Tag> {
   }
 
   @override
-  Tag decode(Map<String, dynamic> propsMap) => meta.fromMap(propsMap);
+  Tag decode(Map<String, dynamic> propsMap) => maker.fromMap(propsMap);
 }
 
-class _HandlerIdRule extends JsonRule<HandlerId> {
-  final OnEventFunc onHandlerCalled;
+class _RemoteHandlerRule extends JsonRule<RemoteHandler> {
+  final OnRemoteEventFunc onHandlerCalled;
 
-  _HandlerIdRule(this.onHandlerCalled): super("handler");
-
-  @override
-  bool appliesTo(instance) => (instance is HandlerId);
+  _RemoteHandlerRule(this.onHandlerCalled): super("handler");
 
   @override
-  encode(HandlerId h) => [h.frameId, h.id];
+  bool appliesTo(instance) => (instance is RemoteHandler);
+
+  @override
+  encode(RemoteHandler h) => [h.frameId, h.id];
 
   @override
   decode(array) {
     if (array is List && array.length >= 2) {
-      var id = new HandlerId(array[0], array[1]);
+      var handler = new RemoteHandler(array[0], array[1]);
       return (HandlerEvent event) {
-        onHandlerCalled(new HandlerCall(id, event));
+        onHandlerCalled(event, handler);
       };
     } else {
       throw "can't decode Handler: ${array.runtimeType}";
@@ -92,19 +92,19 @@ class _HandlerEventRule extends JsonRule<HandlerEvent> {
   }
 }
 
-class _HandlerCallRule extends JsonRule<HandlerCall> {
+class _HandlerCallRule extends JsonRule<RemoteCallback> {
   _HandlerCallRule() : super("call");
 
   @override
-  bool appliesTo(instance) => (instance is HandlerCall);
+  bool appliesTo(instance) => (instance is RemoteCallback);
 
   @override
-  encode(HandlerCall call) => [call.id.frameId, call.id.id, call.event];
+  encode(RemoteCallback call) => [call.handler.frameId, call.handler.id, call.event];
 
   @override
-  HandlerCall decode(array) {
+  RemoteCallback decode(array) {
     if (array is List && array.length >= 3) {
-      return new HandlerCall(new HandlerId(array[0], array[1]), array[2]);
+      return new RemoteCallback(new RemoteHandler(array[0], array[1]), array[2]);
     } else {
       throw "can't decode HandleCall: ${array.runtimeType}";
     }

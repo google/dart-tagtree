@@ -22,7 +22,7 @@ class ThemeDemo extends AnimatedTag<String> {
 
     return $.Div(clazz: "main", inner: [
       menu,
-      new ThemeTag(theme, $.Div(clazz: "content", inner: content))
+      new ThemeZone(theme, $.Div(clazz: "content", inner: content))
     ]);
   }
 }

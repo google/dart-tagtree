@@ -65,10 +65,10 @@ class TagSet {
   }
 
   /// Creates a codec for sending and receiving [Tag]s and
-  /// [HandlerCall]s. Whenever a Handler is received,
+  /// [RemoteCallback]s. Whenever a Handler is received,
   /// it will be replaced with a [HandlerFunc] that calls
   /// the given onEvent function.
-  TaggedJsonCodec makeCodec({OnEventFunc onEvent}) =>
+  TaggedJsonCodec makeCodec({OnRemoteEventFunc onEvent}) =>
       _makeCodec(this, onEvent: onEvent);
 
   /// Creates Tags from method calls using the tag's method name.

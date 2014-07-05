@@ -95,7 +95,7 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
 }
 
 class _ThemeNode extends _Node {
-  ThemeTag tag;
+  ThemeZone tag;
   _Node shadow;
   _ThemeNode(String path, int depth, this.tag) : super(path, depth);
 

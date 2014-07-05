@@ -20,15 +20,14 @@ class TextFile extends Tag {
   get animator => null; // theme must provide
 
   @override
-  get propsImpl => {"lines": lines};
-
-  @override
-  get jsonTag => $TextFile.jsonTag;
+  get maker => $TextFile;
 
   static fromMap(Map<String, dynamic> m) => new TextFile._fromMap(m);
+  static toProps(TextFile tag) => new PropsMap({"lines": tag.lines});
 }
 
 const $TextFile = const TagMaker(
   jsonTag: "TextFile",
-  fromMap: TextFile.fromMap
+  fromMap: TextFile.fromMap,
+  toProps: TextFile.toProps
 );

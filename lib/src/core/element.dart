@@ -14,13 +14,13 @@ class ElementTag implements Tag {
   bool checked() => true; // already done in ElementType.makeTag.
 
   @override
-  Animator get animator => null;
+  Animator get animator => null; // Special case in renderer.
+
+  @override
+  TagMaker get maker => type.tagMaker;
 
   @override
   get jsonTag => type.htmlTag;
-
-  @override
-  get propsImpl => throw "not implemented"; // not needed
 
   String get htmlTag => type.htmlTag;
 
@@ -82,6 +82,7 @@ class ElementType {
   TagMaker get tagMaker => new TagMaker(
       jsonTag: htmlTag,
       fromMap: makeTag,
+      toProps: (ElementTag tag) => tag.props,
       handlers: handlerTypes,
       method: method,
       params: namedParamToKey
@@ -206,17 +207,6 @@ class AttributeType extends PropType {
   @override
   bool checkValue(value) {
     assert(value is String || value is num); // automatically converted
-    return true;
-  }
-}
-
-/// The type of a property that can store an event handler.
-class HandlerType extends PropType {
-  const HandlerType(Symbol sym, String name) : super(sym, name);
-
-  @override
-  bool checkValue(dynamic value) {
-    assert(value is HandlerFunc || value is HandlerId);
     return true;
   }
 }

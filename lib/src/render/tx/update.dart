@@ -34,8 +34,8 @@ abstract class _Update extends _Mount with _Unmount {
       }
 
     } else if (node is _ThemeNode) {
-      if (nextAnim == null && nextTag is ThemeTag) {
-        _updateThemeNode(node, nextTag);
+      if (nextAnim == null && nextTag is ThemeZone) {
+        _updateThemeZone(node, nextTag);
         return node;
       } else {
         return _replace(node, nextTag, newTheme);
@@ -81,15 +81,15 @@ abstract class _Update extends _Mount with _Unmount {
     addRenderCallback(node.onRendered);
   }
 
-  void _updateThemeNode(_ThemeNode node, ThemeTag next) {
-    ThemeTag prev = node.tag;
-    if (prev.theme == next.theme && prev.shadow == next.shadow) {
+  void _updateThemeZone(_ThemeNode node, ThemeZone next) {
+    ThemeZone prev = node.tag;
+    if (prev.theme == next.theme && prev.innerTag == next.innerTag) {
       return; // Nothing to do
     }
 
     // Recurse.
     node.tag = next;
-    node.shadow = updateOrReplace(node.shadow, next.shadow, prev.theme, next.theme);
+    node.shadow = updateOrReplace(node.shadow, next.innerTag, prev.theme, next.theme);
   }
 
   /// Recursively updates an HTML element and its children to match the given tag.

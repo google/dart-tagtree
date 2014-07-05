@@ -46,11 +46,11 @@ abstract class _Mount {
       _expandElement(node, theme, html);
       return node;
 
-    } else if (tag is ThemeTag) {
+    } else if (tag is ThemeZone) {
       var node = new _ThemeNode(path, depth, tag);
 
       // Recurse.
-      node.shadow = mountTag(node.tag.shadow, node.tag.theme, html, node.path, node.depth + 1);
+      node.shadow = mountTag(node.tag.innerTag, node.tag.theme, html, node.path, node.depth + 1);
 
       return node;
     } else {
@@ -78,7 +78,7 @@ abstract class _Mount {
     }
 
     // Special forms.
-    if (tag is ElementTag || tag is ThemeTag) {
+    if (tag is ElementTag || tag is ThemeZone) {
       return null;
     }
 

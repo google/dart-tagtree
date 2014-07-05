@@ -21,9 +21,9 @@ class WebSocketRoot {
     _session = s;
     _session._mount(this);
     _socket.forEach((String data) {
-      core.HandlerCall call = _codec.decode(data);
+      core.RemoteCallback call = _codec.decode(data);
       if (_handleFrame != null) {
-        var func = _handleFrame.handlers[call.id.id];
+        var func = _handleFrame.handlers[call.handler.id];
         if (func != null) {
           func(call.event);
         } else {
@@ -60,13 +60,13 @@ class WebSocketRoot {
 
 class _Frame {
   final int id;
-  final Map handlers = <int, Function>{};
+  final Map handlers = <int, core.HandlerFunc>{};
   int nextHandlerId = 0;
 
   _Frame(this.id);
 
-  core.HandlerId createHandler(Function func) {
-    var h = new core.HandlerId(id, nextHandlerId++);
+  core.RemoteHandler createHandler(core.HandlerFunc func) {
+    var h = new core.RemoteHandler(id, nextHandlerId++);
     handlers[h.id] = func;
     return h;
   }

@@ -7,88 +7,114 @@ part of core;
 /// final fields.
 ///
 /// A Tag may have other tags as children, forming a tag tree. By convention,
-/// children should normally be stored in a property named "inner".
+/// children should normally be stored in a field named "inner".
 ///
-/// Some tags represent single HTML elements. (See [ElementTag]. Other
-/// tags are implemented by an [Animator]. A tag can be associated with
-/// its animator either by overriding the [animator] property or by adding
-/// the animator to a [Theme]. (The Theme's mapping takes priority when
-/// a theme is used.)
+/// Some tags represent single HTML elements; see [ElementTag].
+/// Other tags are implemented by an [Animator]. A tag can be
+/// associated with its animator either by overriding the [animator] property
+/// or by adding the animator to a [Theme] in a surrounding [ThemeZone].
+/// (The Theme's mapping takes priority when a theme is in scope.)
 ///
-/// For convenience, the [TemplateTag] and [AnimatedTag] subclasses can be used
-/// as shortcuts to implement a tag and its animator at the same time.
+/// The [TemplateTag] and [AnimatedTag] subclasses are useful shortcuts
+/// for implementing a Tag and its Animator at the same time.
 ///
-/// Tag objects have no lifecycle or dependency on the browser and are often
-/// usable on client or server. If a tag implements [propsImpl], it can
-/// be serialized to JSON and sent over the network.
+/// Tag objects have no lifecycle or dependency on the browser and are
+/// often usable on client or server. If a Tag implements the [maker]
+/// property with a suitable [TagMaker], it can be serialized to JSON
+/// and sent over the network.
 abstract class Tag implements Jsonable {
 
-  /// Most tags can used as constants.
+  /// Subclasses of Tag should normally have a const constructor.
   const Tag();
 
   /// Asserts that the tag's props are valid. If so, returns true.
   ///
   /// This method exists so that the constructor can be const.
   /// When Dart is running in checked mode, this method will be
-  /// called automatically before the tag is rendered or sent over
+  /// called automatically before a Tag is rendered or sent over
   /// the network.
   bool checked() => true;
 
-  /// Returns the animator for this tag, when not overridden by a Theme.
+  /// Returns the default animator for this tag, which will be used
+  /// when not overridden by a surrounding [ThemeZone].
+  /// A null may be returned when there is no default, in which case
+  /// the ThemeTag must supply an animator.
   Animator get animator;
+
+  /// Returns the TagMaker for this tag.
+  ///
+  /// Throws an exception by default. Subclasses should implement this property
+  /// if needed to support reflection (via "props") and JSON encoding.
+  TagMaker get maker {
+    throw "maker property not implemented for ${runtimeType}";
+  }
 
   /// Returns the tag's props as a [PropsMap].
   ///
   /// Throws an exception if not implemented. Subclasses should implement
-  /// this method by overriding [propsImpl].
+  /// this method by implementing [maker] and [TagMaker.toProps].
   PropsMap get props {
     var p = _propsCache[this];
     if (p == null) {
       assert(checked());
-      p = new PropsMap(propsImpl);
+      if (maker.toProps == null) {
+        throw "TagMaker for ${runtimeType} doesn't have a toProps function";
+      }
+      p = maker.toProps(this);
       _propsCache[p] = p;
     }
     return p;
   }
 
-  /// Constructs the property map needed for [props] to work.
-  ///
-  /// For a tag to be serializable, its props should contain JSON data
-  /// (including other [Jsonable] nodes) or a [HandlerFunc].
-  ///
-  /// By convention, a tag's children are usually stored in its "inner" field.
-  Map<String, dynamic> get propsImpl => throw "propsImpl isn't implemented for ${runtimeType}";
-
   @override
-  String get jsonTag => throw "jsonTag not implemented";
+  String get jsonTag => maker.jsonTag;
 
   static final _propsCache = new Expando<PropsMap>();
 }
 
-/// A function for creating a Tag from its JSON properties.
-typedef Tag MakeTagFunc(Map<String, dynamic> propsMap);
+/// A PropsMap provides an alternate representation of a [Tag]'s fields.
+class PropsMap extends UnmodifiableMapBase<String, dynamic> {
+  final Map<String, dynamic> _map;
 
-/// A TagMaker provides other ways to create one type of Tag.
+  PropsMap(this._map);
+
+  @override
+  Iterable<String> get keys => _map.keys;
+
+  @override
+  operator[](String key) => _map[key];
+}
+
+/// A function for creating a Tag from its JSON properties.
+typedef Tag MapToTag(Map<String, dynamic> propsMap);
+
+/// A function for converting a Tag to a PropsMap containing its JSON properties.
+///
+/// For a tag to be serializable, the properties should contain JSON data
+/// (including other [Jsonable] nodes) or a [HandlerFunc].
+typedef PropsMap TagToProps(Tag tag);
+
+/// A TagMaker provides additional ways to create a Tag.
 ///
 /// The [fromMap] method creates a tag from a map containing its properties.
+///
 /// The [fromInvocation] method can be used to create a tag from within
 /// [noSuchMethod].
 ///
 /// By convention, the TagMaker for "Foo" should be in a constant named "$Foo".
-/// (Perhaps someday this will be an annotation?)
-///
 /// Multiple TagMakers can be collected into a [TagSet].
 class TagMaker {
-  /// For decoding JSON
+  /// For decoding and encoding JSON
   final String jsonTag;
-  final MakeTagFunc fromMap;
+  final MapToTag fromMap;
+  final TagToProps toProps;
   final Iterable<HandlerType> handlers;
 
   /// For decoding an Invocation
   final Symbol method;
   final Map<Symbol, String> params;
 
-  const TagMaker({this.jsonTag, this.fromMap, this.handlers: const [],
+  const TagMaker({this.jsonTag, this.fromMap, this.toProps, this.handlers: const [],
     this.method, this.params});
 
   bool checked() {
@@ -123,19 +149,4 @@ class TagMaker {
     }
     return fromMap(propsMap);
   }
-}
-
-/// A PropsMap provides an alternate representation of a [Tag]'s fields.
-class PropsMap extends UnmodifiableMapBase<String, dynamic> {
-  final Map<String, dynamic> _map;
-
-  PropsMap(this._map);
-
-  /// Returns the key of each property.
-  @override
-  Iterable<String> get keys => _map.keys;
-
-  /// Returns the value of a property.
-  @override
-  operator[](String key) => _map[key];
 }

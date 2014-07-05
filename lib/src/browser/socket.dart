@@ -1,69 +1,79 @@
 part of browser;
 
-/// The Slot tag sends a TagNode to a server over a websocket.
-/// The server responds with a stream of tag trees that will be displayed in the slot.
-/// [src] is the URL of the websocket to open and [exportedTags] contains the tags that
-/// may sent over the network.
-class Slot extends AnimatedTag<Tag> {
-  final Tag placeholder;
+/// A RemoteZone tag displays a stream of tag trees from a WebSocket.
+///
+/// The [src] prop contains the URL of the websocket to open.
+/// The [placeholder] will be displayed until the websocket connects.
+/// The [exports] prop contains TagMakers for the tags that may be
+/// rendered by the remote session.
+/// If not null, Tags within the zone will be rendered with the given
+/// [theme].
+///
+/// All UI events within a RemoteZone are sent back to the remote session.
+class RemoteZone extends AnimatedTag<Tag> {
   final String src;
-  final HtmlTagSet exportedTags;
+  final Tag placeholder;
+  final HtmlTagSet exports;
   final Theme theme;
-  const Slot({this.placeholder, this.src, this.exportedTags, this.theme});
+
+  const RemoteZone({this.src, this.placeholder, this.exports, this.theme});
 
   @override
   bool checked() {
     assert(src != null);
     assert(placeholder != null);
-    assert(exportedTags != null);
+    assert(exports != null);
     return true;
   }
 
   @override
-  Place start() => new SlotPlace(this, placeholder);
+  Place start() => new _RemoteTagPlace(placeholder, src, exports);
 
   @override
-  Tag renderAt(SlotPlace p) {
-    p.configure(this);
+  Tag renderAt(_RemoteTagPlace p) {
+    p.configure(src, exports);
     if (theme != null) {
-      return new ThemeTag(theme, p.state);
+      return new ThemeZone(theme, p.state);
     } else {
       return p.state;
     }
   }
 }
 
-class SlotPlace extends Place<Tag> {
-  HtmlTagSet $;
+class _RemoteTagPlace extends Place<Tag> {
   String src;
+  HtmlTagSet tagSet;
   _Connection conn;
 
-  SlotPlace(Slot slot, Tag firstState) : super(firstState) {
-    configure(slot);
+  _RemoteTagPlace(Tag firstState, String src, HtmlTagSet tagSet) : super(firstState) {
+    configure(src, tagSet);
   }
 
-  void configure(Slot newSlot) {
-    if ($ != newSlot.exportedTags) {
-      $ = newSlot.exportedTags;
-      if (conn != null) {
-        conn.onTagSetChange($);
-      }
-    }
-
-    if (src != newSlot.src) {
-      src = newSlot.src;
+  void configure(String src, HtmlTagSet tagSet) {
+    if (this.src != src) {
       _close();
-      conn = new _Connection(src, this, $);
+      conn = new _Connection(this, src, tagSet.makeCodec(onEvent: onZoneEvent));
+    } else if (this.tagSet != tagSet && conn != null) {
+      conn.codec = tagSet.makeCodec(onEvent: onZoneEvent);
     }
+    this.src = src;
+    this.tagSet = tagSet;
   }
 
-  void showServerAnimationFrame(Tag tagTree) {
-    nextState = tagTree;
+  /// Called each time the server sends a new animation frame.
+  void onFrameChanged(Tag nextFrame) {
+    nextState = nextFrame;
+  }
+
+  /// Called each time an animation frame in the zone (originally sent by the server)
+  /// gets an event.
+  void onZoneEvent(HandlerEvent event, RemoteHandler handler) {
+    conn.send(new RemoteCallback(handler, event));
   }
 
   void showStatus(String message) {
     print(message);
-    nextState = $.Div(inner: message);
+    nextState = tagSet.Div(inner: message);
   }
 
   @override
@@ -83,20 +93,19 @@ class SlotPlace extends Place<Tag> {
 class _Connection {
   final String url;
   final WebSocket ws;
-  final SlotPlace slot;
-
-  bool opened = false;
   TaggedJsonCodec codec;
 
-  _Connection(String url, this.slot, TagSet tagSet) :
+  bool opened = false;
+
+  _Connection(_RemoteTagPlace place, String url, this.codec) :
     this.url = url,
     this.ws = new WebSocket(url)
   {
     ws.onError.listen((_) {
       if (!opened) {
-        slot.showStatus("Can't connect to ${url}");
+        place.showStatus("Can't connect to ${url}");
       } else {
-        slot.showStatus("Websocket error");
+        place.showStatus("Websocket error");
       }
     });
 
@@ -105,25 +114,19 @@ class _Connection {
         print("websocket opened");
       }
       opened = true;
-      slot.showServerAnimationFrame(codec.decode(e.data));
+      place.onFrameChanged(codec.decode(e.data));
     });
 
     ws.onClose.listen((CloseEvent e) {
       if (!opened) {
-        slot.showStatus("Can't connect to ${url} (closed)");
+        place.showStatus("Can't connect to ${url} (closed)");
       } else {
-        slot.showStatus("Disconnected from ${url}");
+        place.showStatus("Disconnected from ${url}");
       }
     });
-
-    onTagSetChange(tagSet);
   }
 
-  void onTagSetChange(TagSet tags) {
-    codec = tags.makeCodec(onEvent: sendEventToServer);
-  }
-
-  void sendEventToServer(HandlerCall call) {
+  void send(RemoteCallback call) {
     String msg = codec.encode(call);
     ws.sendString(msg);
   }

@@ -30,11 +30,11 @@ class Theme {
   String toString() => "Theme(${name})";
 }
 
-/// A tag that set the theme to be used for rendering its shadow.
-class ThemeTag extends Tag {
+/// A tag that sets the theme to be used within it.
+class ThemeZone extends Tag {
   final Theme theme;
-  final Tag shadow;
-  ThemeTag(this.theme, this.shadow);
+  final Tag innerTag;
+  ThemeZone(this.theme, this.innerTag);
 
   checked() {
     assert(theme != null);
