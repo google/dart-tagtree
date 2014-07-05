@@ -1,15 +1,15 @@
 part of core;
 
 /// A function for creating a Tag from its JSON properties.
-typedef JsonableTag MapToTag(Map<String, dynamic> propsMap);
+typedef JsonTag MapToTag(Map<String, dynamic> propsMap);
 
 /// A function for converting a Tag to a PropsMap containing its JSON properties.
 ///
 /// For a tag to be serializable, the properties should contain JSON data
 /// (including other [Jsonable] nodes) or a [HandlerFunc].
-typedef PropsMap TagToProps(JsonableTag tag);
+typedef PropsMap TagToProps(JsonTag tag);
 
-/// A TagMaker provides additional ways to create a [JsonableTag].
+/// A TagMaker provides additional ways to create a [JsonTag].
 ///
 /// The [fromMap] method creates a tag from a map containing its properties.
 ///

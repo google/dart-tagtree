@@ -26,7 +26,7 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnRemoteHandlerEvent onEvent}) {
   return new TaggedJsonCodec(rules, [const JsonableFinder()]);
 }
 
-class _JsonableTagRule extends JsonRule<JsonableTag> {
+class _JsonableTagRule extends JsonRule<JsonTag> {
   final TagMaker maker;
 
   _JsonableTagRule(TagMaker meta) : this.maker = meta, super(meta.jsonTag) {
@@ -34,10 +34,10 @@ class _JsonableTagRule extends JsonRule<JsonableTag> {
   }
 
   @override
-  bool appliesTo(Tag instance) => instance is JsonableTag && instance.jsonTag == tagName;
+  bool appliesTo(Tag instance) => instance is JsonTag && instance.jsonTag == tagName;
 
   @override
-  encode(JsonableTag tag) {
+  encode(JsonTag tag) {
     assert(tag.checked()); // don't send malformed Tags over the network.
     var map = tag.props._map;
     assert(map != null);

@@ -1,6 +1,6 @@
 part of core;
 
-/// A TagSet acts as a factory for a set of [JsonableTag]s.
+/// A TagSet acts as a factory for a set of [JsonTag]s.
 ///
 /// Tags can be created in two ways: using a method call (handled by
 /// noSuchMethod), or from JSON, using the codec returned by

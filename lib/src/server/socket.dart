@@ -1,6 +1,6 @@
 part of server;
 
-typedef Session MakeSessionFunc(core.JsonableTag tag);
+typedef Session MakeSessionFunc(core.JsonTag tag);
 
 WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker, MakeSessionFunc makeSession) =>
     new WebSocketRoot(socket, maker, makeSession);
@@ -24,7 +24,7 @@ class WebSocketRoot {
   /// Reads a request from the socket and starts the appropriate session.
   void start() {
     incoming.first.then((data) {
-      core.JsonableTag request = _codec.decode(data);
+      core.JsonTag request = _codec.decode(data);
       var session = makeSession(request);
       if (session == null) {
         print("ignored request: " + request.jsonTag);

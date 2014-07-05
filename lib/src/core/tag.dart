@@ -23,7 +23,7 @@ part of core;
 /// The [TemplateTag] and [AnimatedTag] subclasses are useful shortcuts
 /// for implementing a Tag and its Animator at the same time.
 ///
-/// A [JsonableTag] can be serialized as JSON and sent over the network.
+/// A [JsonTag] can be serialized as JSON and sent over the network.
 abstract class Tag {
 
   /// Subclasses of Tag should normally have a const constructor.

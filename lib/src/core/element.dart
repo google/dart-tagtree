@@ -2,7 +2,7 @@ part of core;
 
 /// A tag that's normally rendered as a single HTML element.
 /// Constructed via [ElementType.makeTag].
-class ElementTag extends JsonableTag {
+class ElementTag extends JsonTag {
   final ElementType type;
 
   @override

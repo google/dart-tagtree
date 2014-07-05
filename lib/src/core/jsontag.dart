@@ -1,8 +1,8 @@
 part of core;
 
 /// A tag that can be encoded as tagged JSON.
-abstract class JsonableTag extends Tag implements Jsonable {
-  const JsonableTag();
+abstract class JsonTag extends Tag implements Jsonable {
+  const JsonTag();
 
   /// Remotely-rendered tags usually get their implementation from a [Theme].
   Animator get animator => null;
@@ -34,7 +34,7 @@ abstract class JsonableTag extends Tag implements Jsonable {
   static final _propsCache = new Expando<PropsMap>();
 }
 
-/// A PropsMap provides an alternate representation of a [JsonableTag]'s fields.
+/// A PropsMap provides an alternate representation of a [JsonTag]'s fields.
 class PropsMap extends UnmodifiableMapBase<String, dynamic> {
   final Map<String, dynamic> _map;
 

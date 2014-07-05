@@ -9,7 +9,7 @@ final theme = new Theme(const {
   TextFile: const _TextFile(),
 });
 
-class DemoPicker extends AnimatedTag<JsonableTag> {
+class DemoPicker extends AnimatedTag<JsonTag> {
   const DemoPicker();
 
   @override
@@ -25,7 +25,7 @@ class DemoPicker extends AnimatedTag<JsonableTag> {
       return $.Button(onClick: onClick, inner: text);
     };
 
-    JsonableTag request = p.state;
+    JsonTag request = p.state;
 
     final serverDemo = new RemoteZone(
         placeholder: $.Div(inner: "Loading..."),

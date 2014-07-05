@@ -5,7 +5,7 @@ import "package:tagtree/core.dart";
 /**
  * Requests a button demo.
  */
-class ButtonDemo extends JsonableTag {
+class ButtonDemo extends JsonTag {
   const ButtonDemo();
   get maker => $ButtonDemo;
 
@@ -22,7 +22,7 @@ const $ButtonDemo = const TagMaker(
 /**
  * Requests that a file be tailed.
  */
-class TailDemo extends JsonableTag {
+class TailDemo extends JsonTag {
   const TailDemo();
   get maker => $TailDemo;
 
@@ -39,7 +39,7 @@ const $TailDemo = const TagMaker(
 /**
  * An animation frame returned by [TailDemo].
  */
-class TextFile extends JsonableTag {
+class TextFile extends JsonTag {
   final List<String> lines;
 
   const TextFile({this.lines});

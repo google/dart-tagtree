@@ -13,7 +13,7 @@ part of browser;
 class RemoteZone extends AnimatedTag<Tag> {
   final Tag placeholder;
   final String src;
-  final JsonableTag request;
+  final JsonTag request;
   final HtmlTagSet exports;
   final Theme theme;
 
@@ -44,16 +44,16 @@ class RemoteZone extends AnimatedTag<Tag> {
 
 class _RemoteTagPlace extends Place<Tag> {
   String src;
-  JsonableTag request;
+  JsonTag request;
   HtmlTagSet tagSet;
   _Connection conn;
 
-  _RemoteTagPlace(Tag firstState, String src, JsonableTag request, HtmlTagSet tagSet) :
+  _RemoteTagPlace(Tag firstState, String src, JsonTag request, HtmlTagSet tagSet) :
     super(firstState) {
     configure(src, request, tagSet);
   }
 
-  void configure(String src, JsonableTag request, HtmlTagSet tagSet) {
+  void configure(String src, JsonTag request, HtmlTagSet tagSet) {
     if (this.src != src || this.request != request) {
       _close();
       conn = new _Connection(this, src, request, tagSet.makeCodec(onEvent: onZoneEvent));
