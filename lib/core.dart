@@ -22,11 +22,13 @@ import 'dart:collection';
 import 'package:tagtree/json.dart';
 
 part 'src/core/animator.dart';
+part 'src/core/codec.dart';
 part 'src/core/element.dart';
 part 'src/core/handler.dart';
-part 'src/core/json.dart';
+part 'src/core/jsontag.dart';
 part 'src/core/place.dart';
 part 'src/core/state.dart';
+part 'src/core/tagmaker.dart';
 part 'src/core/tagset.dart';
 part 'src/core/template.dart';
 part 'src/core/theme.dart';

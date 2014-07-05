@@ -2,7 +2,7 @@ part of core;
 
 /// A tag that's normally rendered as a single HTML element.
 /// Constructed via [ElementType.makeTag].
-class ElementTag implements Tag {
+class ElementTag extends JsonableTag {
   final ElementType type;
 
   @override
@@ -11,16 +11,7 @@ class ElementTag implements Tag {
   const ElementTag._raw(this.type, this.props);
 
   @override
-  bool checked() => true; // already done in ElementType.makeTag.
-
-  @override
-  Animator get animator => null; // Special case in renderer.
-
-  @override
   TagMaker get maker => type.tagMaker;
-
-  @override
-  get jsonTag => type.htmlTag;
 
   String get htmlTag => type.htmlTag;
 

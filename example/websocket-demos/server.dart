@@ -1,14 +1,31 @@
-// A websocket server that prints a message whenever a button is pressed.
+// A websocket server that makes two demos available.
 /// To use: run this command and then run web/client.html in Dartium.
 
 import "dart:io";
 
+import "demos/button.dart" as button;
+import "demos/tail.dart" as tail;
+
+import "web/shared.dart";
+
 import "package:tagtree/core.dart";
 import "package:tagtree/server.dart";
 
-final $ = new HtmlTagSet();
+final $ = new HtmlTagSet.withTags([$ButtonDemo, $TailDemo, $TextFile]);
 
 main(List<String> args) {
+
+  // watch this file
+  var watcher = new tail.TailWatcher(new File(Platform.script.toFilePath()), 50);
+
+  makeSession(Tag request) {
+    if (request is ButtonDemo) {
+      return new button.ButtonDemo();
+    } else if (request is TailDemo) {
+      return new tail.TailDemo(watcher);
+    }
+    return null;
+  }
 
   HttpServer.bind("localhost", 8081).then((server) {
 
@@ -19,33 +36,13 @@ main(List<String> args) {
       if (path == "/ws") {
         WebSocketTransformer.upgrade(request).then((WebSocket socket) {
           print("websocket connected");
-          socketRoot(socket, $).mount(new ButtonSession());
+          socketRoot(socket, $, makeSession).start();
         });
       } else {
         sendNotFound(request);
       }
     });
   });
-}
-
-class ButtonSession extends Session<int> {
-  @override
-  getFirstState() => 0;
-
-  int get clicks => state;
-
-  onClick(_) {
-    print("button clicked");
-    nextState = clicks + 1;
-  }
-
-  @override
-  Tag render() {
-    return $.Div(inner: [
-                 $.Div(inner: "Clicks: ${clicks}"),
-                 $.Button(onClick: remote(onClick), inner: "Click to log a message"),
-                ]);
-  }
 }
 
 sendNotFound(HttpRequest request) {

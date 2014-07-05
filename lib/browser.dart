@@ -18,7 +18,7 @@ import 'dart:html';
 
 import 'package:tagtree/core.dart';
 import 'package:tagtree/html.dart';
-import 'package:tagtree/json.dart' show TaggedJsonCodec;
+import 'package:tagtree/json.dart' show TaggedJsonCodec, Jsonable;
 import 'package:tagtree/render.dart' as render;
 
 export 'package:tagtree/html.dart';

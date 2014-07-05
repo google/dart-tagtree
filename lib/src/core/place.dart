@@ -18,7 +18,11 @@ class Place<S> extends StateMachineMixin<S> {
   }
 
   @override
-  void invalidate() => _delegate.invalidate();
+  void invalidate() {
+    if (_delegate != null) {
+      _delegate.invalidate();
+    }
+  }
 
   /// If this property is set when [Animator.renderAt] returns, the renderer will call
   /// the given function after updating the DOM.

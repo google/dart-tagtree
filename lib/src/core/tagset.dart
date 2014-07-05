@@ -1,9 +1,10 @@
 part of core;
 
-/// A TagSet is a factory for Tags.
+/// A TagSet acts as a factory for a set of [JsonableTag]s.
 ///
-/// Tags can be created in two ways: with a method call (using noSuchMethod),
-/// or from JSON, using the codec returned by [makeCodec]).
+/// Tags can be created in two ways: using a method call (handled by
+/// noSuchMethod), or from JSON, using the codec returned by
+/// [makeCodec]).
 class TagSet {
   final Iterable<TagMaker> makers;
 
@@ -68,7 +69,7 @@ class TagSet {
   /// [RemoteCallback]s. Whenever a Handler is received,
   /// it will be replaced with a [HandlerFunc] that calls
   /// the given onEvent function.
-  TaggedJsonCodec makeCodec({OnRemoteEventFunc onEvent}) =>
+  TaggedJsonCodec makeCodec({OnRemoteHandlerEvent onEvent}) =>
       _makeCodec(this, onEvent: onEvent);
 
   /// Creates Tags from method calls using the tag's method name.

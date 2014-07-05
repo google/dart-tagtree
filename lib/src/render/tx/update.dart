@@ -26,7 +26,8 @@ abstract class _Update extends _Mount with _Unmount {
       return node;
 
     } else if (node is _ElementNode) {
-      if (nextAnim == null && nextTag is ElementTag) {
+      if (nextAnim == null && nextTag is ElementTag &&
+          node.tag.htmlTag == nextTag.htmlTag) {
         _updateElement(node, nextTag, oldTheme, newTheme);
         return node;
       } else {

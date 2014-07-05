@@ -1,3 +1,5 @@
+library tail;
+
 /// A websocket server that shows the last few lines of a file.
 /// Whenever the file changes, the browser view will automatically update.
 /// To use: run this command and then run web/client.html in Dartium.
@@ -9,63 +11,14 @@ import "dart:io";
 import "package:tagtree/core.dart";
 import "package:tagtree/server.dart";
 
-import "web/shared.dart";
+import '../web/shared.dart';
 
-final $ = new HtmlTagSet.withTags([$TextFile]);
+final $ = new HtmlTagSet();
 
-main(List<String> args) {
-  if (args.length == 0) {
-    // Show this file.
-    start(new File(Platform.script.toFilePath()));
-  } else if (args.length == 1) {
-    start(new File(args[0]));
-  } else {
-    exitUsage();
-  }
-}
-
-exitUsage() {
-  print("Usage: dart tail.dart [filename]");
-  exit(1);
-}
-
-start(File tailFile) {
-  if (!FileSystemEntity.isWatchSupported) {
-    print("Sorry, file watching isn't supported on this OS.");
-    exit(1);
-  }
-
-  if (!tailFile.existsSync()) {
-    print("file doesn't exist: ${tailFile}");
-    exitUsage();
-  }
-
-  var watcher = new TailWatcher(tailFile, 50);
-
-  HttpServer.bind("localhost", 8081).then((server) {
-
-    print("\nThe server is ready.");
-    print("Please run web/client.html in Dartium\n");
-    server.listen((request) {
-      String path = request.uri.path;
-      if (path == "/ws") {
-        WebSocketTransformer.upgrade(request).then((WebSocket socket) {
-          print("websocket connected");
-          socketRoot(socket, $).mount(new TailSession(watcher));
-        });
-      } else {
-        sendNotFound(request);
-      }
-    });
-  });
-}
-
-// View
-
-class TailSession extends Session<Tail> {
+class TailDemo extends Session<Tail> {
   final TailWatcher watcher;
 
-  TailSession(this.watcher) {
+  TailDemo(this.watcher) {
     watcher.onChange.listen((Tail t) {
       nextState = t;
     });
@@ -167,14 +120,4 @@ Future<Tail> loadTail(File f, int linesWanted, {int sizeGuess}) {
       return loadTail(f, linesWanted, sizeGuess: sizeGuess * 2);
     });
   });
-}
-
-// HTTP utility methods
-
-sendNotFound(HttpRequest request) {
-  print("sending not found for ${request.uri.path}");
-  request.response
-      ..statusCode = HttpStatus.NOT_FOUND
-      ..write('Not found')
-      ..close();
 }

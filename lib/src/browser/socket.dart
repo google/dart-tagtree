@@ -11,27 +11,29 @@ part of browser;
 ///
 /// All UI events within a RemoteZone are sent back to the remote session.
 class RemoteZone extends AnimatedTag<Tag> {
-  final String src;
   final Tag placeholder;
+  final String src;
+  final JsonableTag request;
   final HtmlTagSet exports;
   final Theme theme;
 
-  const RemoteZone({this.src, this.placeholder, this.exports, this.theme});
+  const RemoteZone({this.placeholder, this.src, this.request, this.exports, this.theme});
 
   @override
   bool checked() {
-    assert(src != null);
     assert(placeholder != null);
+    assert(src != null);
+    assert(request != null);
     assert(exports != null);
     return true;
   }
 
   @override
-  Place start() => new _RemoteTagPlace(placeholder, src, exports);
+  Place start() => new _RemoteTagPlace(placeholder, src, request, exports);
 
   @override
   Tag renderAt(_RemoteTagPlace p) {
-    p.configure(src, exports);
+    p.configure(src, request, exports);
     if (theme != null) {
       return new ThemeZone(theme, p.state);
     } else {
@@ -42,21 +44,24 @@ class RemoteZone extends AnimatedTag<Tag> {
 
 class _RemoteTagPlace extends Place<Tag> {
   String src;
+  JsonableTag request;
   HtmlTagSet tagSet;
   _Connection conn;
 
-  _RemoteTagPlace(Tag firstState, String src, HtmlTagSet tagSet) : super(firstState) {
-    configure(src, tagSet);
+  _RemoteTagPlace(Tag firstState, String src, JsonableTag request, HtmlTagSet tagSet) :
+    super(firstState) {
+    configure(src, request, tagSet);
   }
 
-  void configure(String src, HtmlTagSet tagSet) {
-    if (this.src != src) {
+  void configure(String src, JsonableTag request, HtmlTagSet tagSet) {
+    if (this.src != src || this.request != request) {
       _close();
-      conn = new _Connection(this, src, tagSet.makeCodec(onEvent: onZoneEvent));
+      conn = new _Connection(this, src, request, tagSet.makeCodec(onEvent: onZoneEvent));
     } else if (this.tagSet != tagSet && conn != null) {
       conn.codec = tagSet.makeCodec(onEvent: onZoneEvent);
     }
     this.src = src;
+    this.request = request;
     this.tagSet = tagSet;
   }
 
@@ -97,7 +102,7 @@ class _Connection {
 
   bool opened = false;
 
-  _Connection(_RemoteTagPlace place, String url, this.codec) :
+  _Connection(_RemoteTagPlace place, String url, Jsonable request, this.codec) :
     this.url = url,
     this.ws = new WebSocket(url)
   {
@@ -107,6 +112,10 @@ class _Connection {
       } else {
         place.showStatus("Websocket error");
       }
+    });
+
+    ws.onOpen.listen((_) {
+      send(request);
     });
 
     ws.onMessage.listen((MessageEvent e) {
@@ -126,8 +135,8 @@ class _Connection {
     });
   }
 
-  void send(RemoteCallback call) {
-    String msg = codec.encode(call);
+  void send(Jsonable data) {
+    String msg = codec.encode(data);
     ws.sendString(msg);
   }
 

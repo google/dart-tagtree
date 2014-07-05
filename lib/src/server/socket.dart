@@ -1,26 +1,45 @@
 part of server;
 
-WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker) =>
-    new WebSocketRoot(socket, maker);
+typedef Session MakeSessionFunc(core.JsonableTag tag);
+
+WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker, MakeSessionFunc makeSession) =>
+    new WebSocketRoot(socket, maker, makeSession);
 
 /// A WebSocketRoot runs a [Session] on a WebSocket.
 class WebSocketRoot {
   final WebSocket _socket;
+  final Stream incoming;
   final Codec<dynamic, String> _codec;
+  final MakeSessionFunc makeSession;
   Session _session;
   int nextFrameId = 0;
   _Frame _handleFrame, _nextFrame;
   bool renderScheduled = false;
 
-  WebSocketRoot(this._socket, core.TagSet tags) :
-      _codec = tags.makeCodec();
+  WebSocketRoot(WebSocket socket, core.TagSet tags, this.makeSession) :
+    _socket = socket,
+    incoming = socket.asBroadcastStream(),
+    _codec = tags.makeCodec();
 
-  /// Starts running a Session on this WebSocket.
+  /// Reads a request from the socket and starts the appropriate session.
+  void start() {
+    incoming.first.then((data) {
+      core.JsonableTag request = _codec.decode(data);
+      var session = makeSession(request);
+      if (session == null) {
+        print("ignored request: " + request.jsonTag);
+        _socket.close();
+      }
+      mount(session);
+    });
+  }
+
+  /// Starts running a different Session on this WebSocket.
   void mount(Session s) {
     assert(_session == null);
     _session = s;
     _session._mount(this);
-    _socket.forEach((String data) {
+    incoming.forEach((String data) {
       core.RemoteCallback call = _codec.decode(data);
       if (_handleFrame != null) {
         var func = _handleFrame.handlers[call.handler.id];

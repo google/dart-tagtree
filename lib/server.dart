@@ -11,7 +11,7 @@ library server;
 
 import 'package:tagtree/core.dart' as core;
 
-import 'dart:async' show scheduleMicrotask;
+import 'dart:async' show scheduleMicrotask, Stream;
 import 'dart:convert' show Codec;
 import 'dart:io';
 

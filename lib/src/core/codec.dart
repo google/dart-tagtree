@@ -1,8 +1,9 @@
 part of core;
 
-typedef void OnRemoteEventFunc(HandlerEvent event, RemoteHandler handler);
+/// A function to be called whenever a decoded [RemoteHandler] receives an event.
+typedef void OnRemoteHandlerEvent(HandlerEvent event, RemoteHandler handler);
 
-TaggedJsonCodec _makeCodec(TagSet tags, {OnRemoteEventFunc onEvent}) {
+TaggedJsonCodec _makeCodec(TagSet tags, {OnRemoteHandlerEvent onEvent}) {
   if (onEvent == null) {
     onEvent = (e, _) {
       print("ignored event to remote handler: ${e}");
@@ -12,7 +13,7 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnRemoteEventFunc onEvent}) {
   var rules = <JsonRule>[];
 
   for (TagMaker meta in tags.makers) {
-    rules.add(new TagRule(meta));
+    rules.add(new _JsonableTagRule(meta));
   }
 
   rules.add(new _RemoteHandlerRule(onEvent));
@@ -25,18 +26,18 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnRemoteEventFunc onEvent}) {
   return new TaggedJsonCodec(rules, [const JsonableFinder()]);
 }
 
-class TagRule extends JsonRule<Tag> {
+class _JsonableTagRule extends JsonRule<JsonableTag> {
   final TagMaker maker;
 
-  TagRule(TagMaker meta) : this.maker = meta, super(meta.jsonTag) {
+  _JsonableTagRule(TagMaker meta) : this.maker = meta, super(meta.jsonTag) {
     assert(meta.canDecodeJson);
   }
 
   @override
-  bool appliesTo(Tag instance) => instance is Tag && instance.jsonTag == tagName;
+  bool appliesTo(Tag instance) => instance is JsonableTag && instance.jsonTag == tagName;
 
   @override
-  encode(Tag tag) {
+  encode(JsonableTag tag) {
     assert(tag.checked()); // don't send malformed Tags over the network.
     var map = tag.props._map;
     assert(map != null);
@@ -48,7 +49,7 @@ class TagRule extends JsonRule<Tag> {
 }
 
 class _RemoteHandlerRule extends JsonRule<RemoteHandler> {
-  final OnRemoteEventFunc onHandlerCalled;
+  final OnRemoteHandlerEvent onHandlerCalled;
 
   _RemoteHandlerRule(this.onHandlerCalled): super("handler");
 

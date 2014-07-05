@@ -2,7 +2,44 @@ library shared;
 
 import "package:tagtree/core.dart";
 
-class TextFile extends Tag {
+/**
+ * Requests a button demo.
+ */
+class ButtonDemo extends JsonableTag {
+  const ButtonDemo();
+  get maker => $ButtonDemo;
+
+  static fromMap(_) => new ButtonDemo();
+  static toProps(_) => new PropsMap({});
+}
+
+const $ButtonDemo = const TagMaker(
+    jsonTag: "ButtonDemo",
+    fromMap: ButtonDemo.fromMap,
+    toProps: ButtonDemo.toProps
+);
+
+/**
+ * Requests that a file be tailed.
+ */
+class TailDemo extends JsonableTag {
+  const TailDemo();
+  get maker => $TailDemo;
+
+  static fromMap(_) => new TailDemo();
+  static toProps(_) => new PropsMap({});
+}
+
+const $TailDemo = const TagMaker(
+    jsonTag: "TailDemo",
+    fromMap: TailDemo.fromMap,
+    toProps: TailDemo.toProps
+);
+
+/**
+ * An animation frame returned by [TailDemo].
+ */
+class TextFile extends JsonableTag {
   final List<String> lines;
 
   const TextFile({this.lines});
