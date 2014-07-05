@@ -16,7 +16,6 @@ typedef PropsMap TagToProps(JsonTag tag);
 /// The [fromInvocation] method can be used to create a tag from within
 /// [noSuchMethod].
 ///
-/// By convention, the TagMaker for "Foo" should be in a constant named "$Foo".
 /// Multiple TagMakers can be collected into a [TagSet].
 class TagMaker {
   /// For decoding and encoding JSON

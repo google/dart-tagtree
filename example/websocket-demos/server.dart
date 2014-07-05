@@ -11,7 +11,7 @@ import "web/shared.dart";
 import "package:tagtree/core.dart";
 import "package:tagtree/server.dart";
 
-final $ = new HtmlTagSet.withTags([$ButtonDemo, $TailDemo, $TextFile]);
+final $ = new HtmlTagSet.withTags([ButtonDemo.$maker, TailDemo.$maker, TailSnapshot.$maker]);
 
 main(List<String> args) {
 

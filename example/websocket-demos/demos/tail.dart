@@ -34,7 +34,7 @@ class TailDemo extends Session<Tail> {
     }
     return $.Div(inner: [
         $.H1(inner: "The last ${state.lines.length} lines of ${state.file.path}"),
-        new TextFile(lines: state.lines)
+        new TailSnapshot(lines: state.lines)
         ]);
   }
 }

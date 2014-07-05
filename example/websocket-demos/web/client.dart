@@ -3,10 +3,10 @@ import "package:tagtree/core.dart";
 
 import "shared.dart";
 
-final $ = new HtmlTagSet.withTags([$ButtonDemo, $TailDemo, $TextFile]);
+final $ = new HtmlTagSet.withTags([ButtonDemo.$maker, TailDemo.$maker, TailSnapshot.$maker]);
 
 final theme = new Theme(const {
-  TextFile: const _TextFile(),
+  TailSnapshot: const _TextFile(),
 });
 
 class DemoPicker extends AnimatedTag<JsonTag> {
@@ -49,7 +49,7 @@ class _TextFile extends Template {
   const _TextFile();
 
   @override
-  render(TextFile tag) => $.Pre(inner: tag.lines.join("\n"));
+  render(TailSnapshot tag) => $.Pre(inner: tag.lines.join("\n"));
 }
 
 main() =>

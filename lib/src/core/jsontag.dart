@@ -7,8 +7,8 @@ abstract class JsonTag extends Tag implements Jsonable {
   /// Remotely-rendered tags usually get their implementation from a [Theme].
   Animator get animator => null;
 
-  /// Subclasses must supply a TagMaker. By convention, a tag named "Foo" should
-  /// be stored in a constant named "$Foo".
+  /// Subclasses must supply a TagMaker. By convention, the maker property
+  /// should point to a static constant named "$maker".
   TagMaker get maker;
 
   @override

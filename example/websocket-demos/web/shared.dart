@@ -7,44 +7,42 @@ import "package:tagtree/core.dart";
  */
 class ButtonDemo extends JsonTag {
   const ButtonDemo();
-  get maker => $ButtonDemo;
+  get maker => $maker;
 
+  static const $maker = const TagMaker(
+      jsonTag: "ButtonDemo",
+      fromMap: fromMap,
+      toProps: toProps
+  );
   static fromMap(_) => new ButtonDemo();
   static toProps(_) => new PropsMap({});
 }
-
-const $ButtonDemo = const TagMaker(
-    jsonTag: "ButtonDemo",
-    fromMap: ButtonDemo.fromMap,
-    toProps: ButtonDemo.toProps
-);
 
 /**
  * Requests that a file be tailed.
  */
 class TailDemo extends JsonTag {
   const TailDemo();
-  get maker => $TailDemo;
+  get maker => $maker;
 
+  static const $maker = const TagMaker(
+      jsonTag: "TailDemo",
+      fromMap: fromMap,
+      toProps: toProps
+  );
   static fromMap(_) => new TailDemo();
   static toProps(_) => new PropsMap({});
 }
 
-const $TailDemo = const TagMaker(
-    jsonTag: "TailDemo",
-    fromMap: TailDemo.fromMap,
-    toProps: TailDemo.toProps
-);
-
 /**
- * An animation frame returned by [TailDemo].
+ * A file snapshot returned by [TailDemo].
  */
-class TextFile extends JsonTag {
+class TailSnapshot extends JsonTag {
   final List<String> lines;
 
-  const TextFile({this.lines});
+  const TailSnapshot({this.lines});
 
-  TextFile._fromMap(Map<String, dynamic> props) :
+  TailSnapshot._fromMap(Map<String, dynamic> props) :
     this(lines: props["lines"]);
 
   @override
@@ -57,14 +55,13 @@ class TextFile extends JsonTag {
   get animator => null; // theme must provide
 
   @override
-  get maker => $TextFile;
+  get maker => $maker;
 
-  static fromMap(Map<String, dynamic> m) => new TextFile._fromMap(m);
-  static toProps(TextFile tag) => new PropsMap({"lines": tag.lines});
+  static const $maker = const TagMaker(
+    jsonTag: "TailSnapshot",
+    fromMap: fromMap,
+    toProps: toProps
+  );
+  static fromMap(m) => new TailSnapshot._fromMap(m);
+  static toProps(TailSnapshot tag) => new PropsMap({"lines": tag.lines});
 }
-
-const $TextFile = const TagMaker(
-  jsonTag: "TextFile",
-  fromMap: TextFile.fromMap,
-  toProps: TextFile.toProps
-);
