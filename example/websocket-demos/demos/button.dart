@@ -7,23 +7,24 @@ import "package:tagtree/server.dart";
 
 final $ = new HtmlTagSet();
 
-class ButtonDemoSession extends Session<ButtonDemo, int> {
-  @override
-  getFirstState(_) => 0;
-
-  int get clicks => state;
-
-  onClick(_) {
-    print("button clicked");
-    nextState = clicks + 1;
-  }
+class ButtonAnimator extends Animator<ButtonDemo, int> {
+  const ButtonAnimator();
 
   @override
-  Tag render(_) {
+  Place start(ButtonDemo tag) => new Place(0);
+
+  @override
+  Tag renderAt(Place<int> p, ButtonDemo tag) {
+
+    onClick(_) {
+      print("button clicked");
+      p.nextState = p.nextState + 1;
+    }
+
     return $.Div(inner: [
-                 $.H1(inner: "Button Demo"),
-                 $.Div(inner: "Clicks: ${clicks}"),
-                 $.Button(onClick: remote(onClick), inner: "Click to log a message"),
-                ]);
+     $.H1(inner: "Button Demo"),
+     $.Div(inner: "Clicks: ${p.state}"),
+     $.Button(onClick: p.handler(onClick), inner: "Click to log a message"),
+    ]);
   }
 }

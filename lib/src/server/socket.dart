@@ -1,23 +1,26 @@
 part of server;
 
-typedef Session MakeSessionFunc(core.JsonTag tag);
+typedef core.Animator MakeAnimatorFunc(core.JsonTag tag);
 
-WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker, MakeSessionFunc makeSession) =>
-    new WebSocketRoot(socket, maker, makeSession);
+WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker, MakeAnimatorFunc makeAnim) =>
+    new WebSocketRoot(socket, maker, makeAnim);
 
-/// A WebSocketRoot runs a [Session] on a WebSocket.
+/// A WebSocketRoot runs a Animator on a WebSocket.
 class WebSocketRoot {
   final WebSocket _socket;
   final Stream incoming;
   final Codec<dynamic, String> _codec;
-  final MakeSessionFunc makeSession;
+  final MakeAnimatorFunc makeAnim;
+
   core.JsonTag _request;
-  Session _session;
+  core.Animator _anim;
+  core.Place _place;
+
   int nextFrameId = 0;
   _Frame _handleFrame, _nextFrame;
   bool renderScheduled = false;
 
-  WebSocketRoot(WebSocket socket, core.TagSet tags, this.makeSession) :
+  WebSocketRoot(WebSocket socket, core.TagSet tags, this.makeAnim) :
     _socket = socket,
     incoming = socket.asBroadcastStream(),
     _codec = tags.makeCodec();
@@ -26,20 +29,23 @@ class WebSocketRoot {
   void start() {
     incoming.first.then((data) {
       core.JsonTag request = _codec.decode(data);
-      var session = makeSession(request);
-      if (session == null) {
+      var anim = makeAnim(request);
+      if (anim == null) {
         print("ignored request: " + request.jsonTag);
         _socket.close();
       }
-      mount(session, request);
+      mount(anim, request);
     });
   }
 
   /// Starts running a different Session on this WebSocket.
-  void mount(Session s, core.JsonTag request) {
-    assert(_session == null);
-    _session = s;
-    _session._mount(this, request);
+  void mount(core.Animator anim, core.JsonTag request) {
+    assert(_anim == null);
+    _anim = anim;
+    _place = _anim.start(request);
+    _place.mount(new _PlaceDelegate(this));
+    _request = request;
+
     incoming.forEach((String data) {
       core.RemoteCallback call = _codec.decode(data);
       if (_handleFrame != null) {
@@ -53,6 +59,7 @@ class WebSocketRoot {
         print("ignored callback (no frame): ${data}");
       }
     });
+
     _requestFrame();
   }
 
@@ -66,15 +73,35 @@ class WebSocketRoot {
 
   _render() {
     renderScheduled = false;
-    _session.commitState();
+    _place.commitState();
     _nextFrame = new _Frame(nextFrameId++);
-    String encoded = _codec.encode(_session.render(_request));
+    String encoded = _codec.encode(_anim.renderAt(_place, _request));
     _socket.add(encoded);
 
     // TODO: possibly keep more than one frame in case of late callbacks
     // due to frame pipelining.
     _handleFrame = _nextFrame;
     _nextFrame = null;
+  }
+}
+
+class _PlaceDelegate extends core.PlaceDelegate {
+  WebSocketRoot root;
+  _PlaceDelegate(this.root);
+
+  @override
+  void invalidate() {
+    root._requestFrame();
+  }
+
+  @override
+  void set onRendered(callback(core.Place p)) {
+    throw "onRendered not implemented for server-side animations";
+  }
+
+  @override
+  core.HandlerFunc wrapHandler(core.HandlerFunc h) {
+    return root._nextFrame.createHandler(h);
   }
 }
 

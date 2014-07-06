@@ -4,7 +4,7 @@ library tail;
 /// Whenever the file changes, the browser view will automatically update.
 /// To use: run this command and then run web/client.html in Dartium.
 
-import "dart:async" show Completer, Future, Stream, StreamController, StreamSink;
+import "dart:async";
 import "dart:convert" show UTF8;
 import "dart:io";
 
@@ -15,29 +15,34 @@ import '../web/shared.dart';
 
 final $ = new HtmlTagSet();
 
-class TailDemoSession extends Session<TailDemo, Tail> {
+class TailAnimator extends Animator<TailDemo, Tail> {
   final TailWatcher watcher;
 
-  TailDemoSession(this.watcher);
+  TailAnimator(this.watcher);
 
   @override
-  getFirstState(TailDemo request) {
-    watcher.onChange.listen((Tail t) {
-      nextState = t.suffix(request.lineCount);
-    });
-    return watcher.currentValue.suffix(request.lineCount);
+  Place start(_) {
+    var p = new Place(watcher.currentValue);
+    StreamSubscription sub;
+    p.onMount = (_) {
+      sub = watcher.onChange.listen((Tail t) {
+        p.nextState = t;
+      });
+    };
+    p.onUnmount = (_) {
+      sub.cancel();
+    };
+    return p;
   }
 
   @override
-  Tag render(TailDemo request) {
-    if (state == null) {
-      return $.Div(inner: "Loading...");
-    }
+  Tag renderAt(Place<Tail> p, TailDemo tag) {
+    Tail t = p.state.suffix(tag.lineCount);
     return $.Div(inner: [
         $.H1(inner: "Tail Demo"),
-        $.H2(inner: "The last ${state.lines.length} lines of ${state.file.path}"),
-        new TailSnapshot(lines: state.lines)
-        ]);
+        $.H2(inner: "The last ${t.lines.length} lines of ${t.file.path}"),
+        new TailSnapshot(lines: t.lines)
+    ]);
   }
 }
 
@@ -131,3 +136,4 @@ Future<Tail> loadTail(File f, int linesWanted, {int sizeGuess}) {
     });
   });
 }
+

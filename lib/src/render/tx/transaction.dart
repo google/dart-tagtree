@@ -11,7 +11,7 @@ class _Transaction extends _Update {
   final List<_AnimatedNode> _nodesToUpdate;
 
   // What was done
-  final List<OnRendered> _renderCallbacks = [];
+  final List<Function> _renderCallbacks = [];
 
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree,
       Iterable<_AnimatedNode> nodesToUpdate)
@@ -44,7 +44,7 @@ class _Transaction extends _Update {
       dom.mountForm(form.path);
     }
 
-    for (OnRendered callback in _renderCallbacks) {
+    for (Function callback in _renderCallbacks) {
       callback();
     }
   }
@@ -67,9 +67,9 @@ class _Transaction extends _Update {
   // What was done
 
   @override
-  void addRenderCallback(OnRendered r) {
-    if (r != null) {
-      _renderCallbacks.add(r);
+  void addRenderCallback(Function callback) {
+    if (callback != null) {
+      _renderCallbacks.add(callback);
     }
   }
 

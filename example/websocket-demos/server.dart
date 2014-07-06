@@ -18,11 +18,11 @@ main(List<String> args) {
   // watch this file
   var watcher = new tail.TailWatcher(new File(Platform.script.toFilePath()), 50);
 
-  makeSession(Tag request) {
+  Animator getAnimator(Tag request) {
     if (request is ButtonDemo) {
-      return new button.ButtonDemoSession();
+      return const button.ButtonAnimator();
     } else if (request is TailDemo) {
-      return new tail.TailDemoSession(watcher);
+      return new tail.TailAnimator(watcher);
     }
     return null;
   }
@@ -36,7 +36,7 @@ main(List<String> args) {
       if (path == "/ws") {
         WebSocketTransformer.upgrade(request).then((WebSocket socket) {
           print("websocket connected");
-          socketRoot(socket, $, makeSession).start();
+          socketRoot(socket, $, getAnimator).start();
         });
       } else {
         sendNotFound(request);

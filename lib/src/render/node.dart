@@ -45,13 +45,23 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
   _Node shadow;
   bool _isDirty = true;
 
-  @override
-  OnRendered onRendered;
+  PlaceCallback _onRendered;
 
   _AnimatedNode(String path, int depth, Tag tag, this.anim, this._invalidate) :
     super(path, depth) {
     _place = anim.start(tag);
     _place.mount(this);
+  }
+
+  @override
+  set onRendered(PlaceCallback callback) {
+    _onRendered = callback;
+  }
+
+  void fireOnRendered() {
+    if (_onRendered != null) {
+      _onRendered(_place);
+    }
   }
 
   @override
@@ -61,6 +71,9 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
       _isDirty = true;
     }
   }
+
+  @override
+  HandlerFunc wrapHandler(h) => h;
 
   bool get isMounted => _place != null;
 

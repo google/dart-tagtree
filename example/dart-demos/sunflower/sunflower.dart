@@ -32,7 +32,7 @@ class SunflowerApp extends AnimatedTag<int> {
 
     // Ask for a callback when the DOM is ready.
     var canvas = new Ref<CanvasElement>();
-    p.onRendered = () => draw(canvas.elt.context2D, seeds, seedRadius);
+    p.onRendered = (_) => draw(canvas.elt.context2D, seeds, seedRadius);
 
     return $.Div(inner: [
 

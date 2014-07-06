@@ -8,7 +8,7 @@
  *
  * A [RemoteZone] can be used to display a stream of tag trees loaded from a WebSocket,
  * and send events back to the server.
- * (The server should use a WebSocketRoot and a Session for its end of the connection.)
+ * (The server should use a WebSocketRoot for its end of the connection.)
  */
 library browser;
 
