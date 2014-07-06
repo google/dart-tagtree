@@ -15,25 +15,27 @@ import '../web/shared.dart';
 
 final $ = new HtmlTagSet();
 
-class TailDemo extends Session<Tail> {
+class TailDemoSession extends Session<TailDemo, Tail> {
   final TailWatcher watcher;
 
-  TailDemo(this.watcher) {
+  TailDemoSession(this.watcher);
+
+  @override
+  getFirstState(TailDemo request) {
     watcher.onChange.listen((Tail t) {
-      nextState = t;
+      nextState = t.suffix(request.lineCount);
     });
+    return watcher.currentValue.suffix(request.lineCount);
   }
 
   @override
-  getFirstState() => watcher.currentValue;
-
-  @override
-  Tag render() {
+  Tag render(TailDemo request) {
     if (state == null) {
       return $.Div(inner: "Loading...");
     }
     return $.Div(inner: [
-        $.H1(inner: "The last ${state.lines.length} lines of ${state.file.path}"),
+        $.H1(inner: "Tail Demo"),
+        $.H2(inner: "The last ${state.lines.length} lines of ${state.file.path}"),
         new TailSnapshot(lines: state.lines)
         ]);
   }
@@ -45,6 +47,14 @@ class Tail {
   final File file;
   final List<String> lines;
   Tail(this.file, this.lines);
+
+  Tail suffix(int lineCount) {
+    int skip = lines.length - lineCount;
+    if (skip < 0) {
+      skip = 0;
+    }
+    return new Tail(file, lines.sublist(skip));
+  }
 }
 
 /// Watches a file for changes.

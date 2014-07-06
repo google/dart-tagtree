@@ -1,14 +1,14 @@
 part of server;
 
 /// A Session renders its UI remotely, via a web socket.
-abstract class Session<S> extends core.StateMachineMixin<S> {
+abstract class Session<R extends core.JsonTag, S> extends core.StateMachineMixin<S> {
   WebSocketRoot _root;
 
-  S getFirstState();
+  S getFirstState(R request);
 
-  _mount(root) {
+  _mount(root, R request) {
     _root = root;
-    initStateMachine(getFirstState());
+    initStateMachine(getFirstState(request));
   }
 
   @override
@@ -16,7 +16,7 @@ abstract class Session<S> extends core.StateMachineMixin<S> {
     _root._requestFrame();
   }
 
-  core.Tag render();
+  core.Tag render(R request);
 
   /// Wraps an event callback so that it can be sent over the WebSocket.
   /// This method may only be called during render.

@@ -1,13 +1,15 @@
 library button;
 
+import "../web/shared.dart";
+
 import "package:tagtree/core.dart";
 import "package:tagtree/server.dart";
 
 final $ = new HtmlTagSet();
 
-class ButtonDemo extends Session<int> {
+class ButtonDemoSession extends Session<ButtonDemo, int> {
   @override
-  getFirstState() => 0;
+  getFirstState(_) => 0;
 
   int get clicks => state;
 
@@ -17,8 +19,9 @@ class ButtonDemo extends Session<int> {
   }
 
   @override
-  Tag render() {
+  Tag render(_) {
     return $.Div(inner: [
+                 $.H1(inner: "Button Demo"),
                  $.Div(inner: "Clicks: ${clicks}"),
                  $.Button(onClick: remote(onClick), inner: "Click to log a message"),
                 ]);

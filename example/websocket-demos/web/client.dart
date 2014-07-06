@@ -38,7 +38,7 @@ class DemoPicker extends AnimatedTag<JsonTag> {
       $.Div(inner: [
         "Choose a demo: ",
         makeButton(const ButtonDemo(), "Button"),
-        makeButton(const TailDemo(), "Tail")
+        makeButton(const TailDemo(25), "Tail")
       ]),
       serverDemo
     ]);

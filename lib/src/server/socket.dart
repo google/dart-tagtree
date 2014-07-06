@@ -11,6 +11,7 @@ class WebSocketRoot {
   final Stream incoming;
   final Codec<dynamic, String> _codec;
   final MakeSessionFunc makeSession;
+  core.JsonTag _request;
   Session _session;
   int nextFrameId = 0;
   _Frame _handleFrame, _nextFrame;
@@ -30,15 +31,15 @@ class WebSocketRoot {
         print("ignored request: " + request.jsonTag);
         _socket.close();
       }
-      mount(session);
+      mount(session, request);
     });
   }
 
   /// Starts running a different Session on this WebSocket.
-  void mount(Session s) {
+  void mount(Session s, core.JsonTag request) {
     assert(_session == null);
     _session = s;
-    _session._mount(this);
+    _session._mount(this, request);
     incoming.forEach((String data) {
       core.RemoteCallback call = _codec.decode(data);
       if (_handleFrame != null) {
@@ -67,7 +68,7 @@ class WebSocketRoot {
     renderScheduled = false;
     _session.commitState();
     _nextFrame = new _Frame(nextFrameId++);
-    String encoded = _codec.encode(_session.render());
+    String encoded = _codec.encode(_session.render(_request));
     _socket.add(encoded);
 
     // TODO: possibly keep more than one frame in case of late callbacks

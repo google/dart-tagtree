@@ -2,9 +2,7 @@ library shared;
 
 import "package:tagtree/core.dart";
 
-/**
- * Requests a button demo.
- */
+/// A server-side demo demonstrating event handling.
 class ButtonDemo extends JsonTag {
   const ButtonDemo();
   get maker => $maker;
@@ -18,11 +16,10 @@ class ButtonDemo extends JsonTag {
   static toProps(_) => new PropsMap({});
 }
 
-/**
- * Requests that a file be tailed.
- */
+/// A server-side demo demonstrating view updating.
 class TailDemo extends JsonTag {
-  const TailDemo();
+  final int lineCount;
+  const TailDemo(this.lineCount);
   get maker => $maker;
 
   static const $maker = const TagMaker(
@@ -30,13 +27,11 @@ class TailDemo extends JsonTag {
       fromMap: fromMap,
       toProps: toProps
   );
-  static fromMap(_) => new TailDemo();
-  static toProps(_) => new PropsMap({});
+  static fromMap(Map props) => new TailDemo(props["lineCount"]);
+  static toProps(TailDemo tag) => new PropsMap({"lineCount": tag.lineCount});
 }
 
-/**
- * A file snapshot returned by [TailDemo].
- */
+/// A file snapshot returned by [TailDemo].
 class TailSnapshot extends JsonTag {
   final List<String> lines;
 

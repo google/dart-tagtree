@@ -20,9 +20,9 @@ main(List<String> args) {
 
   makeSession(Tag request) {
     if (request is ButtonDemo) {
-      return new button.ButtonDemo();
+      return new button.ButtonDemoSession();
     } else if (request is TailDemo) {
-      return new tail.TailDemo(watcher);
+      return new tail.TailDemoSession(watcher);
     }
     return null;
   }
