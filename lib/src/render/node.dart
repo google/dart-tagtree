@@ -35,7 +35,7 @@ abstract class _Node {
   void unmount();
 }
 
-class _AnimatedNode extends _Node implements PlaceDelegate {
+class _AnimatedNode extends _Node {
   Animator anim;
   _InvalidateFunc _invalidate;
   Place _place;
@@ -45,35 +45,17 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
   _Node shadow;
   bool _isDirty = true;
 
-  PlaceCallback _onRendered;
-
   _AnimatedNode(String path, int depth, Tag tag, this.anim, this._invalidate) :
     super(path, depth) {
     _place = anim.start(tag);
-    _place.mount(this);
+    _place.delegate = new _PlaceDelegate(this);
   }
 
-  @override
-  set onRendered(PlaceCallback callback) {
-    _onRendered = callback;
-  }
-
-  void fireOnRendered() {
-    if (_onRendered != null) {
-      _onRendered(_place);
+  void onRendered() {
+    if (_place.onRendered != null) {
+      _place.onRendered(_place);
     }
   }
-
-  @override
-  void invalidate() {
-    if (isMounted) {
-      _invalidate(this);
-      _isDirty = true;
-    }
-  }
-
-  @override
-  HandlerFunc wrapHandler(h) => h;
 
   bool get isMounted => _place != null;
 
@@ -100,11 +82,29 @@ class _AnimatedNode extends _Node implements PlaceDelegate {
     renderedTheme = null;
     shadow = null;
 
-    _place.unmount();
+    if (_place.onCut != null) {
+      _place.onCut(_place);
+    }
+    _place.delegate = null;
     _place = null;
+
     _invalidate = null;
     anim = null;
   }
+}
+
+class _PlaceDelegate extends PlaceDelegate {
+  final _AnimatedNode node;
+  _PlaceDelegate(this.node);
+
+  @override
+  void requestFrame() {
+    node._invalidate(node);
+    node._isDirty = true;
+  }
+
+  @override
+  HandlerFunc wrapHandler(HandlerFunc h) => h;
 }
 
 class _ThemeNode extends _Node {

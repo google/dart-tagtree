@@ -34,17 +34,18 @@ class WebSocketRoot {
         print("ignored request: " + request.jsonTag);
         _socket.close();
       }
-      mount(anim, request);
+      _mount(anim, request);
     });
   }
 
-  /// Starts running a different Session on this WebSocket.
-  void mount(core.Animator anim, core.JsonTag request) {
+  /// Starts running a Session on this WebSocket.
+  void _mount(core.Animator anim, core.JsonTag request) {
     assert(_anim == null);
     _anim = anim;
-    _place = _anim.start(request);
-    _place.mount(new _PlaceDelegate(this));
     _request = request;
+
+    _place = _anim.start(request);
+    _place.delegate = new _PlaceDelegate(this);
 
     incoming.forEach((String data) {
       core.RemoteCallback call = _codec.decode(data);
@@ -58,9 +59,18 @@ class WebSocketRoot {
       } else {
         print("ignored callback (no frame): ${data}");
       }
+    }).then((_) {
+      _unmount();
     });
 
     _requestFrame();
+  }
+
+  void _unmount() {
+    if (_place.onCut != null) {
+      _place.onCut(_place);
+    }
+    _place.delegate = null;
   }
 
   _requestFrame() {
@@ -90,13 +100,8 @@ class _PlaceDelegate extends core.PlaceDelegate {
   _PlaceDelegate(this.root);
 
   @override
-  void invalidate() {
+  void requestFrame() {
     root._requestFrame();
-  }
-
-  @override
-  void set onRendered(callback(core.Place p)) {
-    throw "onRendered not implemented for server-side animations";
   }
 
   @override

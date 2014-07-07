@@ -1,4 +1,3 @@
-import 'package:tagtree/core.dart';
 import 'package:tagtree/browser.dart';
 
 class HelloMessage extends TemplateTag {

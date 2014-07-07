@@ -79,7 +79,7 @@ abstract class _Update extends _Mount with _Unmount {
     node.shadow = updateOrReplace(node.shadow, shadowTree, oldTheme, newTheme);
 
     // This is last so that the shadow's callbacks fire before the parent.
-    addRenderCallback(node.fireOnRendered);
+    addRenderCallback(node.onRendered);
   }
 
   void _updateThemeZone(_ThemeNode node, ThemeZone next) {

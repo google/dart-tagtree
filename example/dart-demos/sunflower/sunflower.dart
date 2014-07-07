@@ -7,10 +7,10 @@
 
 library sunflower;
 
+import 'package:tagtree/browser.dart';
+
 import 'dart:html';
 import 'dart:math';
-import 'package:tagtree/core.dart';
-import 'package:tagtree/browser.dart';
 
 class SunflowerApp extends AnimatedTag<int> {
   final int startSeeds;

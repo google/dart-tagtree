@@ -37,7 +37,7 @@ abstract class _Mount {
       node.shadow = mountTag(shadow, theme, html, node.path, node.depth + 1);
 
       // This is last so that the shadows' callbacks happen before the parent.
-      addRenderCallback(node.fireOnRendered);
+      addRenderCallback(node.onRendered);
 
       return node;
 

@@ -1,86 +1,65 @@
 part of core;
 
-/// An Animator implements a [Tag] by rendering "shadow" tag trees
-/// in response to events.
+/// An Animator generates a stream of output tags from a stream of input tags.
+/// The input and output streams are called animations.
 ///
-/// Animators are stateless and may be freely shared; a single
-/// animator can render animations in multiple places at once.
-/// The renderer chooses which Animator to use for a Tag by either
-/// looking at the tag's [Tag.animator] property or by looking
-/// up the animator in a [Theme].
+/// An animation may contain other animations, all playing at the same time.
+/// This happens when a renderer pipes part of one animator's output stream
+/// into another animator. These pipelines form a tree structure that divide
+/// up a web page into nested animations. The outer animation controls the lifetime
+/// of the inner animations by deciding whether to render each tag in a new
+/// frame.
 ///
-/// Some animators just render a single frame, by substituting values
-/// into a template. (See the [Template] subclass.) In that case,
-/// a new frame won't be rendered until the input [Tag] or [Theme]
-/// changes. Other animators keep animation-specific state in each
-/// [Place] and render a new frame whenever this state changes.
+/// Animations don't run at a fixed frame rate. Instead, each animator generates
+/// frames as needed. The outer animation may be paused (not generating frames)
+/// or moving. When it generates a new frame, the renderer will send a [Tag] to each
+/// downstream animator, and they will usually render new frames as well. (But this
+/// may be skipped; see [shouldRender].)
 ///
-/// Whenever a Tag or Theme changes, the renderer needs to decide
-/// whether to continue playing the same animation or cut to a new
-/// animation. The animator makes this decision in [shouldCut].
+/// An inner animation may generate new frames on its own when the outer animation
+/// is paused, in response to events handled entirely within the inner animation. In
+/// this case, [Place.nextState] or [Place.step] should be used to trigger a new frame.
 abstract class Animator<T extends Tag, S> {
 
-  /// Animators are stateless and should be const.
+  /// Animators are normally const since they contain no animation-specific state.
+  /// (If not const, the == operator should be implemented, since it's used by the default
+  /// implementation of [shouldCut].)
   const Animator();
 
   /// Starts a new animation.
-  /// (Called automatically by the renderer.)
-  /// Returns the Place object that the renderer will use to keep
-  /// track of the animation.
-  Place start(T firstTag);
+  ///
+  /// The animator should create a new Place for keeping track of any animation-specific
+  /// state.
+  Place start(T firstInputTag);
 
   /// Renders one frame of an animation.
-  /// (Called automatically by the renderer.)
-  /// Returns the shadow tag tree to be rendered.
-  Tag renderAt(Place<S> place, T currentTag);
-
-  /// Returns true if the renderer should cut to a new animation.
-  /// stop playing this animation
-  /// and cut to the next one. (The current Place will be unmounted and a
-  /// new Place created for the next animation.)
   ///
-  /// Otherwise, the current animation will continue playing.
+  /// Creates an output tag tree that should be rendered in place of the [inputTag].
   ///
-  /// The default implementation cuts to the new animation if it's different,
-  /// according to the '==' operator.
-  bool shouldCut(Place<S> place, T nextTag, Animator nextAnim) => nextAnim != this;
+  /// A single animator can render frames from multiple animations that are all playing
+  /// at the same time. Therefore, animators must read any animation-specific state from
+  /// the provided [place]. Any event handlers in the generated output tree should write
+  /// to the same [place].
+  ///
+  /// The [inputTag] could be different for each frame. This happens when an animation
+  /// runs inside another animation and the outer animation renders a new frame.
+  Tag renderAt(Place<S> place, T inputTag);
 
   /// Returns true if [renderAt] should be called after a tag change.
-  /// Otherwise, the previous shadow will be reused, the possibly the DOM
-  /// update will be skipped.
+  ///
+  /// Otherwise, the previous shadow tree will be reused.
+  /// (This improves performance since updating the DOM can often
+  /// be skipped altogether.)
   bool shouldRender(Tag previousTag, Tag nextTag) => true;
+
+  /// Returns true if the renderer should cut to a new animation.
+  ///
+  /// If true, the current Place will be discarded after calling [Place.onCut],
+  /// and a new Place created by calling the next animation's [start] method.
+  /// Otherwise, the current animation will continue playing with the new input tag.
+  ///
+  /// The default implementation cuts to the next animation when the renderer chooses
+  /// a different animator (based on ==) for the next tag.
+  bool shouldCut(Place<S> place, T nextInputTag, Animator nextAnim) => this != nextAnim;
 }
 
-/// Implements a Tag and its Animator at the same time.
-/// (Useful for simple cases.)
-abstract class AnimatedTag<S> extends Tag {
-  const AnimatedTag();
-
-  @override
-  get animator => const _AnimatedTag();
-
-  Place start();
-
-  Tag renderAt(Place p);
-
-  /// Returns true if the renderer shold cut to a new animation.
-  /// If so, this tag will construct the new Place and render the new
-  /// animation's first frame.
-  /// Otherwise, the previous animation will continue and this
-  /// tag will render the next frame.
-  bool shouldCut(Place p) => false;
-}
-
-class _AnimatedTag<T extends AnimatedTag, S> extends Animator<T, S> {
-  const _AnimatedTag();
-
-  @override
-  Place start(T firstTag) => firstTag.start();
-
-  @override
-  renderAt(Place p, T currentTag) => currentTag.renderAt(p);
-
-  @override
-  bool shouldCut(Place<S> place, T nextTag, Animator nextAnim) =>
-      nextAnim != this || nextTag.shouldCut(place);
-}

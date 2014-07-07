@@ -1,5 +1,4 @@
 import 'package:tagtree/browser.dart';
-import 'package:tagtree/core.dart';
 
 class ReversableText extends AnimatedTag<bool> {
   final String text;

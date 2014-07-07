@@ -30,6 +30,5 @@ part 'src/core/place.dart';
 part 'src/core/state.dart';
 part 'src/core/tagmaker.dart';
 part 'src/core/tagset.dart';
-part 'src/core/template.dart';
 part 'src/core/theme.dart';
 part 'src/core/tag.dart';

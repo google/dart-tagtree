@@ -1,61 +1,62 @@
 part of core;
 
-/// A callback for updating the DOM after the renderer is finished rendering
-/// a frame of an animation.
-/// See [Place.onRendered].
-typedef OnRendered();
-
 typedef PlaceCallback(Place p);
 
 /// The place where an animation runs.
+///
+/// A Place holds animation-specific data while an animation is playing.
+/// To begin an animation, the renderer calls [Animator.start] to create a new
+/// Place. Before rendering each frame, the animator should get the current state
+/// from [Place.state].
+///
+/// Whenever an event handler gets or sets the [nextState] property, the
+/// Place automatically requests a new animation frame. (A new frame can
+/// also be requested by calling [step].)
 class Place<S> extends StateMachineMixin<S> {
-  PlaceDelegate _delegate;
-  PlaceCallback onMount;
-  PlaceCallback onUnmount;
 
+  /// Points to the renderer-specific implementation of this Place.
+  /// Non-null while the Place is mounted.
+  PlaceDelegate delegate;
+
+  /// Called after each animation frame is rendered (when local).
+  ///
+  /// If the animation is running locally, the renderer will call this function
+  /// after updating the DOM. The function can use a browser.Ref to get direct
+  /// access to a DOM node.
+  ///
+  /// Not called if the animator is running outside the browser.
+  PlaceCallback onRendered;
+
+  /// Called after the last frame of the animation.
+  /// The DOM hasn't been updated yet.
+  PlaceCallback onCut;
+
+  /// [Animator.start] should call this constructor.
   Place(S firstState) {
     initStateMachine(firstState);
   }
 
-  void mount(PlaceDelegate delegate) {
-    this._delegate = delegate;
-    if (onMount != null) {
-      onMount(this);
-    }
-  }
-
+  /// Requests that the next frame of this animation be rendered.
+  /// (Has no effect if the animation isn't running.)
   @override
-  void invalidate() {
-    if (_delegate != null) {
-      _delegate.invalidate();
+  void step() {
+    if (delegate != null) {
+      delegate.requestFrame();
     }
   }
 
-  /// If this Place is a server-side animation that's being displayed remotely,
-  /// wraps the given event handler so that it can be included in a tag tree
-  /// that will be sent over the network. (Otherwise does nothing.)
-  HandlerFunc handler(HandlerFunc h) => _delegate.wrapHandler(h);
-
-  /// If this property is set when [Animator.renderAt] returns, the renderer will call
-  /// the given function after updating the DOM.
-  /// The callback can be used along with browser.Ref and [ElementTag.ref] to
-  /// get direct access to a DOM node.
-  void set onRendered(PlaceCallback callback) {
-    _delegate.onRendered = callback;
-  }
-
-  /// Called when an animation ends at a place.
-  /// The DOM hasn't been removed yet.
-  void unmount() {
-    if (onUnmount != null) {
-      onUnmount(this);
-    }
-    _delegate = null;
-  }
+  /// Wraps an event handler to allow it to be called remotely.
+  ///
+  /// If an Animator can run on the server, it should call this method on each [HandlerFunc]
+  /// before adding it to the tag tree. (Note that there may be some lag before the handler
+  /// is called due to the time it takes to send the event from browser to server.)
+  ///
+  /// Has no effect if the animation is running locally.
+  HandlerFunc handler(HandlerFunc h) => delegate.wrapHandler(h);
 }
 
+/// The implementation of a Place.
 abstract class PlaceDelegate {
   HandlerFunc wrapHandler(HandlerFunc h);
-  void invalidate();
-  void set onRendered(PlaceCallback callback);
+  void requestFrame();
 }

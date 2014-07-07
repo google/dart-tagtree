@@ -14,6 +14,8 @@ import 'dart:async' show scheduleMicrotask, Stream;
 import 'dart:convert' show Codec;
 import 'dart:io';
 
+export 'package:tagtree/core.dart';
+export 'package:tagtree/common.dart';
 export 'package:tagtree/html.dart';
 
 part 'src/server/socket.dart';

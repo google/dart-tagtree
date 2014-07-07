@@ -50,19 +50,19 @@ abstract class StateMachineMixin<S> {
   _cast(x) => x;
 
   /// Subclass hook that will be called whenever the state becomes dirty.
-  void invalidate();
+  void step();
 
   /// Returns the currently rendered state. This should be treated as read-only.
   S get state => _state;
 
   /// Returns uncommitted state that will become current after a call to [commitState].
   /// The returned state object may safely be mutated.
-  /// Accessing next automatically marks it as dirty and calls [invalidate].
+  /// Accessing [nextState] automatically marks it as dirty and calls [step].
   S get nextState {
     if (_nextState == null) {
       _nextState = cloneState(_state);
       assert(_nextState != null);
-      invalidate();
+      step();
     }
     return _nextState;
   }
@@ -71,17 +71,6 @@ abstract class StateMachineMixin<S> {
   /// Automatically marks the state as dirty and calls invalidate().
   void set nextState(S s) {
     _nextState = s;
-    invalidate();
-  }
-
-  /// An alternate way to update the state.
-  void step(Step step) {
-    if (_nextState == null) {
-      _nextState = step(state);
-      assert(_nextState != null);
-    } else {
-      nextState = step(nextState);
-    }
-    invalidate();
+    step();
   }
 }

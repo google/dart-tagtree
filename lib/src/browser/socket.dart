@@ -51,6 +51,9 @@ class _RemoteTagPlace extends Place<Tag> {
   _RemoteTagPlace(Tag firstState, String src, JsonTag request, HtmlTagSet tagSet) :
     super(firstState) {
     configure(src, request, tagSet);
+    onCut = (_) {
+      _close();
+    };
   }
 
   void configure(String src, JsonTag request, HtmlTagSet tagSet) {
@@ -79,12 +82,6 @@ class _RemoteTagPlace extends Place<Tag> {
   void showStatus(String message) {
     print(message);
     nextState = tagSet.Div(inner: message);
-  }
-
-  @override
-  unmount() {
-    _close();
-    super.unmount();
   }
 
   void _close() {

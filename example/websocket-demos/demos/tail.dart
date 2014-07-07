@@ -23,15 +23,15 @@ class TailAnimator extends Animator<TailDemo, Tail> {
   @override
   Place start(_) {
     var p = new Place(watcher.currentValue);
-    StreamSubscription sub;
-    p.onMount = (_) {
-      sub = watcher.onChange.listen((Tail t) {
-        p.nextState = t;
-      });
-    };
-    p.onUnmount = (_) {
+
+    var sub = watcher.onChange.listen((Tail t) {
+      p.nextState = t;
+    });
+
+    p.onCut = (_) {
       sub.cancel();
     };
+
     return p;
   }
 

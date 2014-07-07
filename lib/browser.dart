@@ -17,10 +17,13 @@ import 'dart:collection' show HashMap;
 import 'dart:html';
 
 import 'package:tagtree/core.dart';
+import 'package:tagtree/common.dart' show AnimatedTag;
 import 'package:tagtree/html.dart';
 import 'package:tagtree/json.dart' show TaggedJsonCodec, Jsonable;
 import 'package:tagtree/render.dart' as render;
 
+export 'package:tagtree/core.dart';
+export 'package:tagtree/common.dart';
 export 'package:tagtree/html.dart';
 
 part 'src/browser/dom.dart';

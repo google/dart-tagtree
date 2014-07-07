@@ -6,27 +6,23 @@ class TimerApp extends AnimatedTag<int> {
   const TimerApp();
 
   @override
-  start() => new Ticker(new Duration(seconds: 1));
+  start() {
+    var p = new Place(0);
+
+    var tick = (_) {
+      p.nextState += 1;
+    };
+
+    Timer timer = new Timer.periodic(new Duration(seconds: 1), tick);
+    p.onCut = (_) {
+      timer.cancel();
+    };
+
+    return p;
+  }
 
   @override
-  renderAt(Ticker p) => $.Div(inner: "Seconds elapsed: ${p.state}");
-}
-
-class Ticker extends Place<int> {
-  Timer timer;
-  Ticker(Duration period) : super(0) {
-    timer = new Timer.periodic(period, tick);
-  }
-
-  tick(_) {
-    nextState += 1;
-  }
-
-  @override
-  unmount() {
-    timer.cancel();
-    super.unmount();
-  }
+  renderAt(Place<int> p) => $.Div(inner: "Seconds elapsed: ${p.state}");
 }
 
 main() =>
