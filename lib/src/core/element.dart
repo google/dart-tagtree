@@ -11,7 +11,7 @@ class ElementTag extends JsonTag {
   const ElementTag._raw(this.type, this.props);
 
   @override
-  TagMaker get maker => type.tagMaker;
+  TagMaker get jsonType => type.tagMaker;
 
   String get htmlTag => type.htmlTag;
 
@@ -29,11 +29,17 @@ class ElementTag extends JsonTag {
 /// Represents raw (unsanitized) HTML.
 /// It can be used as the value of an element's "inner" property.
 /// It will be passed through Dart's sanitizer when rendered.
-class RawHtml implements Jsonable {
+class RawHtml extends Jsonable {
   final String html;
   const RawHtml(this.html);
+
   @override
-  String get jsonTag => "rawHtml";
+  get jsonType => $jsonType;
+
+  static const $jsonType = const JsonType("rawHtml", toJson, fromJson);
+
+  static toJson(RawHtml rh) => rh.html;
+  static fromJson(String html, _) => new RawHtml(html);
 }
 
 /// The structure of an HTML element, as represented by an [ElementTag].
@@ -70,18 +76,24 @@ class ElementType {
     return true;
   }
 
-  TagMaker get tagMaker => new TagMaker(
-      jsonTag: htmlTag,
-      fromMap: makeTag,
-      toProps: (ElementTag tag) => tag.props,
-      handlers: handlerTypes,
-      method: method,
-      params: namedParamToKey
-  );
+  TagMaker get tagMaker {
+    if (_tagMaker[this] == null) {
+      assert(checked());
+      _tagMaker[this] = new TagMaker(
+        jsonTag: htmlTag,
+        fromMap: (map, _) => makeTag(map),
+        toProps: (ElementTag tag) => tag.props,
+        handlers: handlerTypes,
+        method: method,
+        params: namedParamToKey
+      );
+    }
+    return _tagMaker[this];
+  }
 
   /// Creates a tag that will render as this HTML element.
   /// The map must only contain properties listed in [propTypes].
-  Tag makeTag(Map<String, dynamic> propMap) {
+  makeTag(Map<String, dynamic> propMap) {
     var v = new ElementTag._raw(this, new PropsMap(propMap));
     assert(checkTag(v));
     return v;
@@ -152,6 +164,7 @@ class ElementType {
   // Lazily initialized indexes.
   static final _props = new Expando<List<PropType>>();
   static final _propsByName = new Expando<Map<String, PropType>>();
+  static final _tagMaker = new Expando<TagMaker>();
 }
 
 /// A description of one property of an [ElementTag].

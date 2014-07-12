@@ -27,8 +27,8 @@ class TagSet {
     for (var meta in makers) {
       assert(meta.checked());
       if (meta.canDecodeJson) {
-        assert(byJson[meta.jsonTag] == null);
-        byJson[meta.jsonTag] = meta;
+        assert(byJson[meta.tagName] == null);
+        byJson[meta.tagName] = meta;
         for (var handler in meta.handlers) {
           var prev = handlerTypes[handler.propKey];
           assert(prev == null || prev == handler);

@@ -5,14 +5,14 @@ import "package:tagtree/core.dart";
 /// A server-side demo demonstrating event handling.
 class ButtonDemo extends JsonTag {
   const ButtonDemo();
-  get maker => $maker;
+  get jsonType => $maker;
 
   static const $maker = const TagMaker(
       jsonTag: "ButtonDemo",
       fromMap: fromMap,
       toProps: toProps
   );
-  static fromMap(_) => new ButtonDemo();
+  static fromMap(_, _2) => new ButtonDemo();
   static toProps(_) => new PropsMap({});
 }
 
@@ -20,14 +20,14 @@ class ButtonDemo extends JsonTag {
 class TailDemo extends JsonTag {
   final int lineCount;
   const TailDemo(this.lineCount);
-  get maker => $maker;
+  get jsonType => $maker;
 
   static const $maker = const TagMaker(
       jsonTag: "TailDemo",
       fromMap: fromMap,
       toProps: toProps
   );
-  static fromMap(Map props) => new TailDemo(props["lineCount"]);
+  static fromMap(Map props, _) => new TailDemo(props["lineCount"]);
   static toProps(TailDemo tag) => new PropsMap({"lineCount": tag.lineCount});
 }
 
@@ -50,13 +50,13 @@ class TailSnapshot extends JsonTag {
   get animator => null; // theme must provide
 
   @override
-  get maker => $maker;
+  get jsonType => $maker;
 
   static const $maker = const TagMaker(
     jsonTag: "TailSnapshot",
     fromMap: fromMap,
     toProps: toProps
   );
-  static fromMap(m) => new TailSnapshot._fromMap(m);
+  static fromMap(m,_) => new TailSnapshot._fromMap(m);
   static toProps(TailSnapshot tag) => new PropsMap({"lines": tag.lines});
 }

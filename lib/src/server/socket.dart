@@ -31,7 +31,7 @@ class WebSocketRoot {
       core.JsonTag request = _codec.decode(data);
       var anim = makeAnim(request);
       if (anim == null) {
-        print("ignored request: " + request.jsonTag);
+        print("ignored request: " + request.jsonType.tagName);
         _socket.close();
       }
       _mount(anim, request);

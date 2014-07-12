@@ -4,14 +4,14 @@ class TaggedJsonCodec extends Codec<dynamic, String> {
   Converter<dynamic, String> encoder;
   Converter<String, dynamic> decoder;
 
-  TaggedJsonCodec(Iterable<JsonRule> rules, Iterable<TagFinder> tagFinders) {
+  TaggedJsonCodec(Iterable<JsonRule> rules, Iterable<TagFinder> tagFinders, decodeContext) {
     var tagToRule = <String, JsonRule>{};
     for (var r in rules) {
       assert(!tagToRule.containsKey(r.tagName));
       tagToRule[r.tagName] = r;
     }
     encoder = new TaggedJsonEncoder(tagToRule, tagFinders);
-    decoder = new TaggedJsonDecoder(tagToRule);
+    decoder = new TaggedJsonDecoder(tagToRule, decodeContext);
   }
 }
 
@@ -33,7 +33,7 @@ abstract class JsonRule<T> {
   encode(T instance);
 
   /// Given a tree returned by [encode], creates an instance.
-  T decode(jsonTree);
+  T decode(jsonTree, decodeContext);
 }
 
 /// A TagFinder finds the JSON tag for encoding an instance.
@@ -105,11 +105,18 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
       return;
     }
 
-    assert(rule.appliesTo(v));
+    assert(_checkApplies(rule, v));
     var data = rule.encode(v);
     out.write("[${JSON.encode(rule.tagName)},");
     _encodeTree(out, data);
     out.write("]");
+  }
+
+  bool _checkApplies(JsonRule rule, v) {
+    if (!rule.appliesTo(v)) {
+      throw "rule doesn't apply: ${rule} to ${v}";
+    }
+    return true;
   }
 
   /// Returns the rule or null if there is none.
@@ -162,8 +169,9 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
 /// rule to decode the list.
 class TaggedJsonDecoder extends Converter<String, dynamic> {
   final Map<String, JsonRule> _rules;
+  final decodeContext;
 
-  TaggedJsonDecoder(this._rules);
+  TaggedJsonDecoder(this._rules, this.decodeContext);
 
   convert(String json) => JSON.decode(json, reviver: (k,v) {
     if (v is List) {
@@ -177,7 +185,7 @@ class TaggedJsonDecoder extends Converter<String, dynamic> {
           throw "no rule for tag: ${tag}";
         }
         assert(v.length == 2);
-        return rule.decode(v[1]);
+        return rule.decode(v[1], decodeContext);
       }
     } else {
       return v;
