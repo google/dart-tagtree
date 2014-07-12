@@ -10,12 +10,17 @@ abstract class Jsonable {
   JsonType get jsonType;
 }
 
-class JsonType extends JsonRule {
-  final JsonEncodeFunc toJson;
-  final JsonDecodeFunc fromJson;
-  const JsonType(String tag, this.toJson, this.fromJson) : super(tag);
+class JsonType<T extends Jsonable> {
+  /// A tag used on the wire to identify instances encoded using this rule.
+  /// (The tag must be unique within a [JsonRuleSet].)
+  final String tagName;
 
-  @override
+  final JsonEncodeFunc _toJson;
+  final JsonDecodeFunc _fromJson;
+
+  const JsonType(this.tagName, this._toJson, this._fromJson);
+
+  /// Returns true if this rule can encode the instance.
   bool appliesTo(instance) {
     if (instance is Jsonable) {
       return instance.jsonType == this;
@@ -24,28 +29,20 @@ class JsonType extends JsonRule {
     }
   }
 
-  @override
-  encode(object) {
+  /// Returns the state of a Dart object as a JSON-encodable tree.
+  /// The result may contain Jsonable instances and these will be
+  /// encoded recursively.
+  encode(T object) {
     assert(object.checked());
-    var json = toJson(object);
+    var json = _toJson(object);
     assert(json != null);
     return json;
   }
 
-  @override
-  decode(json, context) => fromJson(json, context);
+  /// Given a tree returned by [encode], creates an instance.
+  T decode(json, context) => _fromJson(json);
 }
 
 typedef JsonEncodeFunc(Jsonable object);
 
-typedef Jsonable JsonDecodeFunc(jsonObject, decodeContext);
-
-class JsonableFinder implements TagFinder<Jsonable> {
-  const JsonableFinder();
-
-  @override
-  bool appliesToType(instance) => instance is Jsonable;
-
-  @override
-  String getTag(Jsonable instance) => instance.jsonType.tagName;
-}
+typedef Jsonable JsonDecodeFunc(jsonObject);

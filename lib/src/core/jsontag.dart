@@ -7,22 +7,15 @@ abstract class JsonTag extends Tag implements Jsonable {
   /// Remotely-rendered tags usually get their implementation from a [Theme].
   Animator get animator => null;
 
-  /// Subclasses must supply a TagMaker. By convention, the maker property
-  /// should point to a static constant named "$maker".
-  TagMaker get jsonType;
-
   /// Returns the tag's props as a [PropsMap].
   ///
   /// Throws an exception if not implemented. Subclasses should implement
-  /// this method by implementing [jsonType] and [TagMaker.toProps].
+  /// this method by implementing [jsonType].
   PropsMap get props {
     var p = _propsCache[this];
     if (p == null) {
       assert(checked());
-      if (jsonType.toJson == null) {
-        throw "TagMaker for ${runtimeType} doesn't have an encoder function";
-      }
-      p = new PropsMap(jsonType.toJson(this));
+      p = new PropsMap(jsonType.encode(this));
       _propsCache[p] = p;
     }
     return p;

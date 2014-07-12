@@ -39,7 +39,7 @@ class RawHtml extends Jsonable {
   static const $jsonType = const JsonType("rawHtml", toJson, fromJson);
 
   static toJson(RawHtml rh) => rh.html;
-  static fromJson(String html, _) => new RawHtml(html);
+  static fromJson(String html) => new RawHtml(html);
 }
 
 /// The structure of an HTML element, as represented by an [ElementTag].
@@ -81,7 +81,7 @@ class ElementType {
       assert(checked());
       _tagMaker[this] = new TagMaker(
         jsonTag: htmlTag,
-        fromMap: (map, _) => makeTag(map),
+        fromMap: makeTag,
         toProps: (ElementTag tag) => tag.props,
         handlers: handlerTypes,
         method: method,

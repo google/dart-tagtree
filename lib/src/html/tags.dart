@@ -4,7 +4,7 @@ part of html;
 class HtmlTagSet extends TagSet with HtmlTags {
   HtmlTagSet() : super(_htmlTagMakers);
 
-  HtmlTagSet.withTags(Iterable<TagMaker> moreMakers) : super.concat(_htmlTagMakers, moreMakers);
+  HtmlTagSet.withTags(Iterable<JsonType> moreMakers) : super.concat(_htmlTagMakers, moreMakers);
 
   // Suppress warnings
   noSuchMethod(Invocation inv) => super.noSuchMethod(inv);

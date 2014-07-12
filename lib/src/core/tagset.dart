@@ -6,12 +6,12 @@ part of core;
 /// noSuchMethod), or from JSON, using the codec returned by
 /// [makeCodec]).
 class TagSet {
-  final Iterable<TagMaker> makers;
+  final Iterable<JsonType> types;
 
-  const TagSet(this.makers);
+  const TagSet(this.types);
 
-  TagSet.concat(Iterable<TagMaker> makers1, Iterable<TagMaker> makers2) :
-    this.makers = new List<TagMaker>.from(makers1)..addAll(makers2);
+  TagSet.concat(Iterable<JsonType> types1, Iterable<JsonType> types2) :
+    this.types = new List<JsonType>.from(types1)..addAll(types2);
 
   bool checked() => _init();
 
@@ -20,24 +20,27 @@ class TagSet {
       return true;
     }
 
-    var byJson = <String, TagMaker>{};
+    var byJson = <String, JsonType>{};
     var byMethod = <Symbol, TagMaker>{};
     var handlerTypes = <String, HandlerType>{};
 
-    for (var meta in makers) {
-      assert(meta.checked());
-      if (meta.canDecodeJson) {
-        assert(byJson[meta.tagName] == null);
-        byJson[meta.tagName] = meta;
-        for (var handler in meta.handlers) {
+    for (JsonType type in types) {
+      if (type is TagMaker) {
+        assert(type.checked());
+      }
+      assert(byJson[type.tagName] == null);
+
+      byJson[type.tagName] = type;
+      if (type is TagMaker) {
+        for (var handler in type.handlers) {
           var prev = handlerTypes[handler.propKey];
           assert(prev == null || prev == handler);
           handlerTypes[handler.propKey] = handler;
         }
-      }
-      if (meta.canDecodeInvocation) {
-        assert(byMethod[meta.method] == null);
-        byMethod[meta.method] = meta;
+        if (type.canDecodeInvocation) {
+          assert(byMethod[type.method] == null);
+          byMethod[type.method] = type;
+        }
       }
     }
 
@@ -47,7 +50,7 @@ class TagSet {
     return true;
   }
 
-  Map<String, TagMaker> get byJson {
+  Map<String, JsonType> get byJson {
     _init();
     return _byJson[this];
   }
@@ -83,7 +86,7 @@ class TagSet {
     return super.noSuchMethod(inv);
   }
 
-  static final _byJson = new Expando<Map<String, TagMaker>>();
+  static final _byJson = new Expando<Map<String, JsonType>>();
   static final _byMethod = new Expando<Map<Symbol, TagMaker>>();
   static final _handlerTypes = new Expando<Iterable<HandlerType>>();
 }

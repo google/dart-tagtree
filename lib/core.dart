@@ -21,6 +21,8 @@ library core;
 import 'dart:collection';
 import 'package:tagtree/json.dart';
 
+export 'package:tagtree/json.dart' show JsonType;
+
 part 'src/core/animator.dart';
 part 'src/core/codec.dart';
 part 'src/core/element.dart';

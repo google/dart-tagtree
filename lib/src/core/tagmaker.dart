@@ -2,7 +2,7 @@ part of core;
 
 /// A TagMaker provides additional ways to create a [JsonTag].
 ///
-/// The [fromJson] method creates a tag from a map containing its properties.
+/// The [_fromJson] method creates a tag from a map containing its properties.
 ///
 /// The [fromInvocation] method can be used to create a tag from within
 /// [noSuchMethod].
@@ -20,18 +20,12 @@ class TagMaker extends JsonType {
 
   bool checked() {
     assert(handlers != null);
-    if (canDecodeJson) {
-      assert(fromJson != null);
-    }
     if (canDecodeInvocation) {
       assert(tagName != null); // for error reporting
       assert(params != null);
-      assert(toJson != null);
     }
     return true;
   }
-
-  bool get canDecodeJson => tagName != null;
 
   bool get canDecodeInvocation => method != null;
 
@@ -48,6 +42,6 @@ class TagMaker extends JsonType {
       }
       propsMap[propKey] = inv.namedArguments[name];
     }
-    return fromJson(propsMap, null);
+    return decode(propsMap, null);
   }
 }

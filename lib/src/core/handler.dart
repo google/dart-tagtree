@@ -17,7 +17,7 @@ class HandlerType extends PropType {
 
       toJson(HandlerEvent e) => [e.elementPath, e.value];
 
-      HandlerEvent fromJson(array, _) {
+      HandlerEvent fromJson(array) {
         if (array is List && array.length == 2) {
           return new HandlerEvent(this, array[0], array[1]);
         } else {
@@ -75,11 +75,23 @@ class RemoteHandler extends Jsonable {
   @override
   get jsonType => $jsonType;
 
-  static const $jsonType = const JsonType("handler", toJson, fromJson);
+  static const $jsonType = const _RemoteHandlerType();
+}
 
-  static toJson(RemoteHandler h) => [h.frameId, h.id];
+class _RemoteHandlerType implements JsonType {
+  const _RemoteHandlerType();
 
-  static fromJson(array, OnRemoteHandlerEvent context) {
+  @override
+  String get tagName => "handler";
+
+  @override
+  bool appliesTo(instance) => instance is RemoteHandler;
+
+  @override
+  encode(RemoteHandler h) => [h.frameId, h.id];
+
+  @override
+  decode(array, OnRemoteHandlerEvent context) {
     if (array is List && array.length >= 2) {
       var handler = new RemoteHandler(array[0], array[1]);
       return (HandlerEvent event) {
@@ -105,7 +117,7 @@ class RemoteCallback extends Jsonable {
 
   static toJson(RemoteCallback call) => [call.handler.frameId, call.handler.id, call.event];
 
-  static fromJson(array, _) {
+  static fromJson(array) {
     if (array is List && array.length >= 3) {
       return new RemoteCallback(new RemoteHandler(array[0], array[1]), array[2]);
     } else {

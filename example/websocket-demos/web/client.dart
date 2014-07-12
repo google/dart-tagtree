@@ -3,7 +3,7 @@ import "package:tagtree/core.dart";
 
 import "shared.dart";
 
-final $ = new HtmlTagSet.withTags([ButtonDemo.$maker, TailDemo.$maker, TailSnapshot.$maker]);
+final $ = new HtmlTagSet.withTags([ButtonDemo.$jsonType, TailDemo.$jsonType, TailSnapshot.$jsonType]);
 
 final theme = new Theme(const {
   TailSnapshot: const _TextFile(),

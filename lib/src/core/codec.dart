@@ -10,19 +10,19 @@ TaggedJsonCodec _makeCodec(TagSet tags, {OnRemoteHandlerEvent onEvent}) {
     };
   }
 
-  var rules = <JsonRule>[];
+  var types = <JsonType>[];
 
-  for (TagMaker meta in tags.makers) {
-    rules.add(meta);
+  for (JsonType type in tags.types) {
+    types.add(type);
   }
-
-  rules.add(RemoteHandler.$jsonType);
-  rules.add(RemoteCallback.$jsonType);
   for (var type in tags.handlerTypes) {
-    rules.add(type.eventType);
+    types.add(type.eventType);
   }
-  rules.add(RawHtml.$jsonType);
 
-  return new TaggedJsonCodec(rules, [const JsonableFinder()], onEvent);
+  types.add(RemoteHandler.$jsonType);
+  types.add(RemoteCallback.$jsonType);
+  types.add(RawHtml.$jsonType);
+
+  return new TaggedJsonCodec(types, onEvent);
 }
 
