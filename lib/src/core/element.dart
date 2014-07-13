@@ -11,7 +11,7 @@ class ElementTag extends JsonTag {
   const ElementTag._raw(this.type, this.props);
 
   @override
-  TagMaker get jsonType => type.tagMaker;
+  TagType get jsonType => type.tagType;
 
   String get htmlTag => type.htmlTag;
 
@@ -76,19 +76,18 @@ class ElementType {
     return true;
   }
 
-  TagMaker get tagMaker {
-    if (_tagMaker[this] == null) {
+  TagType get tagType {
+    if (_tagType[this] == null) {
       assert(checked());
-      _tagMaker[this] = new TagMaker(
+      _tagType[this] = new TagType(
         jsonTag: htmlTag,
         fromMap: makeTag,
-        toProps: (ElementTag tag) => tag.props,
-        handlers: handlerTypes,
+        toMap: (ElementTag tag) => tag.props,
         method: method,
         params: namedParamToKey
       );
     }
-    return _tagMaker[this];
+    return _tagType[this];
   }
 
   /// Creates a tag that will render as this HTML element.
@@ -129,9 +128,6 @@ class ElementType {
     return out;
   }
 
-  /// The description of each property that stores a handler.
-  Iterable<HandlerType> get handlerTypes => propTypes.where((t) => t is HandlerType);
-
   /// A map from a named parameter to the property key to use with [makeTag].
   /// There is one entry for each property.
   Map<Symbol, String> get namedParamToKey {
@@ -164,7 +160,7 @@ class ElementType {
   // Lazily initialized indexes.
   static final _props = new Expando<List<PropType>>();
   static final _propsByName = new Expando<Map<String, PropType>>();
-  static final _tagMaker = new Expando<TagMaker>();
+  static final _tagType = new Expando<TagType>();
 }
 
 /// A description of one property of an [ElementTag].

@@ -2,25 +2,25 @@ part of render;
 
 /// Contains all the handlers for one Root.
 class _HandlerMap {
-  // A multimap from (handler key, path) to the handler to call.
-  final _handlers = <Symbol, Map<String, HandlerFunc>> {};
+  // A multimap from (event type, path) to the handler to call.
+  final _handlers = <String, Map<String, HandlerFunc>> {};
 
-  HandlerFunc getHandler(HandlerType type, String path) {
-    _handlers.putIfAbsent(type.namedParam, () => {});
-    return _handlers[type.namedParam][path];
+  HandlerFunc getHandler(String typeName, String path) {
+    _handlers.putIfAbsent(typeName, () => {});
+    return _handlers[typeName][path];
   }
 
-  void setHandler(HandlerType type, String path, HandlerFunc handler) {
-    _handlers.putIfAbsent(type.namedParam, () => {});
-    _handlers[type.namedParam][path] = handler;
+  void setHandler(String typeName, String path, HandlerFunc handler) {
+    _handlers.putIfAbsent(typeName, () => {});
+    _handlers[typeName][path] = handler;
   }
 
-  void removeHandler(HandlerType type, String path) {
-    _handlers[type.namedParam].remove(path);
+  void removeHandler(String typeName, String path) {
+    _handlers[typeName].remove(path);
   }
 
   void removeHandlersForPath(String path) {
-    for (Symbol key in _handlers.keys) {
+    for (String key in _handlers.keys) {
       Map m = _handlers[key];
       m.remove(path);
     }
@@ -37,21 +37,21 @@ bool _inEvent = false;
 void _dispatch(HandlerEvent e, _HandlerMap handlers) {
   if (_inEvent) {
     // React does this too; see EVENT_SUPPRESSION
-    print("ignored ${e.type.propKey} received while processing another event");
+    print("ignored ${e.typeName} received while processing another event");
     return;
   }
   _inEvent = true;
   try {
     if (e.elementPath != null) {
-      HandlerFunc h = handlers.getHandler(e.type, e.elementPath);
+      HandlerFunc h = handlers.getHandler(e.typeName, e.elementPath);
       if (h != null) {
-        debugLog("\n### ${e.type.propKey}");
+        debugLog("\n### ${e.typeName}");
         h(e);
       } else {
-        debugLog("\n (${e.type.propKey})");
+        debugLog("\n (${e.typeName})");
       }
     } else {
-      debugLog("\n (${e.type.propKey})");
+      debugLog("\n (${e.typeName})");
     }
   } finally {
     _inEvent = false;

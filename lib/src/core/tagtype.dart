@@ -1,25 +1,17 @@
 part of core;
 
-/// A TagMaker provides additional ways to create a [JsonTag].
-///
-/// The [_fromJson] method creates a tag from a map containing its properties.
-///
-/// The [fromInvocation] method can be used to create a tag from within
-/// [noSuchMethod].
-///
-/// Multiple TagMakers can be collected into a [TagSet].
-class TagMaker extends JsonType {
-  final Iterable<HandlerType> handlers;
+/// A TagType is a JsonType that also allows the tag to be created from an invocation.
+class TagType extends JsonType {
 
-  /// For decoding an Invocation
   final Symbol method;
   final Map<Symbol, String> params;
 
-  const TagMaker({String jsonTag, JsonDecodeFunc fromMap, JsonEncodeFunc toProps, this.handlers: const [],
-    this.method, this.params}) : super(jsonTag, toProps, fromMap);
+  const TagType({String jsonTag, JsonDecodeFunc fromMap, JsonEncodeFunc toMap,
+    List<JsonType> deps: const [],
+    this.method, this.params}) : super(jsonTag, toMap, fromMap, deps: deps);
 
   bool checked() {
-    assert(handlers != null);
+    assert(deps != null);
     if (canDecodeInvocation) {
       assert(tagName != null); // for error reporting
       assert(params != null);
@@ -29,6 +21,7 @@ class TagMaker extends JsonType {
 
   bool get canDecodeInvocation => method != null;
 
+  /// Creates a tag from method call, for use within noSuchMethod.
   JsonTag fromInvocation(Invocation inv) {
     if (!inv.positionalArguments.isEmpty) {
       throw "positional arguments not supported when creating tags";

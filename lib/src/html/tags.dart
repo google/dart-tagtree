@@ -2,9 +2,9 @@ part of html;
 
 /// A TagSet that includes HTML tags and events.
 class HtmlTagSet extends TagSet with HtmlTags {
-  HtmlTagSet() : super(_htmlTagMakers);
+  HtmlTagSet() : super(_htmlTagTypes);
 
-  HtmlTagSet.withTags(Iterable<JsonType> moreMakers) : super.concat(_htmlTagMakers, moreMakers);
+  HtmlTagSet.withTags(Iterable<JsonType> moreMakers) : super.concat(_htmlTagTypes, moreMakers);
 
   // Suppress warnings
   noSuchMethod(Invocation inv) => super.noSuchMethod(inv);
@@ -81,7 +81,7 @@ abstract class HtmlTags {
     inner});
 }
 
-final List<TagMaker> _htmlTagMakers = _htmlTags.map((e) => e.tagMaker).toList();
+final List<TagType> _htmlTagTypes = _htmlTags.map((e) => e.tagType).toList();
 
 final List<ElementType> _htmlTags = () {
 

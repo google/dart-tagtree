@@ -7,8 +7,8 @@ abstract class _Update extends _Mount with _Unmount {
   DomUpdater get dom;
 
   // What was updated
-  void setHandler(HandlerType type, String path, HandlerFunc handler);
-  void removeHandler(HandlerType type, String path);
+  void setHandler(String typeName, String path, HandlerFunc handler);
+  void removeHandler(String typeName, String path);
 
   /// Renders the next animation frame for the given node, if needed.
   /// Cuts to a new animation if needed, otherwise continues the current animation.
@@ -119,7 +119,7 @@ abstract class _Update extends _Mount with _Unmount {
 
       var propType = eltType.propsByName[key];
       if (propType is HandlerType) {
-        removeHandler(propType, path);
+        removeHandler(propType.propKey, path);
       } else if (propType is AttributeType) {
         dom.removeAttribute(path, propType.propKey);
       }
@@ -140,7 +140,7 @@ abstract class _Update extends _Mount with _Unmount {
 
       var type = eltType.propsByName[key];
       if (type is HandlerType) {
-        setHandler(type, path, newVal);
+        setHandler(type.propKey, path, newVal);
         continue;
       } else if (type is AttributeType) {
         String val = _makeDomVal(key, newVal);

@@ -21,22 +21,31 @@ class TagSet {
     }
 
     var byJson = <String, JsonType>{};
-    var byMethod = <Symbol, TagMaker>{};
-    var handlerTypes = <String, HandlerType>{};
+    var byMethod = <Symbol, TagType>{};
+
+    addType(JsonType newType) {
+      var prev = byJson[newType.tagName];
+      if (prev == newType) {
+        return;
+      } else if (prev == null) {
+        byJson[newType.tagName] = newType;
+        for (var dep in newType.deps) {
+          addType(dep);
+        }
+        return;
+      } else {
+        throw "already added: ${prev.tagName}";
+      }
+    }
 
     for (JsonType type in types) {
-      if (type is TagMaker) {
+      if (type is TagType) {
         assert(type.checked());
       }
-      assert(byJson[type.tagName] == null);
 
-      byJson[type.tagName] = type;
-      if (type is TagMaker) {
-        for (var handler in type.handlers) {
-          var prev = handlerTypes[handler.propKey];
-          assert(prev == null || prev == handler);
-          handlerTypes[handler.propKey] = handler;
-        }
+      addType(type);
+
+      if (type is TagType) {
         if (type.canDecodeInvocation) {
           assert(byMethod[type.method] == null);
           byMethod[type.method] = type;
@@ -46,7 +55,6 @@ class TagSet {
 
     _byJson[this] = byJson;
     _byMethod[this] = byMethod;
-    _handlerTypes[this] = handlerTypes.values;
     return true;
   }
 
@@ -55,21 +63,15 @@ class TagSet {
     return _byJson[this];
   }
 
-  Map<Symbol, TagMaker> get byMethod {
+  Map<Symbol, TagType> get byMethod {
     _init();
     return _byMethod[this];
   }
 
   Iterable<String> get jsonTags => byJson.keys;
 
-  /// Returns the types of all the handlers used by tags in this set.
-  Iterable<HandlerType> get handlerTypes {
-    _init();
-    return _handlerTypes[this];
-  }
-
   /// Creates a codec for sending and receiving [Tag]s and
-  /// [RemoteCallback]s. Whenever a Handler is received,
+  /// [RemoteCallback]s. Whenever a callback is received,
   /// it will be replaced with a [HandlerFunc] that calls
   /// the given onEvent function.
   TaggedJsonCodec makeCodec({OnRemoteHandlerEvent onEvent}) =>
@@ -78,7 +80,7 @@ class TagSet {
   /// Creates Tags from method calls using the tag's method name.
   noSuchMethod(Invocation inv) {
     if (inv.isMethod) {
-      TagMaker meta = byMethod[inv.memberName];
+      TagType meta = byMethod[inv.memberName];
       if (meta != null) {
         return meta.fromInvocation(inv);
       }
@@ -87,6 +89,5 @@ class TagSet {
   }
 
   static final _byJson = new Expando<Map<String, JsonType>>();
-  static final _byMethod = new Expando<Map<Symbol, TagMaker>>();
-  static final _handlerTypes = new Expando<Iterable<HandlerType>>();
+  static final _byMethod = new Expando<Map<Symbol, TagType>>();
 }

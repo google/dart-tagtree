@@ -27,7 +27,6 @@ abstract class JsonTag extends Tag implements Jsonable {
 /// A PropsMap provides an alternate representation of a [JsonTag]'s fields.
 class PropsMap extends UnmodifiableMapBase<String, dynamic> {
   final Map<String, dynamic> _map;
-
   PropsMap(this._map);
 
   @override

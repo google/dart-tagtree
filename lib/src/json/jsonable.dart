@@ -18,7 +18,10 @@ class JsonType<T extends Jsonable> {
   final JsonEncodeFunc _toJson;
   final JsonDecodeFunc _fromJson;
 
-  const JsonType(this.tagName, this._toJson, this._fromJson);
+  /// Additional types needed for encoding or decoding parts of this type.
+  final List<JsonType> deps;
+
+  const JsonType(this.tagName, this._toJson, this._fromJson, {this.deps: const []});
 
   /// Returns true if this rule can encode the instance.
   bool appliesTo(instance) {

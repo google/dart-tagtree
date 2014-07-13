@@ -10,7 +10,7 @@ abstract class _Mount {
   final List<_ElementNode> _renderedRefs = [];
   final List<_ElementNode> _mountedForms = [];
   void addRenderCallback(Function callback);
-  void addHandler(HandlerType type, String path, val);
+  void addHandler(String typeName, String path, val);
 
   /// Recursively expands a [Tag] to find the underlying HTML elements to render.
   /// Appends the HTML to a buffer and returns a tree of nodes corresponding to it.
@@ -126,7 +126,7 @@ abstract class _Mount {
       var propType = eltType.propsByName[key];
       var val = elt.props[key];
       if (propType is HandlerType) {
-        addHandler(propType, elt.path, val);
+        addHandler(propType.propKey, elt.path, val);
         continue;
       } else if (propType is AttributeType) {
         String escaped = HTML_ESCAPE.convert(_makeDomVal(key, val));

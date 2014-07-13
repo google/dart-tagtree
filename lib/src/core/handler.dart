@@ -11,31 +11,11 @@ class HandlerType extends PropType {
     assert(value is HandlerFunc);
     return true;
   }
-
-  JsonType get eventType {
-    if (_eventType[this] == null) {
-
-      toJson(HandlerEvent e) => [e.elementPath, e.value];
-
-      HandlerEvent fromJson(array) {
-        if (array is List && array.length == 2) {
-          return new HandlerEvent(this, array[0], array[1]);
-        } else {
-          throw "can't decode TagEvent: ${array.runtimeType}";
-        }
-      }
-
-      _eventType[this] = new JsonType(propKey, toJson, fromJson);
-    }
-    return _eventType[this];
-  }
-
-  static var _eventType = new Expando<JsonType>();
 }
 
 /// A value to be delivered to an event handler.
 class HandlerEvent extends Jsonable {
-  final HandlerType type;
+  final String typeName;
 
   /// The path in the rendered tag tree to the element node that should handle this event.
   /// (It's always an element since animated nodes have been expanded.)
@@ -44,13 +24,25 @@ class HandlerEvent extends Jsonable {
   /// The value to be delivered. (It should be serializable for remote handlers.)
   final value;
 
-  HandlerEvent(this.type, this.elementPath, this.value) {
-    assert(type != null);
+  HandlerEvent(HandlerType type, String elementPath, value) :
+    this._raw(type.propKey, elementPath, value);
+
+  HandlerEvent._raw(this.typeName, this.elementPath, this.value) {
+    assert(typeName != null);
     assert(elementPath != null);
   }
 
   @override
-  get jsonType => type.eventType;
+  get jsonType => $jsonType;
+
+  static const $jsonType = const JsonType("event", toJson, fromJson);
+
+  static toJson(HandlerEvent event) => [event.typeName, event.elementPath, event.value];
+
+  static fromJson(array) {
+    assert(array.length == 3);
+    return new HandlerEvent._raw(array[0], array[1], array[2]);
+  }
 }
 
 /// A function that's called when an event happens.
@@ -83,6 +75,9 @@ class _RemoteHandlerType implements JsonType {
 
   @override
   String get tagName => "handler";
+
+  @override
+  get deps => const [];
 
   @override
   bool appliesTo(instance) => instance is RemoteHandler;

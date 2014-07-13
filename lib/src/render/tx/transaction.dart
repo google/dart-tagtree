@@ -74,18 +74,18 @@ class _Transaction extends _Update {
   }
 
   @override
-  void addHandler(HandlerType type, String path, val) {
-    handlers.setHandler(type, path, val);
+  void addHandler(String typeName, String path, val) {
+    handlers.setHandler(typeName, path, val);
   }
 
   @override
-  void setHandler(HandlerType type, String path, val) {
-    handlers.setHandler(type, path, val);
+  void setHandler(String typeName, String path, val) {
+    handlers.setHandler(typeName, path, val);
   }
 
   @override
-  void removeHandler(HandlerType type, String path) {
-    handlers.removeHandler(type, path);
+  void removeHandler(String typeName, String path) {
+    handlers.removeHandler(typeName, path);
   }
 
   @override

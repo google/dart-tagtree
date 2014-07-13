@@ -13,6 +13,7 @@ class ReversableText extends AnimatedTag<bool> {
     onClick(event) {
       p.nextState = !p.nextState;
     }
+
     var renderedText = p.state ? reverse(text) : text;
 
     return $.Div(clazz: "sample_text", onClick: onClick, inner: renderedText);
