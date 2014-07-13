@@ -48,75 +48,46 @@ class HandlerEvent extends Jsonable {
 /// A function that's called when an event happens.
 typedef HandlerFunc(HandlerEvent e);
 
-/// A HandlerFunc that can be converted to JSON.
-class RemoteHandler extends Jsonable {
+/// A key representing a remote function.
+class FunctionKey extends Jsonable {
   final int frameId;
   final int id;
-  HandlerFunc delegate; // not encoded
 
-  RemoteHandler(this.frameId, this.id);
-
-  // implement HandlerFunc
-  call(HandlerEvent e) {
-    if (delegate == null) {
-      throw "delegate not set on RemoteHandler ${id}";
-    }
-    return delegate(e);
-  }
+  FunctionKey(this.frameId, this.id);
 
   @override
   get jsonType => $jsonType;
 
-  static const $jsonType = const _RemoteHandlerType();
-}
-
-class _RemoteHandlerType implements JsonType {
-  const _RemoteHandlerType();
-
-  @override
-  String get tagName => "handler";
-
-  @override
-  get deps => const [];
-
-  @override
-  bool appliesTo(instance) => instance is RemoteHandler;
-
-  @override
-  encode(RemoteHandler h) => [h.frameId, h.id];
-
-  @override
-  decode(array, OnRemoteHandlerEvent context) {
+  static const $jsonType = const JsonType("handler", toJson, fromJson);
+  static toJson(FunctionKey h) => [h.frameId, h.id];
+  static fromJson(array) {
     if (array is List && array.length >= 2) {
-      var handler = new RemoteHandler(array[0], array[1]);
-      return (HandlerEvent event) {
-        context(event, handler);
-      };
+      return new FunctionKey(array[0], array[1]);
     } else {
-      throw "can't decode Handler: ${array.runtimeType}";
+      throw "can't decode FunctionKey: ${array.runtimeType}";
     }
   }
 }
 
-/// A RemoteCallback contains an event to be delivered to a remote handler.
-class RemoteCallback extends Jsonable {
-  final RemoteHandler handler;
+/// A FunctionCall contains an event to be delivered to a remote handler.
+class FunctionCall extends Jsonable {
+  final FunctionKey key;
   final HandlerEvent event;
 
-  RemoteCallback(this.handler, this.event);
+  FunctionCall(this.key, this.event);
 
   @override
   get jsonType => $jsonType;
 
   static const $jsonType = const JsonType("call", toJson, fromJson);
 
-  static toJson(RemoteCallback call) => [call.handler.frameId, call.handler.id, call.event];
+  static toJson(FunctionCall call) => [call.key.frameId, call.key.id, call.event];
 
   static fromJson(array) {
     if (array is List && array.length >= 3) {
-      return new RemoteCallback(new RemoteHandler(array[0], array[1]), array[2]);
+      return new FunctionCall(new FunctionKey(array[0], array[1]), array[2]);
     } else {
-      throw "can't decode HandleCall: ${array.runtimeType}";
+      throw "can't decode FunctionCall: ${array.runtimeType}";
     }
   }
 }

@@ -43,7 +43,7 @@ class JsonType<T extends Jsonable> {
   }
 
   /// Given a tree returned by [encode], creates an instance.
-  T decode(json, context) => _fromJson(json);
+  T decode(json) => _fromJson(json);
 }
 
 typedef JsonEncodeFunc(Jsonable object);

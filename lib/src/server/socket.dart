@@ -9,9 +9,9 @@ WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker, MakeAnimatorFunc m
 class WebSocketRoot {
   final WebSocket _socket;
   final Stream incoming;
-  final Codec<dynamic, String> _codec;
   final MakeAnimatorFunc makeAnim;
 
+  Codec<dynamic, String> _codec;
   Jsonable _request;
   core.Animator _anim;
   core.Place _place;
@@ -22,8 +22,11 @@ class WebSocketRoot {
 
   WebSocketRoot(WebSocket socket, core.TagSet tags, this.makeAnim) :
     _socket = socket,
-    incoming = socket.asBroadcastStream(),
-    _codec = tags.makeCodec();
+    incoming = socket.asBroadcastStream() {
+
+    toKey(Function f) => _nextFrame.registerFunction(f);
+    _codec = tags.makeCodec(toKey: toKey);
+  }
 
   /// Reads a request from the socket and starts the appropriate session.
   void start() {
@@ -48,9 +51,9 @@ class WebSocketRoot {
     _place.delegate = new _PlaceDelegate(this);
 
     incoming.forEach((String data) {
-      core.RemoteCallback call = _codec.decode(data);
+      core.FunctionCall call = _codec.decode(data);
       if (_handleFrame != null) {
-        var func = _handleFrame.handlers[call.handler.id];
+        var func = _handleFrame.handlers[call.key.id];
         if (func != null) {
           func(call.event);
         } else {
@@ -103,23 +106,18 @@ class _PlaceDelegate extends core.PlaceDelegate {
   void requestFrame() {
     root._requestFrame();
   }
-
-  @override
-  core.HandlerFunc wrapHandler(core.HandlerFunc h) {
-    return root._nextFrame.createHandler(h);
-  }
 }
 
 class _Frame {
   final int id;
-  final Map handlers = <int, core.HandlerFunc>{};
+  final Map handlers = <int, Function>{};
   int nextHandlerId = 0;
 
   _Frame(this.id);
 
-  core.RemoteHandler createHandler(core.HandlerFunc func) {
-    var h = new core.RemoteHandler(id, nextHandlerId++);
-    handlers[h.id] = func;
+  core.FunctionKey registerFunction(Function f) {
+    var h = new core.FunctionKey(id, nextHandlerId++);
+    handlers[h.id] = f;
     return h;
   }
 }

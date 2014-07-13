@@ -75,8 +75,8 @@ class _RemoteTagPlace extends Place<Tag> {
 
   /// Called each time an animation frame in the zone (originally sent by the server)
   /// gets an event.
-  void onZoneEvent(HandlerEvent event, RemoteHandler handler) {
-    conn.send(new RemoteCallback(handler, event));
+  void onZoneEvent(HandlerEvent event, FunctionKey key) {
+    conn.send(new FunctionCall(key, event));
   }
 
   void showStatus(String message) {

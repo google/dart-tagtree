@@ -102,9 +102,6 @@ class _PlaceDelegate extends PlaceDelegate {
     node._invalidate(node);
     node._isDirty = true;
   }
-
-  @override
-  HandlerFunc wrapHandler(HandlerFunc h) => h;
 }
 
 class _ThemeNode extends _Node {

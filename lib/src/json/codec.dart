@@ -1,18 +1,30 @@
 part of json;
 
+/// Registers a function so that it can be remotely called.
+/// Returns a key to represent it.
+typedef Jsonable FunctionToKey(Function f);
+
+/// Converts each function key into a callable function.
+/// Returns other values unchanged.
+typedef MakeCallable(Jsonable functionKey);
+
 class TaggedJsonCodec extends Codec<dynamic, String> {
   Converter<dynamic, String> encoder;
   Converter<String, dynamic> decoder;
 
-  TaggedJsonCodec(Iterable<JsonType> types, decodeContext) {
+  TaggedJsonCodec(Iterable<JsonType> types,
+      {FunctionToKey toKey: _defaultToKey, MakeCallable makeCallable: _defaultMakeCallable}) {
     var tagToType = <String, JsonType>{};
     for (var r in types) {
       assert(!tagToType.containsKey(r.tagName));
       tagToType[r.tagName] = r;
     }
-    encoder = new TaggedJsonEncoder(tagToType);
-    decoder = new TaggedJsonDecoder(tagToType, decodeContext);
+    encoder = new TaggedJsonEncoder(tagToType, toKey);
+    decoder = new TaggedJsonDecoder(tagToType, makeCallable);
   }
+
+  static _defaultToKey(_) => throw "can't encode function";
+  static _defaultMakeCallable(v) => v;
 }
 
 /// Encodes a Dart object as a tree of tagged JSON.
@@ -21,8 +33,9 @@ class TaggedJsonCodec extends Codec<dynamic, String> {
 /// or instances of Jsonable.
 class TaggedJsonEncoder extends Converter<dynamic, String> {
   final Map<String, JsonType> _types;
+  final FunctionToKey _toKey;
 
-  TaggedJsonEncoder(this._types);
+  TaggedJsonEncoder(this._types, this._toKey);
 
   String convert(object) {
     StringBuffer out = new StringBuffer();
@@ -31,6 +44,10 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
   }
 
   void _encodeTree(StringBuffer out, v) {
+
+    if (v is Function) {
+      v = _toKey(v);
+    }
 
     if (v == null || v is bool || v is num || v is String) {
       out.write(JSON.encode(v));
@@ -104,11 +121,16 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
 /// decoder looks up the appropriate type to decode the list.
 class TaggedJsonDecoder extends Converter<String, dynamic> {
   final Map<String, JsonType> types;
-  final decodeContext;
+  final MakeCallable makeCallable;
 
-  TaggedJsonDecoder(this.types, this.decodeContext);
+  TaggedJsonDecoder(this.types, this.makeCallable);
 
   convert(String json) => JSON.decode(json, reviver: (k,v) {
+    v = _decode(v);
+    return makeCallable(v);
+  });
+
+  _decode(v) {
     if (v is List) {
       var tag = v[0];
       if (tag == 0) {
@@ -120,10 +142,10 @@ class TaggedJsonDecoder extends Converter<String, dynamic> {
           throw "no type for tag: ${tag}";
         }
         assert(v.length == 2);
-        return type.decode(v[1], decodeContext);
+        return type.decode(v[1]);
       }
     } else {
       return v;
     }
-  });
+  }
 }

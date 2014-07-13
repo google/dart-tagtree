@@ -24,7 +24,7 @@ class ButtonAnimator extends Animator<ButtonDemoRequest, int> {
     return $.Div(inner: [
      $.H1(inner: "Button Demo"),
      $.Div(inner: "Clicks: ${p.state}"),
-     $.Button(onClick: p.handler(onClick), inner: "Click to log a message"),
+     $.Button(onClick: onClick, inner: "Click to log a message"),
     ]);
   }
 }

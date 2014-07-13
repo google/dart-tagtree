@@ -44,19 +44,9 @@ class Place<S> extends StateMachineMixin<S> {
       delegate.requestFrame();
     }
   }
-
-  /// Wraps an event handler to allow it to be called remotely.
-  ///
-  /// If an Animator can run on the server, it should call this method on each [HandlerFunc]
-  /// before adding it to the tag tree. (Note that there may be some lag before the handler
-  /// is called due to the time it takes to send the event from browser to server.)
-  ///
-  /// Has no effect if the animation is running locally.
-  HandlerFunc handler(HandlerFunc h) => delegate.wrapHandler(h);
 }
 
 /// The implementation of a Place.
 abstract class PlaceDelegate {
-  HandlerFunc wrapHandler(HandlerFunc h);
   void requestFrame();
 }

@@ -24,7 +24,6 @@ import 'package:tagtree/json.dart';
 export 'package:tagtree/json.dart' show JsonType, Jsonable;
 
 part 'src/core/animator.dart';
-part 'src/core/codec.dart';
 part 'src/core/element.dart';
 part 'src/core/handler.dart';
 part 'src/core/jsontag.dart';

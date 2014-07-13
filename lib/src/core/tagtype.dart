@@ -35,6 +35,6 @@ class TagType extends JsonType {
       }
       propsMap[propKey] = inv.namedArguments[name];
     }
-    return decode(propsMap, null);
+    return decode(propsMap);
   }
 }

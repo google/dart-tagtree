@@ -1,5 +1,8 @@
 part of core;
 
+/// A function to be called whenever a decoded [FunctionKey] receives an event.
+typedef void OnRemoteHandlerEvent(HandlerEvent event, FunctionKey handler);
+
 /// A TagSet acts as a factory for a set of tags.
 ///
 /// Tags can be created in two ways: using a method call (handled by
@@ -69,12 +72,36 @@ class TagSet {
 
   Iterable<String> get jsonTags => byJson.keys;
 
-  /// Creates a codec for sending and receiving [Tag]s and
-  /// [RemoteCallback]s. Whenever a callback is received,
-  /// it will be replaced with a [HandlerFunc] that calls
-  /// the given onEvent function.
-  TaggedJsonCodec makeCodec({OnRemoteHandlerEvent onEvent}) =>
-      _makeCodec(this, onEvent: onEvent);
+  /// Creates a codec for sending and receiving tags and events.
+  TaggedJsonCodec makeCodec({FunctionToKey toKey, OnRemoteHandlerEvent onEvent}) {
+
+    if (toKey == null) {
+      toKey = (_) => throw "can't encode function";
+    }
+
+    if (onEvent == null) {
+      onEvent = (e, _) {
+        print("ignored event to remote handler: ${e}");
+      };
+    }
+
+    var types = <JsonType>[
+        HandlerEvent.$jsonType,
+        FunctionKey.$jsonType,
+        FunctionCall.$jsonType,
+        RawHtml.$jsonType
+    ]..addAll(this.types);
+
+    makeCallable(v) {
+      if (v is FunctionKey) {
+        return (HandlerEvent event) => onEvent(event, v);
+      } else {
+        return v;
+      }
+    }
+
+    return new TaggedJsonCodec(types, toKey: toKey, makeCallable: makeCallable);
+  }
 
   /// Creates Tags from method calls using the tag's method name.
   noSuchMethod(Invocation inv) {
