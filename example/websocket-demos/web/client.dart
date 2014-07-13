@@ -5,7 +5,7 @@ import "shared.dart";
 
 final $ = new HtmlTagSet.withTags([ButtonDemoRequest.$jsonType, TailDemoRequest.$jsonType, TailSnapshot.$jsonType]);
 
-final theme = new Theme(const {
+const theme = const Theme(const {
   TailSnapshot: const _TextFile(),
 });
 

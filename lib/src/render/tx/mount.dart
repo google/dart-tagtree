@@ -86,7 +86,7 @@ abstract class _Mount {
     if (theme == null) {
       throw "There is no animator for ${tag.runtimeType} and no theme is installed";
     } else {
-      throw "Theme ${theme.name} has no animator for ${runtimeType}";
+      throw "Theme ${theme} has no animator for ${runtimeType}";
     }
   }
 

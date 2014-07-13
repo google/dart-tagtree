@@ -96,9 +96,9 @@ class _LoginForm extends Template {
 }
 
 final themeDemo = new ThemeDemo(
-    themes: {
-      "Default": new Theme(const {LoginForm: const _LoginForm("pure-form")}),
-      "Stacked": new Theme(const {LoginForm: const _LoginForm("pure-form pure-form-stacked")})
+    themes: const {
+      "Default": const Theme(const {LoginForm: const _LoginForm("pure-form")}),
+      "Stacked": const Theme(const {LoginForm: const _LoginForm("pure-form pure-form-stacked")})
     },
     content: [
       $.P(inner: "Use the above menu to change the appearance of this (non-working) form."),

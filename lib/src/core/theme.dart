@@ -1,33 +1,12 @@
 part of core;
 
-/// A Theme maps Tag types to Animators.
+/// A Theme maps Tag Types to Animators.
 class Theme {
-  static final EMPTY = new Theme(const {});
+  static final EMPTY = const Theme(const {});
+  final Map<Type, Animator> bindings;
 
-  final String name;
-  final _bindings = <dynamic, Animator>{};
-
-  Theme(Map<dynamic, Animator> bindings, {String name}) :
-    this.name = _chooseThemeName(name) {
-    _bindings.addAll(bindings);
-  }
-
-  Theme._extend(Theme parent, Map<dynamic, Animator> bindings, {String name}) :
-    this.name = _chooseThemeName(name) {
-    _bindings.addAll(parent._bindings);
-    _bindings.addAll(bindings);
-  }
-
-  Iterable get keys => _bindings.keys;
-
-  Animator operator [](Object key) => _bindings[key];
-
-  /// Returns a new theme with additional tags defined.
-  Theme extend(Map<dynamic, Animator> bindings) =>
-      new Theme._extend(this,  bindings);
-
-  @override
-  String toString() => "Theme(${name})";
+  const Theme(this.bindings);
+  Animator operator[](Type key) => bindings[key];
 }
 
 /// A tag that sets the theme to be used within it.
@@ -42,14 +21,4 @@ class ThemeZone extends Tag {
   }
 
   get animator => null; // special case
-}
-
-int _untitledCount = 0;
-
-_chooseThemeName(String name) {
-  if (name == null) {
-    _untitledCount += 1;
-    return "Untitled-${ _untitledCount}";
-  }
-  return name;
 }
