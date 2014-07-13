@@ -3,17 +3,17 @@ part of common;
 /// A Template is a stateless animator.
 /// It generates one animation frame for each input tag.
 /// For each possible input, it should return the same output.
-abstract class Template<T extends Tag> extends Animator<T,dynamic> {
+abstract class Template<IN extends Tag> extends Animator<IN,dynamic> {
   const Template();
 
   /// Returns the output tag tree corresponding to the given input.
-  Tag render(T inputTag);
+  Tag render(IN inputTag);
 
   @override
-  Place start(T firstTag) => new Place(false);
+  Place start(IN firstTag) => new Place(false);
 
   @override
-  Tag renderAt(Place p, T currentTag) => render(currentTag);
+  Tag renderAt(Place p, IN currentTag) => render(currentTag);
 }
 
 /// A TemplateTag is a Tag that by default, always expands to the same output.

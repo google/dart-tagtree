@@ -1,6 +1,6 @@
 part of server;
 
-typedef core.Animator MakeAnimatorFunc(core.JsonTag tag);
+typedef core.Animator MakeAnimatorFunc(Jsonable request);
 
 WebSocketRoot socketRoot(WebSocket socket, core.TagSet maker, MakeAnimatorFunc makeAnim) =>
     new WebSocketRoot(socket, maker, makeAnim);
@@ -12,7 +12,7 @@ class WebSocketRoot {
   final Codec<dynamic, String> _codec;
   final MakeAnimatorFunc makeAnim;
 
-  core.JsonTag _request;
+  Jsonable _request;
   core.Animator _anim;
   core.Place _place;
 
@@ -28,7 +28,7 @@ class WebSocketRoot {
   /// Reads a request from the socket and starts the appropriate session.
   void start() {
     incoming.first.then((data) {
-      core.JsonTag request = _codec.decode(data);
+      Jsonable request = _codec.decode(data);
       var anim = makeAnim(request);
       if (anim == null) {
         print("ignored request: " + request.jsonType.tagName);
@@ -39,7 +39,7 @@ class WebSocketRoot {
   }
 
   /// Starts running a Session on this WebSocket.
-  void _mount(core.Animator anim, core.JsonTag request) {
+  void _mount(core.Animator anim, Jsonable request) {
     assert(_anim == null);
     _anim = anim;
     _request = request;

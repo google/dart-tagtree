@@ -2,13 +2,13 @@ part of core;
 
 /// A tag that's normally rendered as a single HTML element.
 /// Constructed via [ElementType.makeTag].
-class ElementTag extends JsonTag {
+class ElementTag extends Tag implements Jsonable {
   final ElementType type;
+  final PropsMap props;
+  const ElementTag._raw(this.type, this.props);
 
   @override
-  final PropsMap props;
-
-  const ElementTag._raw(this.type, this.props);
+  get animator => null; // special case
 
   @override
   TagType get jsonType => type.tagType;
@@ -24,6 +24,18 @@ class ElementTag extends JsonTag {
   /// [Place.onRendered].
   /// (Only works client-side; see browser.Ref).
   get ref => props["ref"];
+}
+
+/// A PropsMap contains an [ElementTag]'s fields.
+class PropsMap extends UnmodifiableMapBase<String, dynamic> {
+  final Map<String, dynamic> _map;
+  PropsMap(this._map);
+
+  @override
+  Iterable<String> get keys => _map.keys;
+
+  @override
+  operator[](String key) => _map[key];
 }
 
 /// Represents raw (unsanitized) HTML.

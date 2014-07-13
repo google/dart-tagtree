@@ -9,6 +9,7 @@
 library server;
 
 import 'package:tagtree/core.dart' as core;
+import 'package:tagtree/json.dart' show Jsonable;
 
 import 'dart:async' show scheduleMicrotask, Stream;
 import 'dart:convert' show Codec;
@@ -17,5 +18,6 @@ import 'dart:io';
 export 'package:tagtree/core.dart';
 export 'package:tagtree/common.dart';
 export 'package:tagtree/html.dart';
+export 'package:tagtree/json.dart' show Jsonable;
 
 part 'src/server/socket.dart';

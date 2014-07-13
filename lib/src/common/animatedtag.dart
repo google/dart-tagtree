@@ -17,16 +17,16 @@ abstract class AnimatedTag<S> extends Tag {
   bool shouldRestart(Place p) => false;
 }
 
-class _AnimatedTag<T extends AnimatedTag, S> extends Animator<T, S> {
+class _AnimatedTag<IN extends AnimatedTag, S> extends Animator<IN, S> {
   const _AnimatedTag();
 
   @override
-  Place start(T firstTag) => firstTag.start();
+  Place start(IN firstTag) => firstTag.start();
 
   @override
-  renderAt(Place p, T currentTag) => currentTag.renderAt(p);
+  renderAt(Place p, IN currentTag) => currentTag.renderAt(p);
 
   @override
-  bool shouldCut(Place<S> place, T nextTag, Animator nextAnim) =>
+  bool shouldCut(Place<S> place, IN nextTag, Animator nextAnim) =>
       nextAnim != this || nextTag.shouldRestart(place);
 }

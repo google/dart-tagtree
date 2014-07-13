@@ -11,17 +11,17 @@ import "web/shared.dart";
 import "package:tagtree/core.dart";
 import "package:tagtree/server.dart";
 
-final $ = new HtmlTagSet.withTags([ButtonDemo.$jsonType, TailDemo.$jsonType, TailSnapshot.$jsonType]);
+final $ = new HtmlTagSet.withTags([ButtonDemoRequest.$jsonType, TailDemoRequest.$jsonType, TailSnapshot.$jsonType]);
 
 main(List<String> args) {
 
   // watch this file
   var watcher = new tail.TailWatcher(new File(Platform.script.toFilePath()), 50);
 
-  Animator getAnimator(Tag request) {
-    if (request is ButtonDemo) {
+  Animator getAnimator(Jsonable request) {
+    if (request is ButtonDemoRequest) {
       return const button.ButtonAnimator();
-    } else if (request is TailDemo) {
+    } else if (request is TailDemoRequest) {
       return new tail.TailAnimator(watcher);
     }
     return null;

@@ -15,7 +15,7 @@ import '../web/shared.dart';
 
 final $ = new HtmlTagSet();
 
-class TailAnimator extends Animator<TailDemo, Tail> {
+class TailAnimator extends Animator<TailDemoRequest, Tail> {
   final TailWatcher watcher;
 
   TailAnimator(this.watcher);
@@ -36,7 +36,7 @@ class TailAnimator extends Animator<TailDemo, Tail> {
   }
 
   @override
-  Tag renderAt(Place<Tail> p, TailDemo tag) {
+  Tag renderAt(Place<Tail> p, TailDemoRequest tag) {
     Tail t = p.state.suffix(tag.lineCount);
     return $.Div(inner: [
         $.H1(inner: "Tail Demo"),

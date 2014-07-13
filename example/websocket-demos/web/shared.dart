@@ -2,33 +2,36 @@ library shared;
 
 import "package:tagtree/core.dart";
 
-/// A server-side demo demonstrating event handling.
-class ButtonDemo extends JsonTag {
-  const ButtonDemo();
+/// Requests a server-side demo demonstrating event handling.
+class ButtonDemoRequest extends Jsonable {
+  const ButtonDemoRequest();
 
   @override
   get jsonType => $jsonType;
   static const $jsonType = const JsonType("ButtonDemo", toMap, fromMap);
-  static toMap(ButtonDemo _) => const {};
-  static fromMap(Map _) => const ButtonDemo();
+  static toMap(ButtonDemoRequest _) => const {};
+  static fromMap(Map _) => const ButtonDemoRequest();
 }
 
-/// A server-side demo demonstrating view updating.
-class TailDemo extends JsonTag {
+/// Requests a server-side demo demonstrating view updating.
+class TailDemoRequest extends Jsonable {
   final int lineCount;
-  const TailDemo(this.lineCount);
+  const TailDemoRequest(this.lineCount);
 
   @override
   get jsonType => $jsonType;
   static const $jsonType = const JsonType("TailDemo", toMap, fromMap);
-  static toMap(TailDemo tag) => {"lineCount": tag.lineCount};
-  static fromMap(Map props) => new TailDemo(props["lineCount"]);
+  static toMap(TailDemoRequest tag) => {"lineCount": tag.lineCount};
+  static fromMap(Map props) => new TailDemoRequest(props["lineCount"]);
 }
 
-/// A file snapshot returned by [TailDemo].
-class TailSnapshot extends JsonTag {
+/// A file snapshot returned by [TailDemoRequest].
+class TailSnapshot extends Tag implements Jsonable {
   final List<String> lines;
   const TailSnapshot({this.lines});
+
+  @override
+  get animator => null;
 
   @override
   get jsonType => $jsonType;

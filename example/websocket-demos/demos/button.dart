@@ -7,14 +7,14 @@ import "package:tagtree/server.dart";
 
 final $ = new HtmlTagSet();
 
-class ButtonAnimator extends Animator<ButtonDemo, int> {
+class ButtonAnimator extends Animator<ButtonDemoRequest, int> {
   const ButtonAnimator();
 
   @override
-  Place start(ButtonDemo tag) => new Place(0);
+  Place start(ButtonDemoRequest tag) => new Place(0);
 
   @override
-  Tag renderAt(Place<int> p, ButtonDemo tag) {
+  Tag renderAt(Place<int> p, ButtonDemoRequest tag) {
 
     onClick(_) {
       print("button clicked");

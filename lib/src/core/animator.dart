@@ -1,25 +1,20 @@
 part of core;
 
-/// An Animator generates a stream of output tags from a stream of input tags.
-/// The input and output streams are called animations.
+/// An Animator generates a stream of output tags from a stream of inputs.
+/// The output stream is called an animation and each tag in the stream is a frame.
 ///
-/// An animation may contain other animations, all playing at the same time.
-/// This happens when a renderer pipes part of one animator's output stream
-/// into another animator. These pipelines form a tree structure that divide
-/// up a web page into nested animations. The outer animation controls the lifetime
-/// of the inner animations by deciding whether to render each tag in a new
-/// frame.
+/// Each animation plays a similar role to a view in a typical user interface library.
+/// Like a view, an animation typically covers a part of the screen (its bounds).
 ///
-/// Animations don't run at a fixed frame rate. Instead, each animator generates
-/// frames as needed. The outer animation may be paused (not generating frames)
-/// or moving. When it generates a new frame, the renderer will send a [Tag] to each
-/// downstream animator, and they will usually render new frames as well. (But this
-/// may be skipped; see [shouldRender].)
+/// Animations may be nested inside other animations, similar to a view hierarchy.
+/// An Animator controls the lifetimes of the inner animations by choosing
+/// whether or not to render a Tag in each frame.
 ///
-/// An inner animation may generate new frames on its own when the outer animation
-/// is paused, in response to events handled entirely within the inner animation. In
-/// this case, [Place.nextState] or [Place.step] should be used to trigger a new frame.
-abstract class Animator<T extends Tag, S> {
+/// Each animation runs at a different, variable frame rate. Typically, a new outer
+/// frame will cause a new inner frame to be rendered, but this can be skipped;
+/// see [shouldRender].) An inner animation may generate a frame that doesn't correspond
+/// to an outer frame using [Place.nextState] or [Place.step].
+abstract class Animator<IN, S> {
 
   /// Animators are normally const since they contain no animation-specific state.
   /// (If not const, the == operator should be implemented, since it's used by the default
@@ -28,38 +23,35 @@ abstract class Animator<T extends Tag, S> {
 
   /// Starts a new animation.
   ///
-  /// The animator should create a new Place for keeping track of any animation-specific
-  /// state.
-  Place start(T firstInputTag);
+  /// Each call to start should return a different Place, which will be used to
+  /// keep track of any animation-specific state.
+  Place start(IN firstInput);
 
-  /// Renders one frame of an animation.
-  ///
-  /// Creates an output tag tree that should be rendered in place of the [inputTag].
+  /// Generates one frame of an animation.
   ///
   /// A single animator can render frames from multiple animations that are all playing
   /// at the same time. Therefore, animators must read any animation-specific state from
-  /// the provided [place]. Any event handlers in the generated output tree should write
-  /// to the same [place].
+  /// the provided [place]. Any event handlers in the output frame should also use the
+  /// provided [place].
   ///
-  /// The [inputTag] could be different for each frame. This happens when an animation
-  /// runs inside another animation and the outer animation renders a new frame.
-  Tag renderAt(Place<S> place, T inputTag);
+  /// The [input] may be the same or different than the previous frame in the same
+  /// animation, depending on whether the outer animation is running faster or slower.
+  Tag renderAt(Place<S> place, IN input);
 
-  /// Returns true if [renderAt] should be called after a tag change.
+  /// Returns true if [renderAt] should be called after the input animation generated a
+  /// new frame.
   ///
-  /// Otherwise, the previous shadow tree will be reused.
-  /// (This improves performance since updating the DOM can often
-  /// be skipped altogether.)
-  bool shouldRender(Tag previousTag, Tag nextTag) => true;
+  /// Otherwise, the previous output will be reused.
+  /// (This improves performance since updating the DOM can often be skipped altogether.)
+  bool shouldRender(IN previousInput, IN nextInput) => true;
 
-  /// Returns true if the renderer should cut to a new animation.
+  /// Returns true if the renderer should cut to another animation.
   ///
-  /// If true, the current Place will be discarded after calling [Place.onCut],
+  /// If true is returned, the current Place will be discarded after calling [Place.onCut],
   /// and a new Place created by calling the next animation's [start] method.
-  /// Otherwise, the current animation will continue playing with the new input tag.
+  /// Otherwise, the current animation will continue playing with the new input.
   ///
-  /// The default implementation cuts to the next animation when the renderer chooses
-  /// a different animator (based on ==) for the next tag.
-  bool shouldCut(Place<S> place, T nextInputTag, Animator nextAnim) => this != nextAnim;
+  /// The default implementation cuts to the next animation as soon as it's different,
+  /// based on the == operator.
+  bool shouldCut(Place<S> place, nextInput, Animator nextAnim) => this != nextAnim;
 }
-

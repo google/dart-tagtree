@@ -22,7 +22,7 @@ class TagType extends JsonType {
   bool get canDecodeInvocation => method != null;
 
   /// Creates a tag from method call, for use within noSuchMethod.
-  JsonTag fromInvocation(Invocation inv) {
+  Tag fromInvocation(Invocation inv) {
     if (!inv.positionalArguments.isEmpty) {
       throw "positional arguments not supported when creating tags";
     }
