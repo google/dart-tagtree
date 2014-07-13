@@ -1,5 +1,5 @@
-.grid { border-collapse: collapse; border: 3px solid grey; cursor: default; }
-.grid td { width: 10px; height: 10px; }
+.pix-grid { border-collapse: collapse; border: 3px solid grey; cursor: default; }
+.pix-grid td { width: 10px; height: 10px; }
 
-.black { background-color: black }
-.white { background-color: white }
+.pix-black { background-color: black }
+.pix-white { background-color: white }

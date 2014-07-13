@@ -154,13 +154,23 @@ class TaggedJsonDecoder extends Converter<String, dynamic> {
       } else {
         var type = types[tag];
         if (type == null) {
-          throw "no type for tag: ${tag}";
+          throw new UnknownTagException(tag);
         }
         assert(v.length == 2);
-        return type.decode(v[1]);
+        Jsonable object = type.decode(v[1]);
+        if (!object.checked()) {
+          throw "check failed for deserialized object: ${object.runtimeType}";
+        }
+        return object;
       }
     } else {
       return v;
     }
   }
+}
+
+class UnknownTagException implements Exception {
+  final String tag;
+  const UnknownTagException(this.tag);
+  toString() => "No type registered to decode tag: ${tag}";
 }

@@ -9,7 +9,7 @@
 library server;
 
 import 'package:tagtree/core.dart' as core;
-import 'package:tagtree/json.dart' show Jsonable, FunctionKey, FunctionCall;
+import 'package:tagtree/json.dart' show Jsonable, FunctionKey, FunctionCall, UnknownTagException;
 
 import 'dart:async' show scheduleMicrotask, Stream;
 import 'dart:convert' show Codec;

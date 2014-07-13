@@ -5,16 +5,20 @@ import "dart:io";
 
 import "demos/button.dart" as button;
 import "demos/tail.dart" as tail;
+import "../pixelpaint/pixelpaint.dart" as pixelpaint;
 
 import "web/shared.dart";
 
 import "package:tagtree/core.dart";
 import "package:tagtree/server.dart";
 
-final exports = const [
+const exports = const [
     ButtonDemoRequest.$jsonType,
     TailDemoRequest.$jsonType,
-    TailSnapshot.$jsonType
+    TailSnapshot.$jsonType,
+    pixelpaint.PixelPaintApp.$jsonType,
+    pixelpaint.GridView.$jsonType,
+    pixelpaint.Grid.$jsonType
 ];
 final $ = new HtmlTagSet.withTags(exports);
 
@@ -28,14 +32,16 @@ main(List<String> args) {
       return const button.ButtonAnimator();
     } else if (request is TailDemoRequest) {
       return new tail.TailAnimator(watcher);
+    } else if (request is pixelpaint.PixelPaintApp) {
+      return const pixelpaint.PixelPaintAnimator();
     }
     return null;
   }
 
   HttpServer.bind("localhost", 8081).then((server) {
 
-    print("\nThe server is ready.");
-    print("Please run web/client.html in Dartium\n");
+    print("\nThe demo server is ready.");
+    print("Please run web/demo-client.html in Dartium\n");
     server.listen((request) {
       String path = request.uri.path;
       if (path == "/ws") {

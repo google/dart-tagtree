@@ -32,12 +32,22 @@ class WebSocketRoot {
   /// Reads a request from the socket and starts the appropriate session.
   void start() {
     incoming.first.then((data) {
-      Jsonable request = _codec.decode(data);
+
+      Jsonable request;
+      try {
+         request = _codec.decode(data);
+      } on UnknownTagException catch (e) {
+        print("ignored request (unknown tag): ${e.tag}");
+        return;
+      }
+
       var anim = makeAnim(request);
       if (anim == null) {
-        print("ignored request: " + request.jsonType.tagName);
+        print("ignored request (no animator): " + request.jsonType.tagName);
         _socket.close();
+        return;
       }
+
       _mount(anim, request);
     });
   }
@@ -57,7 +67,12 @@ class WebSocketRoot {
   }
 
   void _onMessage(String data) {
-    FunctionCall call = _codec.decode(data);
+    FunctionCall call;
+    try {
+      call = _codec.decode(data);
+    } on UnknownTagException catch(e) {
+      print("ignored remote function call (unknown tag): ${e.tag}");
+    }
 
     if (_receivingFrame == null) {
       print("ignored remote function call (frame not available): ${data}");

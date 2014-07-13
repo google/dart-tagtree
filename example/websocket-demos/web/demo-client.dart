@@ -2,8 +2,19 @@ import "package:tagtree/browser.dart";
 import "package:tagtree/core.dart";
 
 import "shared.dart";
+import "../../pixelpaint/pixelpaint.dart";
 
-final $ = new HtmlTagSet.withTags([ButtonDemoRequest.$jsonType, TailDemoRequest.$jsonType, TailSnapshot.$jsonType]);
+const exports = const [
+    ButtonDemoRequest.$jsonType,
+
+    TailDemoRequest.$jsonType,
+    TailSnapshot.$jsonType,
+
+    PixelPaintApp.$jsonType,
+    GridView.$jsonType,
+    Grid.$jsonType
+];
+final $ = new HtmlTagSet.withTags(exports);
 
 const theme = const Theme(const {
   TailSnapshot: const _TextFile(),
@@ -35,10 +46,14 @@ class DemoPicker extends AnimatedTag<Jsonable> {
         theme: theme);
 
     return $.Div(inner: [
+      $.P(inner:
+        "These demos are served from a web socket. You will need to run demo-server.dart "
+        "to see them."),
       $.Div(inner: [
         "Choose a demo: ",
         makeButton(const ButtonDemoRequest(), "Button"),
-        makeButton(const TailDemoRequest(25), "Tail")
+        makeButton(const TailDemoRequest(25), "Tail"),
+        makeButton(const PixelPaintApp(), "PixelPaint")
       ]),
       serverDemo
     ]);

@@ -1,21 +1,27 @@
-import 'package:tagtree/browser.dart';
+library pixelpaint;
+
+import 'package:tagtree/common.dart';
 import 'package:tagtree/core.dart';
+import 'package:tagtree/html.dart';
+
+final $ = new HtmlTagSet();
 
 /// A paint app implemented on top of an HTML table.
 ///
-/// Demonstrates how to get decent performance using a mostly functional style,
-/// assuming that most pixels don't actually change in a single animation frame.
-/// The paint document is modelled as an immutable [Grid]. A top-level state
-/// machine in [PixelPaintApp] reacts to document updates. We avoid unnecessary
-/// renders by dividing up the Grid and [GridView] by row and only rendering a
-/// [RowView] if there is a change to the underlying [Row]. (A more sophisticated
-/// paint program would probably divide up the grid into tiles.)
+/// Demonstrates how to split up a TagTree app between client and server.
+/// (There is no reason to do this for a paint app, but it can be used to test
+/// performance.)
+///
+/// Also demonstrates how to get decent performance using a mostly functional style
+/// (when not running client-server).
 
 //
 // Views
 //
 
-class PixelPaintApp extends AnimatedTag<Grid> {
+/// A tag that requests that the PixelPaintApp should run.
+/// (Can be sent from client to server to start up the app.)
+class PixelPaintApp extends Tag implements Jsonable {
   final int width; // in fat pixels
   final int height; // in fat pixels
   final List<String> palette; // The CSS style for each color
@@ -23,56 +29,100 @@ class PixelPaintApp extends AnimatedTag<Grid> {
   const PixelPaintApp({
     this.width: 50,
     this.height: 50,
-    this.palette: const ["black", "white"]
+    this.palette: const ["pix-black", "pix-white"]
   });
 
   @override
   bool checked() => palette.length == 2;
 
+  /// This is used when not running client-server.
   @override
-  start() => new Place(new Grid(width, height));
+  Animator get animator => const PixelPaintAnimator();
 
   @override
-  renderAt(Place<Grid> p) {
+  get jsonType => $jsonType;
+  static const $jsonType = const JsonType("PixelPaintApp", toMap, fromMap);
+
+  static toMap(PixelPaintApp app) => {
+    "width": app.width,
+    "height": app.height,
+    "palette": app.palette
+  };
+
+  static fromMap(Map m) => new PixelPaintApp(
+      width: m["width"],
+      height: m["height"],
+      palette: m["palette"]
+  );
+}
+
+/// Runs the main loop of the PixelPaint app.
+/// (This animator can run on the server.)
+class PixelPaintAnimator extends Animator<PixelPaintApp, Grid> {
+  const PixelPaintAnimator();
+
+  @override
+  start(PixelPaintApp input) => new Place(new Grid(input.width, input.height));
+
+  @override
+  renderAt(Place<Grid> p, PixelPaintApp input) {
 
     onPaint(int x, int y) {
       p.nextState = new Grid.withChangedPixel(p.nextState, x, y, 1);
     }
 
-    return new GridView(grid: p.state, palette: palette, onPaint: onPaint);
+    return new GridView(grid: p.state, palette: input.palette, onPaint: onPaint);
   }
 }
 
-/// A handler that's called when the user paints a pixel.
-typedef PixelHandler(int x, int y);
-
-/// Renders a stream of grids into a <table> and converts mouse events into paint events.
-/// (This could be a template, except that we need to remember whether the mouse
-/// button is down.)
-class GridView extends AnimatedTag<bool> {
+/// A single animation frame that renders the PixelPaint app's UI.
+/// (When running client-server, these frames are streamed from from server to client.)
+class GridView extends Tag implements Jsonable {
   final Grid grid;
   final List<String> palette;
-  final PixelHandler onPaint;
-
+  final onPaint;
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
-  start() => new MousePlace();
+  Animator get animator => const GridAnimator();
 
   @override
-  Tag renderAt(MousePlace p) {
+  JsonType get jsonType => $jsonType;
+  static const $jsonType = const JsonType("GridView", toMap, fromMap);
+
+  static Map toMap(GridView v) => {
+    "grid": v.grid,
+    "palette": v.palette,
+    "onPaint": v.onPaint,
+  };
+
+  static GridView fromMap(Map<String, dynamic> map) =>
+      new GridView(grid: map["grid"], palette: map["palette"], onPaint: map["onPaint"]);
+}
+
+/// Renders a stream of [GridView] into a <table> and converts mouse events into onPaint calls.
+/// (This could be a template, except that we need to remember whether the mouse
+/// button is down.)
+class GridAnimator extends Animator<GridView, bool> {
+  const GridAnimator();
+
+  @override
+  start(_) => new MousePlace();
+
+  @override
+  Tag renderAt(MousePlace p, GridView input) {
 
     // HTML5 makes keeping track of the mouse button surprisingly tricky!
     // This implementation usually works, but could be improved.
 
     onMouseDown(int x, int y) {
-      onPaint(x, y);
+      input.onPaint(x, y);
       p.isMouseDown = true;
     }
 
     onMouseOver(int x, int y) {
       if (p.isMouseDown) {
-        onPaint(x, y);
+        input.onPaint(x, y);
       }
     }
 
@@ -80,25 +130,28 @@ class GridView extends AnimatedTag<bool> {
       p.isMouseDown = false;
     }
 
-    var paletteMap = palette.asMap();
+    var paletteMap = input.palette.asMap();
     var rows = [];
-    for (int y = 0; y < grid.height; y++) {
-      rows.add(new RowView(y: y, row: grid.rows[y], palette: paletteMap,
+    for (int y = 0; y < input.grid.height; y++) {
+      rows.add(new RowView(y: y, row: input.grid.rows[y], palette: paletteMap,
                            onMouseDown: onMouseDown, onMouseOver: onMouseOver,
                            onMouseUp: onMouseUp));
     }
-    return $.Table(clazz: "grid", inner: rows,
-        onMouseUp: (_) => onMouseUp(),
-        onMouseOut: (_) => onMouseUp() // Try to avoid a "stuck" mouse button
-    );
+    return $.Div(inner: [
+      $.H2(inner: "PixelPaint Demo"),
+      $.Table(clazz: "pix-grid", inner: rows,
+          onMouseUp: (_) => onMouseUp(),
+          onMouseOut: (_) => onMouseUp() // Try to avoid a "stuck" mouse button
+      )
+    ]);
   }
 }
 
 class MousePlace extends Place {
-  // This variable isn't used when rendering, so it shouldn't be stored as state.
+  // This variable isn't used when rendering, so it shouldn't be stored as [state].
   // TODO: it might be nice if Dart or TagTree provided mouse button tracking.
   bool isMouseDown = false;
-  MousePlace() : super(false);
+  MousePlace() : super(false); // state is unused
 }
 
 /// An animation frame for one row of the grid.
@@ -107,8 +160,8 @@ class RowView extends TemplateTag {
   final int y;
   final Row row;
   final Map<int, String> palette;
-  final PixelHandler onMouseDown;
-  final PixelHandler onMouseOver;
+  final Function onMouseDown;
+  final Function onMouseOver;
   final Function onMouseUp;
 
   const RowView({this.y, this.row, this.palette,
@@ -136,8 +189,8 @@ class RowView extends TemplateTag {
 // Model
 //
 
-/// A immutable rectangle of integers.
-class Grid implements Cloneable {
+/// An immutable rectangle of pixels.
+class Grid implements Cloneable, Jsonable {
   final List<Row> rows;
   Grid._raw(this.rows);
 
@@ -167,7 +220,33 @@ class Grid implements Cloneable {
   int get height => rows.length;
 
   @override
+  checked() {
+    if (rows.isEmpty) {
+      return true;
+    }
+    int width = rows.first.width;
+    for (Row row in rows) {
+      if (row.width != width) {
+        throw "grid isn't rectangular";
+      }
+    }
+    return true;
+  }
+
+  @override
   clone() => this;
+
+  @override
+  get jsonType => $jsonType;
+
+  static const $jsonType = const JsonType("Grid", toJson, fromJson);
+
+  static toJson(Grid g) => g.rows.map((Row r) => r.pixels).toList();
+
+  static fromJson(List<List<int>> pixels) {
+    var rows = pixels.map((pix) => new Row._raw(pix)).toList();
+    return new Grid._raw(rows);
+  }
 }
 
 /// An immutable array of integers, representing a row of pixels.
@@ -206,12 +285,5 @@ class Row {
   int operator [](int index) => pixels[index];
 }
 
-//
-// Startup.
-//
-
-main() =>
-    getRoot("#container")
-      .mount(const PixelPaintApp());
 
 

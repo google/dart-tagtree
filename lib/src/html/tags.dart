@@ -58,6 +58,9 @@ abstract class HtmlTags {
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
     width, height});
 
+  Tag B({id, clazz, ref,
+    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+
   Tag Form({id, clazz, ref,
     onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
     inner});
@@ -143,6 +146,8 @@ final List<ElementType> _htmlTags = () {
     const ElementType(#A, "a", globalProps, const [href]),
     const ElementType(#Img, "img", leafGlobalProps, const [width, height, src]),
     const ElementType(#Canvas, "canvas", leafGlobalProps, const [width, height]),
+
+    const ElementType(#B, "b", globalProps),
 
     const ElementType(#Form, "form", globalProps, const [onSubmit]),
     const ElementType(#FieldSet, "fieldset", globalProps),
