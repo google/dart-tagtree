@@ -36,3 +36,5 @@ import 'dart:convert';
 
 part 'src/json/codec.dart';
 part 'src/json/jsonable.dart';
+part 'src/json/rpc.dart';
+

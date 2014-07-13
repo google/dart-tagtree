@@ -4,7 +4,7 @@
  *
  * Tag trees are built out of [Tag] nodes. A Tag's fields can often be
  * inspected by converting it to a [PropsMap]. Some fields may hold
- * a [HandlerFunc], which which will be called when a rendered Tag fires
+ * a callback function which which will be called when a rendered Tag fires
  * a [HandlerEvent].
  *
  * An [ElementTag] is a tag that renders to an HTML element. Its structure is

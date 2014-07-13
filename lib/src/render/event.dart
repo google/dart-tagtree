@@ -3,14 +3,15 @@ part of render;
 /// Contains all the handlers for one Root.
 class _HandlerMap {
   // A multimap from (event type, path) to the handler to call.
-  final _handlers = <String, Map<String, HandlerFunc>> {};
+  final _handlers = <String, Map<String, dynamic>> {};
 
-  HandlerFunc getHandler(String typeName, String path) {
+  getHandler(String typeName, String path) {
     _handlers.putIfAbsent(typeName, () => {});
     return _handlers[typeName][path];
   }
 
-  void setHandler(String typeName, String path, HandlerFunc handler) {
+  void setHandler(String typeName, String path, var handler) {
+    assert(handler is Function || handler is RemoteFunction);
     _handlers.putIfAbsent(typeName, () => {});
     _handlers[typeName][path] = handler;
   }
@@ -43,10 +44,10 @@ void _dispatch(HandlerEvent e, _HandlerMap handlers) {
   _inEvent = true;
   try {
     if (e.elementPath != null) {
-      HandlerFunc h = handlers.getHandler(e.typeName, e.elementPath);
-      if (h != null) {
+      var handler = handlers.getHandler(e.typeName, e.elementPath);
+      if (handler != null) {
         debugLog("\n### ${e.typeName}");
-        h(e);
+        handler(e);
       } else {
         debugLog("\n (${e.typeName})");
       }

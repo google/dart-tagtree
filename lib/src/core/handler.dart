@@ -8,7 +8,7 @@ class HandlerType extends PropType {
 
   @override
   bool checkValue(dynamic value) {
-    assert(value is HandlerFunc);
+    assert(value is Function || value is RemoteFunction);
     return true;
   }
 }
@@ -42,52 +42,5 @@ class HandlerEvent extends Jsonable {
   static fromJson(array) {
     assert(array.length == 3);
     return new HandlerEvent._raw(array[0], array[1], array[2]);
-  }
-}
-
-/// A function that's called when an event happens.
-typedef HandlerFunc(HandlerEvent e);
-
-/// A key representing a remote function.
-class FunctionKey extends Jsonable {
-  final int frameId;
-  final int id;
-
-  FunctionKey(this.frameId, this.id);
-
-  @override
-  get jsonType => $jsonType;
-
-  static const $jsonType = const JsonType("handler", toJson, fromJson);
-  static toJson(FunctionKey h) => [h.frameId, h.id];
-  static fromJson(array) {
-    if (array is List && array.length >= 2) {
-      return new FunctionKey(array[0], array[1]);
-    } else {
-      throw "can't decode FunctionKey: ${array.runtimeType}";
-    }
-  }
-}
-
-/// A FunctionCall contains an event to be delivered to a remote handler.
-class FunctionCall extends Jsonable {
-  final FunctionKey key;
-  final HandlerEvent event;
-
-  FunctionCall(this.key, this.event);
-
-  @override
-  get jsonType => $jsonType;
-
-  static const $jsonType = const JsonType("call", toJson, fromJson);
-
-  static toJson(FunctionCall call) => [call.key.frameId, call.key.id, call.event];
-
-  static fromJson(array) {
-    if (array is List && array.length >= 3) {
-      return new FunctionCall(new FunctionKey(array[0], array[1]), array[2]);
-    } else {
-      throw "can't decode FunctionCall: ${array.runtimeType}";
-    }
   }
 }

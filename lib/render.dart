@@ -14,8 +14,10 @@
  */
 library render;
 
-import 'package:tagtree/core.dart';
 import 'dart:convert';
+
+import 'package:tagtree/core.dart';
+import 'package:tagtree/json.dart' show RemoteFunction;
 
 part 'src/render/debug.dart';
 part 'src/render/dom.dart';

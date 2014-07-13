@@ -11,7 +11,12 @@ import "web/shared.dart";
 import "package:tagtree/core.dart";
 import "package:tagtree/server.dart";
 
-final $ = new HtmlTagSet.withTags([ButtonDemoRequest.$jsonType, TailDemoRequest.$jsonType, TailSnapshot.$jsonType]);
+final exports = const [
+    ButtonDemoRequest.$jsonType,
+    TailDemoRequest.$jsonType,
+    TailSnapshot.$jsonType
+];
+final $ = new HtmlTagSet.withTags(exports);
 
 main(List<String> args) {
 

@@ -57,12 +57,20 @@ class _RemoteTagPlace extends Place<Tag> {
   }
 
   void configure(String src, Jsonable request, HtmlTagSet tagSet) {
+
+
     if (this.src != src || this.request != request) {
       _close();
-      conn = new _Connection(this, src, request, tagSet.makeCodec(onEvent: onZoneEvent));
+
+      send(call) => conn.send(call);
+      var codec = tagSet.makeCodec(onCall: send);
+
+      conn = new _Connection(this, src, request, codec);
+
     } else if (this.tagSet != tagSet && conn != null) {
-      conn.codec = tagSet.makeCodec(onEvent: onZoneEvent);
+      conn.codec = tagSet.makeCodec(onCall: conn.send);
     }
+
     this.src = src;
     this.request = request;
     this.tagSet = tagSet;
@@ -73,11 +81,7 @@ class _RemoteTagPlace extends Place<Tag> {
     nextState = nextFrame;
   }
 
-  /// Called each time an animation frame in the zone (originally sent by the server)
-  /// gets an event.
-  void onZoneEvent(HandlerEvent event, FunctionKey key) {
-    conn.send(new FunctionCall(key, event));
-  }
+  /// Called whenever a callback function is called for an animation frame in the zone.
 
   void showStatus(String message) {
     print(message);

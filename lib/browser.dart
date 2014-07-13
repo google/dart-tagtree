@@ -19,7 +19,7 @@ import 'dart:html';
 import 'package:tagtree/core.dart';
 import 'package:tagtree/common.dart' show AnimatedTag;
 import 'package:tagtree/html.dart';
-import 'package:tagtree/json.dart' show TaggedJsonCodec, Jsonable;
+import 'package:tagtree/json.dart' show TaggedJsonCodec, Jsonable, FunctionKey, FunctionCall;
 import 'package:tagtree/render.dart' as render;
 
 export 'package:tagtree/core.dart';

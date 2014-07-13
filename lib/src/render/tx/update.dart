@@ -7,7 +7,7 @@ abstract class _Update extends _Mount with _Unmount {
   DomUpdater get dom;
 
   // What was updated
-  void setHandler(String typeName, String path, HandlerFunc handler);
+  void setHandler(String typeName, String path, handler);
   void removeHandler(String typeName, String path);
 
   /// Renders the next animation frame for the given node, if needed.

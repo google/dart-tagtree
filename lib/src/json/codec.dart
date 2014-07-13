@@ -2,29 +2,40 @@ part of json;
 
 /// Registers a function so that it can be remotely called.
 /// Returns a key to represent it.
-typedef Jsonable FunctionToKey(Function f);
+typedef FunctionKey RegisterFunction(Function f);
 
-/// Converts each function key into a callable function.
-/// Returns other values unchanged.
-typedef MakeCallable(Jsonable functionKey);
+/// A listener that receives calls made to a [RemoteFunction].
+typedef void OnRemoteCall(FunctionCall call);
 
 class TaggedJsonCodec extends Codec<dynamic, String> {
   Converter<dynamic, String> encoder;
   Converter<String, dynamic> decoder;
 
   TaggedJsonCodec(Iterable<JsonType> types,
-      {FunctionToKey toKey: _defaultToKey, MakeCallable makeCallable: _defaultMakeCallable}) {
+      {RegisterFunction register, OnRemoteCall onCall}) {
+
+    if (register == null) {
+      register = _defaultRegister;
+    }
+
+    if (onCall == null) {
+      onCall = _defaultOnCall;
+    }
+
     var tagToType = <String, JsonType>{};
     for (var r in types) {
       assert(!tagToType.containsKey(r.tagName));
       tagToType[r.tagName] = r;
     }
-    encoder = new TaggedJsonEncoder(tagToType, toKey);
-    decoder = new TaggedJsonDecoder(tagToType, makeCallable);
+    encoder = new TaggedJsonEncoder(tagToType, register);
+    decoder = new TaggedJsonDecoder(tagToType, onCall);
   }
 
-  static _defaultToKey(_) => throw "can't encode function";
-  static _defaultMakeCallable(v) => v;
+  static _defaultRegister(_) => throw "remote function registry not configured";
+
+  static _defaultOnCall(FunctionCall call) {
+    print("ignored remote function call: ${call}");
+  }
 }
 
 /// Encodes a Dart object as a tree of tagged JSON.
@@ -33,7 +44,7 @@ class TaggedJsonCodec extends Codec<dynamic, String> {
 /// or instances of Jsonable.
 class TaggedJsonEncoder extends Converter<dynamic, String> {
   final Map<String, JsonType> _types;
-  final FunctionToKey _toKey;
+  final RegisterFunction _toKey;
 
   TaggedJsonEncoder(this._types, this._toKey);
 
@@ -121,13 +132,17 @@ class TaggedJsonEncoder extends Converter<dynamic, String> {
 /// decoder looks up the appropriate type to decode the list.
 class TaggedJsonDecoder extends Converter<String, dynamic> {
   final Map<String, JsonType> types;
-  final MakeCallable makeCallable;
+  final OnRemoteCall onCall;
 
-  TaggedJsonDecoder(this.types, this.makeCallable);
+  TaggedJsonDecoder(this.types, this.onCall);
 
   convert(String json) => JSON.decode(json, reviver: (k,v) {
     v = _decode(v);
-    return makeCallable(v);
+    if (v is FunctionKey) {
+      return new RemoteFunction(v, onCall);
+    } else {
+      return v;
+    }
   });
 
   _decode(v) {

@@ -17,15 +17,16 @@ class WebSocketRoot {
   core.Place _place;
 
   int nextFrameId = 0;
-  _Frame _handleFrame, _nextFrame;
+  _FrameFunctions _receivingFrame, _nextFrame;
   bool renderScheduled = false;
 
   WebSocketRoot(WebSocket socket, core.TagSet tags, this.makeAnim) :
     _socket = socket,
     incoming = socket.asBroadcastStream() {
 
-    toKey(Function f) => _nextFrame.registerFunction(f);
-    _codec = tags.makeCodec(toKey: toKey);
+    register(Function f) => _nextFrame.registerFunction(f);
+
+    _codec = tags.makeCodec(register: register);
   }
 
   /// Reads a request from the socket and starts the appropriate session.
@@ -50,23 +51,26 @@ class WebSocketRoot {
     _place = _anim.start(request);
     _place.delegate = new _PlaceDelegate(this);
 
-    incoming.forEach((String data) {
-      core.FunctionCall call = _codec.decode(data);
-      if (_handleFrame != null) {
-        var func = _handleFrame.handlers[call.key.id];
-        if (func != null) {
-          func(call.event);
-        } else {
-          print("ignored callback (no handler): ${data}");
-        }
-      } else {
-        print("ignored callback (no frame): ${data}");
-      }
-    }).then((_) {
-      _unmount();
-    });
+    incoming.forEach(_onMessage).then((_) => _unmount());
 
     _requestFrame();
+  }
+
+  void _onMessage(String data) {
+    FunctionCall call = _codec.decode(data);
+
+    if (_receivingFrame == null) {
+      print("ignored remote function call (frame not available): ${data}");
+      return;
+    }
+
+    var func = _receivingFrame.functions[call.key.id];
+    if (func == null) {
+      print("ignored remote function call (not in frame): ${data}");
+      return;
+    }
+
+    Function.apply(func, call.args);
   }
 
   void _unmount() {
@@ -87,14 +91,17 @@ class WebSocketRoot {
   _render() {
     renderScheduled = false;
     _place.commitState();
-    _nextFrame = new _Frame(nextFrameId++);
+
+    _nextFrame = new _FrameFunctions(nextFrameId++);
+
     String encoded = _codec.encode(_anim.renderAt(_place, _request));
     _socket.add(encoded);
 
+    _receivingFrame = _nextFrame;
+    _nextFrame = null;
+
     // TODO: possibly keep more than one frame in case of late callbacks
     // due to frame pipelining.
-    _handleFrame = _nextFrame;
-    _nextFrame = null;
   }
 }
 
@@ -108,16 +115,16 @@ class _PlaceDelegate extends core.PlaceDelegate {
   }
 }
 
-class _Frame {
+class _FrameFunctions {
   final int id;
-  final Map handlers = <int, Function>{};
-  int nextHandlerId = 0;
+  final Map functions = <int, Function>{};
+  int nextFunctionId = 0;
 
-  _Frame(this.id);
+  _FrameFunctions(this.id);
 
-  core.FunctionKey registerFunction(Function f) {
-    var h = new core.FunctionKey(id, nextHandlerId++);
-    handlers[h.id] = f;
-    return h;
+  FunctionKey registerFunction(Function f) {
+    var key = new FunctionKey(id, nextFunctionId++);
+    functions[key.id] = f;
+    return key;
   }
 }
