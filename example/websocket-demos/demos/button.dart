@@ -11,10 +11,10 @@ class ButtonAnimator extends Animator<ButtonDemoRequest, int> {
   const ButtonAnimator();
 
   @override
-  Place start(ButtonDemoRequest tag) => new Place(0);
+  Place start(_) => new Place(0);
 
   @override
-  Tag renderAt(Place<int> p, ButtonDemoRequest tag) {
+  Tag renderAt(Place<int> p, _) {
 
     onClick(_) {
       print("button clicked");
