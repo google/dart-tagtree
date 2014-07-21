@@ -3,13 +3,26 @@ TagTree
 
 TagTree is an experimental UI framework written in Dart, inspired by React.
 
+Attention conservation notice
+-----------------------------
+
+If you're looking for a UI framework to use in a production Dart application,
+you can stop reading now.
+
+If you're curious about the design of a React-like framework, how to model it
+with Dart's classes and types, or how to do RPC in Dart, you might find this
+article and the code it describes of interest.
+
 Concepts
 ========
+
+The three classes at the heart of TagTree are *Tag,* *Animator,* and *Place.*
+You might think of them as an alternative to Model-View-Controller.
 
 Tags
 ----
 
-A [Tag] [1] is just a record:
+A [Tag] [1] is just a class that implements a record:
 
     class GridView extends Tag {
       final Grid grid;
@@ -21,12 +34,19 @@ A [Tag] [1] is just a record:
       get animator => null; // TODO: explain
     }
 
-Like an HTML element, a Tag can have children. This is just another field.
-I suggest you name it *inner*, but that's not required. You can give it
-any fields you like.
+In this example, the GridView tag has three attributes, which are just Dart
+fields. The *grid* and *palette* attributes contain data to be used by the
+tag, and *onPaint* is an event handler. Unlike an HTML element, these
+attributes can be various Dart types, not just strings.
+
+Like an HTML element, a Tag can have children. GridView doesn't have
+any children, but if it did, they would go in another field named
+*inner*. But that's just a convention; a Tag can have any fields you like.
 
 Unlike an HTML element, a Tag should never change. Neither should its
-descendants; the tag trees in TagTree should be deeply immutable.
+descendants; the tag trees in TagTree should be deeply immutable, with
+the exception of event handlers that can point to functions that
+operate on mutable objects.
 (Dart doesn't enforce this, but you can give your Tags a const constructor
 as a hint.)
 
@@ -68,28 +88,32 @@ stream of Tags, or rather a stream of tag trees, since a Tag can have
 descendants. You can think of each of these trees as one frame of the
 animation. Tag Tree calls the *renderAt* method to generate each frame.
 
-In the above example, the input (a ButtonDemo tag) doesn't change.
-The Animator ignores it and generates frames at its own pace, by setting
-the *nextState* property on a Place.
+The *input* to an animator is another stream, usually a tag. Or rather,
+a stream of tags, which is how TagTree represents a tag that changes.
+
+In the above example, the input (a ButtonDemo tag) has no fields and
+doesn't change, so MyButtonAnimator ignores it and generates new animation
+frames at its own pace, by setting the *nextState* property on a Place.
 
 This shows the difference between an Animator and a regular HTML template.
 A template is passive (stateless); its output doesn't change unless its
-input changes. An Animator can act as a template, but it can also get input
-from other places and may have internal state. An Animator's output stream
-has a variable frame rate that's independent of its input stream.
+input changes. An Animator could act as a template that expands each input
+Tag. But it can also get input in other ways and may have internal state.
+An Animator's output stream has a variable frame rate that's independent of
+its input stream.
 
 The result is sort of like a slide show where some slides contain
-animated gifs or videos. Advancing to the next slide will cause movement,
-but the slides themselves can move on their own, too.
+animated gifs or videos. The screen changes when you advance to the
+next slide, but the slides themselves can move on their own, too.
 
-In a similar way, each custom Tag in TagTree has its own animation.
-These animations can be nested to any number of levels and they form a
+In a similar way, each custom Tag in TagTree is rendered as a separate
+animation. These animations can be nested to any number of levels and they form a
 dynamic tree structure, similar to the HTML elements in a web page.
 
 So a TagTree can be thought of as a React-like UI component library,
 implementing a virtual DOM. Like in React, the virtual DOM has tags
 representing regular HTML elements and custom tags that you write yourself.
-But TagTree uses a different (and I think cooler) metaphor to implement
+But TagTree uses a different metaphor to implement
 similar functionality.
 
 Place
@@ -97,19 +121,14 @@ Place
 
 Since the nested animations in TagTree can move on their own, we need a
 way to keep track of their state. In TagTree, the state of an animation
-is always stored in a [Place] [3]. This allows us to make an Animator a
-const value that can be freely shared between multiple animations running
-in different places.
+is always stored in a [Place] [3]. This allows TagTree to freely share
+animators between multiple animations running in different places.
 
 If you want to use a more traditional object-oriented style, you can
-subclass Place and think of it as a view object. TagTree isolates each
+subclass Place and think of it as a widget object. TagTree isolates each
 Place within an Animator, so this is just an implementation detail.
 All communication between animations happens using Tag streams and
 event callbacks.
-
-This Tag-Animator-Place trio is the design pattern at the heart of a
-TagTree-based user interface. Whether you use TagTree or not, I hope you
-find it a useful alternative to Model-View-Controller.
 
 Optional Features
 =================
