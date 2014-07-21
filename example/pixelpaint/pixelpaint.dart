@@ -75,12 +75,14 @@ class PixelPaintAnimator extends Animator<PixelPaintApp, Grid> {
   }
 }
 
+typedef PaintHandler(int x, int y);
+
 /// A single animation frame that renders the PixelPaint app's UI.
 /// (When running client-server, these frames are streamed from from server to client.)
 class GridView extends Tag implements Jsonable {
   final Grid grid;
   final List<String> palette;
-  final onPaint;
+  final PaintHandler onPaint;
   const GridView({this.grid, this.palette, this.onPaint});
 
   @override
@@ -96,8 +98,14 @@ class GridView extends Tag implements Jsonable {
     "onPaint": v.onPaint,
   };
 
-  static GridView fromMap(Map<String, dynamic> map) =>
-      new GridView(grid: map["grid"], palette: map["palette"], onPaint: map["onPaint"]);
+  static GridView fromMap(Map<String, dynamic> map) {
+    // onPaint is a RemoteFunction and must be wrapped in an actual function
+    var onPaint = map["onPaint"];
+    return new GridView(
+          grid: map["grid"],
+          palette: map["palette"],
+          onPaint: (x, y) => onPaint(x, y));
+  }
 }
 
 /// Renders a stream of [GridView] into a <table> and converts mouse events into onPaint calls.

@@ -22,6 +22,8 @@ class FunctionKey extends Jsonable {
 }
 
 /// A proxy for a remote function.
+/// (It is callable, but should be wrapped in a function on deserialization
+/// to store in variables that have a Function type.)
 class RemoteFunction {
   final FunctionKey key;
   final OnRemoteCall onCall;
