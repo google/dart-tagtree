@@ -67,11 +67,20 @@ class _BrowserRoot extends render.RenderRoot {
       root.dispatchEvent(new HandlerEvent(type, path, null));
     }
 
-    container.onClick.listen((e) => handle(e, onClick));
-    container.onMouseDown.listen((e) => handle(e, onMouseDown));
-    container.onMouseOver.listen((e) => handle(e, onMouseOver));
-    container.onMouseUp.listen((e) => handle(e, onMouseUp));
-    container.onMouseOut.listen((e) => handle(e, onMouseOut));
+    handleMouse(MouseEvent e, HandlerType type) {
+      String path = _getTargetPath(e.target);
+      if (path == null) {
+        return;
+      }
+      var m = new MousePosition(e.client.x, e.client.y);
+      root.dispatchEvent(new HandlerEvent(type, path, m));
+    }
+
+    container.onClick.listen((e) => handleMouse(e, onClick));
+    container.onMouseDown.listen((e) => handleMouse(e, onMouseDown));
+    container.onMouseOver.listen((e) => handleMouse(e, onMouseOver));
+    container.onMouseUp.listen((e) => handleMouse(e, onMouseUp));
+    container.onMouseOut.listen((e) => handleMouse(e, onMouseOut));
 
     // Form events are tricky. We want an onChange event to fire every time
     // the value in a text box changes. The native 'input' event does this,

@@ -63,8 +63,5 @@ abstract class RenderRoot {
     if (wasEmpty) {
       installEventListeners();
     }
-
-    // No nodes should be invalidated while rendering.
-    assert(_nodesToUpdate.isEmpty);
   }
 }

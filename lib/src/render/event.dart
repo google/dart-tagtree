@@ -11,13 +11,19 @@ class _HandlerMap {
   }
 
   void setHandler(String typeName, String path, var handler) {
+    if (handler == null) {
+      removeHandler(typeName, path);
+      return;
+    }
     assert(handler is Function || handler is RemoteFunction);
     _handlers.putIfAbsent(typeName, () => {});
     _handlers[typeName][path] = handler;
   }
 
   void removeHandler(String typeName, String path) {
-    _handlers[typeName].remove(path);
+    if (_handlers.containsKey(typeName)) {
+      _handlers[typeName].remove(path);
+    }
   }
 
   void removeHandlersForPath(String path) {

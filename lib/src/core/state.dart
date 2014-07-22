@@ -44,7 +44,7 @@ abstract class StateMachineMixin<S> {
     } else if (prev is bool || prev is num || prev is String) {
       return prev;
     }
-    throw "not cloneable: {prev.runtimeType}";
+    throw "not cloneable: ${prev.runtimeType}";
   }
 
   _cast(x) => x;

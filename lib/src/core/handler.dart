@@ -8,8 +8,32 @@ class HandlerType extends PropType {
 
   @override
   bool checkValue(dynamic value) {
-    assert(value is Function || value is RemoteFunction);
+    assert(value == null || value is Function || value is RemoteFunction);
     return true;
+  }
+}
+
+class MousePosition extends Jsonable {
+  final num x;
+  final num y;
+  MousePosition(this.x, this.y);
+
+  @override
+  checked() {
+    assert(x != null && y != null);
+    return true;
+  }
+
+  @override
+  get jsonType => $jsonType;
+
+  static const $jsonType = const JsonType("mousePosition", toJson, fromJson);
+
+  static toJson(MousePosition pos) => [pos.x, pos.y];
+
+  static fromJson(array) {
+    assert(array.length == 2);
+    return new MousePosition(array[0], array[1]);
   }
 }
 

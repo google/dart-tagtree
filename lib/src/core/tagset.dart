@@ -74,6 +74,7 @@ class TagSet {
 
     var types = <JsonType>[
         HandlerEvent.$jsonType,
+        MousePosition.$jsonType,
         FunctionKey.$jsonType,
         FunctionCall.$jsonType,
         RawHtml.$jsonType
