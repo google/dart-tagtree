@@ -162,9 +162,11 @@ check out the repository and launch the demos from inside the Dart Editor.
 Getting in Touch
 ================
 
-Google Plus: https://plus.google.com/+BrianSlesinsky
-Twitter: @skybrian
 Email: brian+tagtree@slesinsky.org
+
+Google Plus: https://plus.google.com/+BrianSlesinsky
+
+Twitter: @skybrian
 
 [1]: https://github.com/google/dart-tagtree/blob/master/lib/src/core/tag.dart
 [2]: https://github.com/google/dart-tagtree/blob/master/lib/src/core/animator.dart
