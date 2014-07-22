@@ -159,6 +159,13 @@ or client-server.
 I don't have an online demo page set up yet, so for now you will need to
 check out the repository and launch the demos from inside the Dart Editor.
 
+Getting in Touch
+================
+
+Google Plus: https://plus.google.com/+BrianSlesinsky
+Twitter: @skybrian
+Email: brian+tagtree@slesinsky.org
+
 [1]: https://github.com/google/dart-tagtree/blob/master/lib/src/core/tag.dart
 [2]: https://github.com/google/dart-tagtree/blob/master/lib/src/core/animator.dart
 [3]: https://github.com/google/dart-tagtree/blob/master/lib/src/core/place.dart
