@@ -77,7 +77,7 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
     this.height: 400,
     this.colors: const [
       "#f10","#e20","#d30","#c40","#b50","#a60","#970",
-      "#880","#790","#6a0","#5b0","#4c0","#3d","#2e0","1f0"],
+      "#880","#790","#6a0","#5b0","#4c0","#3d0","#2e0","#1f0"],
     this.onClick
   });
 
@@ -137,16 +137,13 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
       num real = pixelToReal(x);
       int count = probe(real, imag, maxIterations);
 
-      String color;
-      if (count == maxIterations) {
-        color = "#000";
-      } else {
+      String color = "#000";
+      if (count < maxIterations) {
         color = colors[count % colors.length];
       }
 
       if (color != prevColor) {
         if (prevColor != null) {
-          assert(x > left);
           context.fillStyle = prevColor;
           context.fillRect(left, y, x - left, 1);
         }
@@ -154,7 +151,6 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
         left = x;
       }
     }
-    assert(width > left);
     context.fillStyle = prevColor;
     context.fillRect(left, y, width - left, 1);
   }
