@@ -17,7 +17,7 @@ class Complex {
 /// The area of the complex plane to display in the view.
 class Camera implements Cloneable {
   final Complex center;
-  final num radius;
+  final num radius; // distance to shorter of width and height
   const Camera(this.center, this.radius);
 
   Camera pan(Complex newCenter) => new Camera(newCenter, radius);
@@ -58,16 +58,7 @@ class MandelbrotApp extends AnimatedTag {
 
 typedef ClickHandler(Complex point);
 
-class RenderState implements Cloneable {
-  final MandelbrotView view;
-  final int linesRendered;
-  RenderState(this.view, this.linesRendered);
-
-  @override
-  clone() => this;
-}
-
-class MandelbrotView extends AnimatedTag {
+class MandelbrotView extends AnimatedTag implements Cloneable {
   final Complex center;
   final num radius;
   final int maxIterations;
@@ -104,17 +95,17 @@ class MandelbrotView extends AnimatedTag {
   }
 
   @override
-  start() => new Place<RenderState>(new RenderState(this, 0));
+  start() => new Place<MandelbrotView>(this);
 
   @override
-  bool shouldRestart(Place<RenderState> p) => p.state.view != this;
+  bool shouldRestart(Place<MandelbrotView> p) => p.state != this;
 
   @override
-  Tag renderAt(Place<RenderState> p) {
+  Tag renderAt(Place p) {
 
     // Ask for a callback when the DOM is ready.
     var canvas = new Ref<CanvasElement>();
-    p.onRendered = (_) => drawStrip(canvas.elt.context2D, p);
+    p.onRendered = (_) => draw(canvas.elt.context2D);
 
     var convertOnClick = null;
     if (onClick != null) {
@@ -128,27 +119,23 @@ class MandelbrotView extends AnimatedTag {
       onClick: convertOnClick);
   }
 
-  void drawStrip(CanvasRenderingContext2D context, Place<RenderState> p) {
-    int y = p.state.linesRendered;
+  @override
+  clone() => this;
 
-    num startTime = window.performance.now();
-    num stopTime = startTime + 25;
-    while (window.performance.now() < stopTime) {
-      if (y == height) {
-        return;
-      }
+  void draw(CanvasRenderingContext2D context) {
+    for (int y = 0; y < height; y++) {
       drawLine(context, y);
-      y++;
     }
-    p.nextState = new RenderState(p.nextState.view, y);
   }
 
   void drawLine(CanvasRenderingContext2D context, int y) {
     num imag = - pixelToImag(y);
+
+    int left = null;
+    String prevColor = null;
     for (int x = 0; x < width; x++) {
       num real = pixelToReal(x);
-
-      int count = probe(real, imag, 10.0, maxIterations);
+      int count = probe(real, imag, maxIterations);
 
       String color;
       if (count == maxIterations) {
@@ -156,9 +143,20 @@ class MandelbrotView extends AnimatedTag {
       } else {
         color = colors[count % colors.length];
       }
-      context.fillStyle = color;
-      context.fillRect(x, y, 1, 1);
+
+      if (color != prevColor) {
+        if (prevColor != null) {
+          assert(x > left);
+          context.fillStyle = prevColor;
+          context.fillRect(left, y, x - left, 1);
+        }
+        prevColor = color;
+        left = x;
+      }
     }
+    assert(width > left);
+    context.fillStyle = prevColor;
+    context.fillRect(left, y, width - left, 1);
   }
 
   num get radiusPixels => width < height ? width/2.0 : height/2.0;
@@ -171,7 +169,14 @@ class MandelbrotView extends AnimatedTag {
 /// Returns the number of iterations it takes for the Mandelbrot sequence to
 /// go outside the circle with the given radius squared. Returns maxIterations
 /// if doesn't escape (is in the set).
-int probe(double real, double imag, double radiusSquared, int maxIterations) {
+int probe(double x, double y, int maxIterations) {
+  double xMinus = x - 0.25;
+  double ySquared = y * y;
+  double q = xMinus * xMinus + ySquared;
+  if (q * (q + xMinus) < 0.25 * ySquared) {
+    return maxIterations; // within cardiod
+  }
+
   double a = 0.0;
   double b = 0.0;
   int count = 0;
@@ -179,15 +184,18 @@ int probe(double real, double imag, double radiusSquared, int maxIterations) {
   while (true) {
     num aSquared = a * a;
     num bSquared = b * b;
-    if (aSquared + bSquared > radiusSquared || count >= maxIterations) {
-      break;
+    if (aSquared + bSquared > 4.0 || count >= maxIterations) {
+      return count;
     }
-    b = 2.0 * a * b + imag;
-    a = aSquared - bSquared + real;
+    num nextA = aSquared - bSquared + x;
+    num nextB = 2.0 * a * b + y;
+    if (a == nextA && b == nextB) {
+      return maxIterations; // fixed point found
+    }
+    a = nextA;
+    b = nextB;
     count++;
   }
-
-  return count;
 }
 
 main() =>
