@@ -193,6 +193,8 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
       input.map((c) => c.toCss()).toList()..add("#000");
 }
 
+const period2RadiusSquared = (1/16)*(1/16);
+
 /// Calculates the value of the Mandelbrot image at one point.
 ///
 /// Returns a number between 0 and maxIterations that indicates the number of iterations
@@ -204,6 +206,11 @@ int probe(double x, double y, int maxIterations) {
   double ySquared = y * y;
   double q = xMinus * xMinus + ySquared;
   if (q * (q + xMinus) < 0.25 * ySquared) {
+    return maxIterations;
+  }
+
+  // Return early if the point is within the period-2 bulb (a circle)
+  if ((x + 1) * (x + 1) + ySquared < period2RadiusSquared) {
     return maxIterations;
   }
 
