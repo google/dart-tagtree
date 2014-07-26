@@ -42,13 +42,8 @@ class MandelbrotApp extends AnimatedTag {
       p.nextState = p.nextState.zoom(scaleAmount);
     }
     var center = p.state.center;
-    var colors = colorRange(
-        new Color.hsl(1, 80, 70),
-        new Color.hsl(360 * 10, 100, 0),
-        1000);
     return $.Div(inner: [
-      new MandelbrotView(center: center, radius: p.state.radius, onClick: onClick,
-          colors: colors),
+      new MandelbrotView(center: center, radius: p.state.radius, onClick: onClick),
       $.Div(inner: [
         $.Button(onClick: (_) => zoom(0.5), inner: "Zoom In"),
         $.Button(onClick: (_) => zoom(2.0), inner: "Zoom Out"),
@@ -94,18 +89,23 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
 
   final int width;
   final int height;
-  final List<Color> colors;
   final ClickHandler onClick;
+  final List<String> colors;
+  double scalePixel;
 
-  const MandelbrotView({
+  MandelbrotView({
     this.center: const Complex(0, 0),
     this.radius: 2.0,
 
     this.width: 400,
     this.height: 400,
-    this.colors,
-    this.onClick
-  });
+    List<Color >colors,
+    this.onClick}) :
+      colors = colors == null ? defaultColors : _makeCssColors(colors)
+  {
+    var radiusPixels = width < height ? width/2.0 : height/2.0;
+    scalePixel = radius / radiusPixels;
+  }
 
   @override
   bool operator==(Object other) {
@@ -148,9 +148,14 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
   clone() => this;
 
   void draw(CanvasRenderingContext2D context) {
+    var startTime = window.performance.now();
+    //window.console.profile("draw");
     for (int y = 0; y < height; y++) {
       drawLine(context, y);
     }
+    //window.console.profileEnd("draw");
+    var elapsedTime = window.performance.now() - startTime;
+    print("draw time: ${elapsedTime} ms");
   }
 
   void drawLine(CanvasRenderingContext2D context, int y) {
@@ -158,15 +163,11 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
 
     int left = null;
     String prevColor = null;
+    int maxIterations = colors.length - 1;
     for (int x = 0; x < width; x++) {
       num real = pixelToCoordX(x);
       int count = probe(real, imag, maxIterations);
-
-      String color = "#000";
-      if (count < maxIterations) {
-        color = colors[count % colors.length].toCss();
-      }
-
+      String color = colors[count];
       if (color != prevColor) {
         if (prevColor != null) {
           context.fillStyle = prevColor;
@@ -180,13 +181,16 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
     context.fillRect(left, y, width - left, 1);
   }
 
-  int get maxIterations => colors.length - 1;
+  num pixelToCoordX(int x) => scalePixel * (x - width / 2) + center.real;
+  num pixelToCoordY(int y) => -scalePixel * (y - height / 2) + center.imag;
 
-  num get radiusPixels => width < height ? width/2.0 : height/2.0;
-  num scalePixel(num pix) => pix * radius / radiusPixels;
+  static final List<String> defaultColors = _makeCssColors(colorRange(
+      new Color.hsl(1, 80, 70),
+      new Color.hsl(360 * 10, 100, 0),
+      1000));
 
-  num pixelToCoordX(int x) => scalePixel(x - width / 2) + center.real;
-  num pixelToCoordY(int y) => -scalePixel(y - height / 2) + center.imag;
+  static _makeCssColors(List<Color> input) =>
+      input.map((c) => c.toCss()).toList()..add("#000");
 }
 
 /// Returns the number of iterations it takes for the Mandelbrot sequence to
