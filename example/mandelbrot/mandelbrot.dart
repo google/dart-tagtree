@@ -42,8 +42,13 @@ class MandelbrotApp extends AnimatedTag {
       p.nextState = p.nextState.zoom(scaleAmount);
     }
     var center = p.state.center;
+    var colors = colorRange(
+        new Color.hsl(1, 80, 70),
+        new Color.hsl(360 * 10, 100, 0),
+        1000);
     return $.Div(inner: [
-      new MandelbrotView(center: center, radius: p.state.radius, onClick: onClick),
+      new MandelbrotView(center: center, radius: p.state.radius, onClick: onClick,
+          colors: colors),
       $.Div(inner: [
         $.Button(onClick: (_) => zoom(0.5), inner: "Zoom In"),
         $.Button(onClick: (_) => zoom(2.0), inner: "Zoom Out"),
@@ -56,28 +61,49 @@ class MandelbrotApp extends AnimatedTag {
   }
 }
 
+class Color {
+  final int h; // 0 - 360 (wraps)
+  final num s; // 0 - 100
+  final num l; // 0 - 100
+  const Color.hsl(this.h, this.s, this.l);
+  String toCss() => "hsl(${h%360},$s%,$l%)";
+}
+
+List<Color> colorRange(Color start, Color end, int size) {
+  var interpolate = (int start, int end, num scale) =>
+      ((end - start) * scale + start).round();
+
+  var result = new List<Color>();
+
+  for (double i = 0.0; i < size; i++) {
+    num scale = i / (size - 1);
+    int h = interpolate(start.h, end.h, scale) % 360;
+    int s = interpolate(start.s, end.s, scale);
+    int l = interpolate(start.l, end.l, scale);
+    result.add(new Color.hsl(h, s, l));
+  }
+
+  return result;
+}
+
 typedef ClickHandler(Complex point);
 
 class MandelbrotView extends AnimatedTag implements Cloneable {
   final Complex center;
   final num radius;
-  final int maxIterations;
 
   final int width;
   final int height;
-  final List<String> colors;
+  final List<Color> colors;
   final ClickHandler onClick;
 
   const MandelbrotView({
     this.center: const Complex(0, 0),
     this.radius: 2.0,
-    this.maxIterations: 1000,
 
     this.width: 400,
     this.height: 400,
-    this.colors: const [
-      "#f10","#e20","#d30","#c40","#b50","#a60","#970",
-      "#880","#790","#6a0","#5b0","#4c0","#3d0","#2e0","#1f0"],
+    this.colors,
     this.onClick
   });
 
@@ -85,7 +111,6 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
   bool operator==(Object other) {
     if (other is MandelbrotView) {
       bool result = center==other.center && radius == other.radius &&
-          maxIterations == other.maxIterations &&
           width == other.width && height == other.height &&
           colors == other.colors &&
           onClick == other.onClick;
@@ -111,7 +136,7 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
     if (onClick != null) {
       convertOnClick = (HandlerEvent e) {
         MousePosition m = e.value;
-        onClick(new Complex(pixelToReal(m.x), pixelToImag(m.y)));
+        onClick(new Complex(pixelToCoordX(m.x), pixelToCoordY(m.y)));
       };
     }
 
@@ -129,17 +154,17 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
   }
 
   void drawLine(CanvasRenderingContext2D context, int y) {
-    num imag = - pixelToImag(y);
+    num imag = - pixelToCoordY(y);
 
     int left = null;
     String prevColor = null;
     for (int x = 0; x < width; x++) {
-      num real = pixelToReal(x);
+      num real = pixelToCoordX(x);
       int count = probe(real, imag, maxIterations);
 
       String color = "#000";
       if (count < maxIterations) {
-        color = colors[count % colors.length];
+        color = colors[count % colors.length].toCss();
       }
 
       if (color != prevColor) {
@@ -155,11 +180,13 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
     context.fillRect(left, y, width - left, 1);
   }
 
+  int get maxIterations => colors.length - 1;
+
   num get radiusPixels => width < height ? width/2.0 : height/2.0;
   num scalePixel(num pix) => pix * radius / radiusPixels;
 
-  num pixelToReal(int x) => scalePixel(x - width / 2) + center.real;
-  num pixelToImag(int y) => -scalePixel(y - height / 2) + center.imag;
+  num pixelToCoordX(int x) => scalePixel(x - width / 2) + center.real;
+  num pixelToCoordY(int y) => -scalePixel(y - height / 2) + center.imag;
 }
 
 /// Returns the number of iterations it takes for the Mandelbrot sequence to
