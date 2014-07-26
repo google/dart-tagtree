@@ -193,26 +193,28 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
       input.map((c) => c.toCss()).toList()..add("#000");
 }
 
-/// Returns the number of iterations it takes for the Mandelbrot sequence to
-/// go outside the circle with the given radius squared. Returns maxIterations
-/// if doesn't escape (is in the set).
+/// Calculates the value of the Mandelbrot image at one point.
+///
+/// Returns a number between 0 and maxIterations that indicates the number of iterations
+/// it takes for the Mandelbrot sequence to go outside the circle with radius 2.
+/// Returns maxIterations if it doesn't escape within that many iterations.
 int probe(double x, double y, int maxIterations) {
+  // Return early if the point is within the central bulb (a cartoid).
   double xMinus = x - 0.25;
   double ySquared = y * y;
   double q = xMinus * xMinus + ySquared;
   if (q * (q + xMinus) < 0.25 * ySquared) {
-    return maxIterations; // within cardiod
+    return maxIterations;
   }
 
   double a = 0.0;
   double b = 0.0;
-  int count = 0;
 
-  while (true) {
+  for (int count = 0; count < maxIterations; count++) {
     num aSquared = a * a;
     num bSquared = b * b;
-    if (aSquared + bSquared > 4.0 || count >= maxIterations) {
-      return count;
+    if (aSquared + bSquared > 4.0) {
+      return count; // escaped
     }
     num nextA = aSquared - bSquared + x;
     num nextB = 2.0 * a * b + y;
@@ -221,8 +223,10 @@ int probe(double x, double y, int maxIterations) {
     }
     a = nextA;
     b = nextB;
-    count++;
   }
+
+  // didn't escape
+  return maxIterations;
 }
 
 main() =>
