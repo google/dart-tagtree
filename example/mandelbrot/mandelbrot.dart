@@ -1,5 +1,9 @@
+library mandelbrot;
+
 import 'package:tagtree/browser.dart';
 import 'dart:html';
+
+part "color.dart";
 
 class Complex {
   final num real;
@@ -56,31 +60,6 @@ class MandelbrotApp extends AnimatedTag {
   }
 }
 
-class Color {
-  final int h; // 0 - 360 (wraps)
-  final num s; // 0 - 100
-  final num l; // 0 - 100
-  const Color.hsl(this.h, this.s, this.l);
-  String toCss() => "hsl(${h%360},$s%,$l%)";
-}
-
-List<Color> colorRange(Color start, Color end, int size) {
-  var interpolate = (int start, int end, num scale) =>
-      ((end - start) * scale + start).round();
-
-  var result = new List<Color>();
-
-  for (double i = 0.0; i < size; i++) {
-    num scale = i / (size - 1);
-    int h = interpolate(start.h, end.h, scale) % 360;
-    int s = interpolate(start.s, end.s, scale);
-    int l = interpolate(start.l, end.l, scale);
-    result.add(new Color.hsl(h, s, l));
-  }
-
-  return result;
-}
-
 typedef ClickHandler(Complex point);
 
 class MandelbrotView extends AnimatedTag implements Cloneable {
@@ -99,7 +78,7 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
 
     this.width: 400,
     this.height: 400,
-    List<Color >colors,
+    List<Color> colors,
     this.onClick}) :
       colors = colors == null ? defaultColors : _makeCssColors(colors)
   {
@@ -150,6 +129,7 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
   void draw(CanvasRenderingContext2D context) {
     var startTime = window.performance.now();
     //window.console.profile("draw");
+    //var pixels = context.getImageData(0,  0,  width, height);
     for (int y = 0; y < height; y++) {
       drawLine(context, y);
     }
@@ -168,6 +148,7 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
       num real = pixelToCoordX(x);
       int count = probe(real, imag, maxIterations);
       String color = colors[count];
+      //int pixel = (y * data.width + x) * 4;
       if (color != prevColor) {
         if (prevColor != null) {
           context.fillStyle = prevColor;
@@ -185,8 +166,8 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
   num pixelToCoordY(int y) => -scalePixel * (y - height / 2) + center.imag;
 
   static final List<String> defaultColors = _makeCssColors(colorRange(
-      new Color.hsl(1, 80, 70),
-      new Color.hsl(360 * 10, 100, 0),
+      new HslColor(1, 80, 70),
+      new HslColor(360 * 10, 100, 0),
       1000));
 
   static _makeCssColors(List<Color> input) =>
