@@ -15,6 +15,9 @@ class Complex {
     other is Complex && real==other.real && imag==other.imag;
 
   @override
+  int get hashCode => real.hashCode ^ imag.hashCode;
+
+  @override
   toString() => imag >= 0 ? "${real}+${imag}i" : "${real}${imag}i";
 }
 
@@ -69,7 +72,7 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
   final int width;
   final int height;
   final ClickHandler onClick;
-  final List<String> colors;
+  final List<Color> colors;
   double scalePixel;
 
   MandelbrotView({
@@ -80,7 +83,7 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
     this.height: 400,
     List<Color> colors,
     this.onClick}) :
-      colors = colors == null ? defaultColors : _makeCssColors(colors)
+      this.colors = (colors == null) ? defaultColors : colors
   {
     var radiusPixels = width < height ? width/2.0 : height/2.0;
     scalePixel = radius / radiusPixels;
@@ -97,6 +100,9 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
     }
     return false;
   }
+
+  @override
+  int get hashCode => center.hashCode ^ radius.hashCode ^ width ^ height;
 
   @override
   start() => new Place<MandelbrotView>(this);
@@ -128,47 +134,45 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
 
   void draw(CanvasRenderingContext2D context) {
     var startTime = window.performance.now();
-    //window.console.profile("draw");
-    //var pixels = context.getImageData(0,  0,  width, height);
+//    window.console.profile("draw");
+
+    var pixels = context.createImageData(width, height);
     for (int y = 0; y < height; y++) {
-      drawLine(context, y);
+      drawLine(pixels, y);
     }
-    //window.console.profileEnd("draw");
+    context.putImageData(pixels, 0,  0);
+
+//    window.console.profileEnd("draw");
     var elapsedTime = window.performance.now() - startTime;
     print("draw time: ${elapsedTime} ms");
   }
 
-  void drawLine(CanvasRenderingContext2D context, int y) {
+  void drawLine(ImageData pixels, int y) {
     num imag = - pixelToCoordY(y);
-
-    int left = null;
-    String prevColor = null;
     int maxIterations = colors.length - 1;
+    int width = pixels.width;
+
+    var data = pixels.data;
+    int pixelIndex = y * width * 4;
+
     for (int x = 0; x < width; x++) {
       num real = pixelToCoordX(x);
-      int count = probe(real, imag, maxIterations);
-      String color = colors[count];
-      //int pixel = (y * data.width + x) * 4;
-      if (color != prevColor) {
-        if (prevColor != null) {
-          context.fillStyle = prevColor;
-          context.fillRect(left, y, x - left, 1);
-        }
-        prevColor = color;
-        left = x;
-      }
+      int iterations = probe(real, imag, maxIterations);
+      Color color = colors[iterations];
+      data[pixelIndex++] = color.r;
+      data[pixelIndex++] = color.g;
+      data[pixelIndex++] = color.b;
+      data[pixelIndex++] = 255;
     }
-    context.fillStyle = prevColor;
-    context.fillRect(left, y, width - left, 1);
   }
 
   num pixelToCoordX(int x) => scalePixel * (x - width / 2) + center.real;
   num pixelToCoordY(int y) => -scalePixel * (y - height / 2) + center.imag;
 
-  static final List<String> defaultColors = _makeCssColors(colorRange(
+  static final List<Color> defaultColors = colorRange(
       new HslColor(1, 80, 70),
       new HslColor(360 * 10, 100, 0),
-      1000));
+      1000);
 
   static _makeCssColors(List<Color> input) =>
       input.map((c) => c.toCss()).toList()..add("#000");
