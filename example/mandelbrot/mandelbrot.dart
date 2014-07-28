@@ -171,14 +171,14 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
 
   static final List<Color> defaultColors = colorRange(
       new HslColor(1, 80, 70),
-      new HslColor(360 * 10, 100, 0),
+      new HslColor(360 * 20, 100, 0),
       1000);
 
   static _makeCssColors(List<Color> input) =>
       input.map((c) => c.toCss()).toList()..add("#000");
 }
 
-const period2RadiusSquared = (1/16)*(1/16);
+const period2RadiusSquared = (1/16);
 
 /// Calculates the value of the Mandelbrot image at one point.
 ///
@@ -202,6 +202,10 @@ int probe(double x, double y, int maxIterations) {
   double a = 0.0;
   double b = 0.0;
 
+  // cycle detection: follow the same path but at half speed
+  double pastA = 0.0;
+  double pastB = 0.0;
+
   for (int count = 0; count < maxIterations; count++) {
     num aSquared = a * a;
     num bSquared = b * b;
@@ -210,11 +214,20 @@ int probe(double x, double y, int maxIterations) {
     }
     num nextA = aSquared - bSquared + x;
     num nextB = 2.0 * a * b + y;
-    if (a == nextA && b == nextB) {
-      return maxIterations; // fixed point found
-    }
     a = nextA;
     b = nextB;
+
+    if (a == pastA && b == pastB) {
+      return maxIterations; // cycle found
+    }
+
+    if (count % 2 == 0) {
+      // move previous point used for detecting cycles
+      num nextPastA = pastA * pastA - pastB * pastB + x;
+      num nextPastB = 2.0 * pastA * pastB + y;
+      pastA = nextPastA;
+      pastB = nextPastB;
+    }
   }
 
   // didn't escape
