@@ -36,27 +36,40 @@ class Camera implements Cloneable {
   clone() => this;
 }
 
-class MandelbrotApp extends AnimatedTag {
-  const MandelbrotApp();
+const defaultCamera = const Camera(const Complex(0, 0), 2.0);
 
-  start() => new Place<Camera>(const Camera(const Complex(0, 0), 2.0));
+typedef CameraHandler(Camera next);
 
-  Tag renderAt(Place<Camera> p) {
+class MandelbrotApp extends TemplateTag {
+  final Camera camera;
+  final CameraHandler onCameraChange;
+
+  const MandelbrotApp({
+    this.camera: defaultCamera,
+    this.onCameraChange
+  });
+
+  @override
+  Tag render() {
+    void setCamera(Camera next) {
+      if (onCameraChange != null) {
+        onCameraChange(next);
+      }
+    }
     void onClick(Complex newCenter) {
-      p.nextState = p.nextState.pan(newCenter);
+      setCamera(camera.pan(newCenter));
     }
     void zoom(num scaleAmount) {
-      p.nextState = p.nextState.zoom(scaleAmount);
+      setCamera(camera.zoom(scaleAmount));
     }
-    var center = p.state.center;
     return $.Div(inner: [
-      new MandelbrotView(center: center, radius: p.state.radius, onClick: onClick),
+      new MandelbrotView(center: camera.center, radius: camera.radius, onClick: onClick),
       $.Div(inner: [
         $.Button(onClick: (_) => zoom(0.5), inner: "Zoom In"),
         $.Button(onClick: (_) => zoom(2.0), inner: "Zoom Out"),
       ]),
       $.Div(inner: [
-        "Center: ${center} Radius: ${p.state.radius}"
+        "Center: ${camera.center} Radius: ${camera.radius}"
       ]),
       $.Div(inner: "Click image to recenter")
     ]);
@@ -231,6 +244,41 @@ int probe(double x, double y, int maxIterations) {
   return maxIterations;
 }
 
-main() =>
-    getRoot("#container")
-      .mount(const MandelbrotApp());
+onCameraChange(Camera next) {
+  var state = "#x=${next.center.real}&y=${next.center.imag}&r=${next.radius}";
+  window.location.hash = state;
+}
+
+Camera loadCamera() {
+  var params = <String, double>{};
+  if (window.location.hash.isNotEmpty) {
+    for (String segment in window.location.hash.substring(1).split("&")) {
+      List parts = segment.split("=");
+      if (parts.length == 2) {
+        var value = double.parse(parts[1], (_) => null);
+        if (value != null) {
+          params[parts[0]] = value;
+        }
+      }
+    }
+  }
+
+  if (params.containsKey("x") && params.containsKey("y") && params.containsKey("r")) {
+   return new Camera(new Complex(params["x"], params["y"]), params["r"]);
+  } else {
+    return defaultCamera;
+  }
+}
+
+render() {
+  var camera = loadCamera();
+  getRoot("#container")
+    .mount(new MandelbrotApp(camera: camera, onCameraChange: onCameraChange));
+}
+
+main() {
+  render();
+  window.onHashChange.listen((_) {
+    render();
+  });
+}
