@@ -69,7 +69,7 @@ class _AnimatedNode extends _Node {
   }
 
   bool shouldCut(Tag nextTag, Animator nextAnim) {
-    return anim.shouldCut(_place, nextTag, nextAnim);
+    return anim.shouldCut(_place, renderedTag, nextTag, nextAnim);
   }
 
   bool isDirty(Tag next) {

@@ -65,7 +65,7 @@ class MandelbrotApp extends AnimatedTag {
 
 typedef ClickHandler(Complex point);
 
-class MandelbrotView extends AnimatedTag implements Cloneable {
+class MandelbrotView extends AnimatedTag {
   final Complex center;
   final num radius;
 
@@ -105,10 +105,10 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
   int get hashCode => center.hashCode ^ radius.hashCode ^ width ^ height;
 
   @override
-  start() => new Place<MandelbrotView>(this);
+  start() => new Place(false);
 
   @override
-  bool shouldRestart(Place<MandelbrotView> p) => p.state != this;
+  bool shouldRestart(Place<MandelbrotView> p, MandelbrotView prev) => prev != this;
 
   @override
   Tag renderAt(Place p) {
@@ -128,9 +128,6 @@ class MandelbrotView extends AnimatedTag implements Cloneable {
     return $.Canvas(width: width, height: height, clazz: "center", ref: canvas,
       onClick: convertOnClick);
   }
-
-  @override
-  clone() => this;
 
   void draw(CanvasRenderingContext2D context) {
     var startTime = window.performance.now();

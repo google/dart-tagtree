@@ -14,7 +14,7 @@ abstract class AnimatedTag<S> extends Tag {
   /// Returns true if the renderer should call [start] and begin a new
   /// animation. Otherwise, the current animation will continue with the
   /// same [Place].
-  bool shouldRestart(Place p) => false;
+  bool shouldRestart(Place p, AnimatedTag prevTag) => false;
 }
 
 class _AnimatedTag<IN extends AnimatedTag, S> extends Animator<IN, S> {
@@ -27,6 +27,6 @@ class _AnimatedTag<IN extends AnimatedTag, S> extends Animator<IN, S> {
   renderAt(Place p, IN currentTag) => currentTag.renderAt(p);
 
   @override
-  bool shouldCut(Place<S> place, IN nextTag, Animator nextAnim) =>
-      nextAnim != this || nextTag.shouldRestart(place);
+  bool shouldCut(Place<S> place, IN prevTag, IN nextTag, Animator nextAnim) =>
+      nextAnim != this || nextTag.shouldRestart(place, prevTag);
 }

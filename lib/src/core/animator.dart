@@ -53,5 +53,6 @@ abstract class Animator<IN, S> {
   ///
   /// The default implementation cuts to the next animation as soon as it's different,
   /// based on the == operator.
-  bool shouldCut(Place<S> place, nextInput, Animator nextAnim) => this != nextAnim;
+  bool shouldCut(Place<S> place, IN input, nextInput, Animator nextAnim) =>
+      this != nextAnim;
 }
