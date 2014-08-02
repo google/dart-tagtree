@@ -62,7 +62,7 @@ To give a Tag some behavior, you need to write an [Animator] [2].
     }
 
     class MyButtonAnimator extends Animator<ButtonDemo, int> {
-      const ButtonAnimator();
+      const MyButtonAnimator();
 
       @override
       Place start(_) => new Place(0);
