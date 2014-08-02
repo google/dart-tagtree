@@ -3,15 +3,12 @@ TagTree
 
 TagTree is an experimental UI framework written in Dart, inspired by React.
 
-Attention conservation notice
------------------------------
+Disclaimer
+----------
 
-If you're looking for a UI framework to use in a production Dart application,
-you can stop reading now.
-
-If you're curious about the design of a React-like framework, how to model it
-with Dart's classes and types, or how to do RPC in Dart, you might find this
-article and the code it describes of interest.
+This is not an official Google product. TagTree is unsupported and not meant
+for use in a production Dart application, unless you're willing to fork the code
+and fix any bugs you find yourself.
 
 Concepts
 ========
