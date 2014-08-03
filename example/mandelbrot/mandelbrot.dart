@@ -38,30 +38,41 @@ class Camera implements Cloneable {
 
 const defaultCamera = const Camera(const Complex(0, 0), 2.0);
 
-typedef CameraHandler(Camera next);
+typedef CameraSaveHandler(Camera next);
 
-class MandelbrotApp extends TemplateTag {
-  final Camera camera;
-  final CameraHandler onCameraChange;
+class MandelbrotApp extends AnimatedTag {
+  final Camera startCamera;
+  final CameraSaveHandler save;
 
-  const MandelbrotApp({
-    this.camera: defaultCamera,
-    this.onCameraChange
-  });
+  const MandelbrotApp({this.startCamera: defaultCamera, this.save});
 
   @override
-  Tag render() {
-    void setCamera(Camera next) {
-      if (onCameraChange != null) {
-        onCameraChange(next);
+  Place start() => new Place(startCamera);
+
+  @override
+  bool shouldRestart(Place p, AnimatedTag prev) {
+    if (prev is MandelbrotApp) {
+      return prev.startCamera != startCamera;
+    } else {
+      return true;
+    }
+  }
+
+  @override
+  Tag renderAt(Place<Camera> p) {
+
+    void onClick(Complex newCenter) {
+      p.nextState = p.nextState.pan(newCenter);
+    }
+
+    void zoom(num scaleAmount) {
+      p.nextState = p.nextState.zoom(scaleAmount);
+      if (save != null) {
+        save(p.nextState);
       }
     }
-    void onClick(Complex newCenter) {
-      setCamera(camera.pan(newCenter));
-    }
-    void zoom(num scaleAmount) {
-      setCamera(camera.zoom(scaleAmount));
-    }
+
+    var camera = p.state;
     return $.Div(inner: [
       new MandelbrotView(center: camera.center, radius: camera.radius, onClick: onClick),
       $.Div(inner: [
@@ -244,11 +255,6 @@ int probe(double x, double y, int maxIterations) {
   return maxIterations;
 }
 
-onCameraChange(Camera next) {
-  var state = "#x=${next.center.real}&y=${next.center.imag}&r=${next.radius}";
-  window.location.hash = state;
-}
-
 Camera loadCamera() {
   var params = <String, double>{};
   if (window.location.hash.isNotEmpty) {
@@ -270,10 +276,15 @@ Camera loadCamera() {
   }
 }
 
+saveCamera(Camera next) {
+  var state = "#x=${next.center.real}&y=${next.center.imag}&r=${next.radius}";
+  window.location.hash = state;
+}
+
 render() {
   var camera = loadCamera();
   getRoot("#container")
-    .mount(new MandelbrotApp(camera: camera, onCameraChange: onCameraChange));
+    .mount(new MandelbrotApp(startCamera: camera, save: saveCamera));
 }
 
 main() {
