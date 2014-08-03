@@ -19,10 +19,11 @@ abstract class _Update extends _Mount with _Unmount {
     Animator nextAnim = findAnimator(nextTag, newTheme);
 
     if (node is _AnimatedNode) {
+      assert(node.isMounted);
       if (node.shouldCut(nextTag, nextAnim)) {
         return _replace(node, nextTag, newTheme);
       }
-      _updateShadow(node, nextTag, oldTheme, newTheme);
+      updateShadow(node, nextTag, oldTheme, newTheme);
       return node;
 
     } else if (node is _ElementNode) {
@@ -44,7 +45,6 @@ abstract class _Update extends _Mount with _Unmount {
     } else {
       throw "unknown node type: ${node.runtimeType}";
     }
-
   }
 
   /// Replace a node and cut to a new animation. This replaces the Place,
@@ -68,7 +68,7 @@ abstract class _Update extends _Mount with _Unmount {
   ///
   /// After the update, all nodes in the subtree point to their newly-rendered Tags
   /// and the DOM has been updated.
-  void _updateShadow(_AnimatedNode node, Tag nextTag, Theme oldTheme, Theme newTheme) {
+  void updateShadow(_AnimatedNode node, Tag nextTag, Theme oldTheme, Theme newTheme) {
     if (oldTheme == newTheme && !node.isDirty(nextTag)) {
       return; // Skip this frame. (Performance shortcut.)
     }

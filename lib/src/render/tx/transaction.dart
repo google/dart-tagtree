@@ -19,7 +19,9 @@ class _Transaction extends _Update {
 
   void run() {
     if (nextTagTree != null) {
+      assert(root._renderedTree == null || root._renderedTree.isMounted);
       root._renderedTree = _replaceTree(root.path, root._renderedTree, nextTagTree);
+      assert(root._renderedTree.isMounted);
     }
 
     // Sort ancestors ahead of children.
@@ -28,7 +30,7 @@ class _Transaction extends _Update {
     for (_AnimatedNode n in _nodesToUpdate) {
       if (n.isMounted) {
         // Re-render using the same Tag.
-        updateOrReplace(n, n.renderedTag, n.renderedTheme, n.renderedTheme);
+        updateShadow(n, n.renderedTag, n.renderedTheme, n.renderedTheme);
       }
     }
 
