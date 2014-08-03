@@ -5,46 +5,17 @@ import 'dart:html';
 
 part "color.dart";
 
-class Complex {
-  final num real;
-  final num imag;
-  const Complex(this.real, this.imag);
+//
+// Views
+//
 
-  @override
-  bool operator==(other) =>
-    other is Complex && real==other.real && imag==other.imag;
-
-  @override
-  int get hashCode => real.hashCode ^ imag.hashCode;
-
-  @override
-  toString() => imag >= 0 ? "${real}+${imag}i" : "${real}${imag}i";
-}
-
-/// The area of the complex plane to display in the view.
-class Camera implements Cloneable {
-  final Complex center;
-  final num radius; // distance to shorter of width and height
-  const Camera(this.center, this.radius);
-
-  Camera pan(Complex newCenter) => new Camera(newCenter, radius);
-
-  // Below 1.0 means zoom in, above means zoom out.
-  Camera zoom(num scaleFactor) => new Camera(center, radius * scaleFactor);
-
-  @override
-  clone() => this;
-}
-
-const defaultCamera = const Camera(const Complex(0, 0), 2.0);
-
-typedef CameraSaveHandler(Camera next);
+typedef SaveCameraHandler(Camera next);
 
 class MandelbrotApp extends AnimatedTag {
   final Camera startCamera;
-  final CameraSaveHandler save;
+  final SaveCameraHandler save;
 
-  const MandelbrotApp({this.startCamera: defaultCamera, this.save});
+  const MandelbrotApp({this.startCamera: Camera.start, this.save});
 
   @override
   Place start() => new Place(startCamera);
@@ -199,6 +170,52 @@ class MandelbrotView extends AnimatedTag {
       input.map((c) => c.toCss()).toList()..add("#000");
 }
 
+//
+// Models
+//
+
+class Complex {
+  final num real;
+  final num imag;
+  const Complex(this.real, this.imag);
+
+  @override
+  bool operator==(other) =>
+    other is Complex && real==other.real && imag==other.imag;
+
+  @override
+  int get hashCode => real.hashCode ^ imag.hashCode;
+
+  @override
+  toString() => imag >= 0 ? "${real}+${imag}i" : "${real}${imag}i";
+}
+
+/// The area of the complex plane to display in the view.
+class Camera implements Cloneable {
+  final Complex center;
+  final num radius; // distance to shorter of width and height
+  const Camera(this.center, this.radius);
+
+  Camera pan(Complex newCenter) => new Camera(newCenter, radius);
+
+  // Below 1.0 means zoom in, above means zoom out.
+  Camera zoom(num scaleFactor) => new Camera(center, radius * scaleFactor);
+
+  @override
+  clone() => this;
+
+  @override
+  operator==(other) => (other is Camera) && center == other.center && radius == other.radius;
+
+  @override
+  get hashCode => center.hashCode ^ radius.hashCode;
+
+  @override
+  toString() => "Camera(${center}, ${radius})";
+
+  static const start = const Camera(const Complex(0, 0), 2.0);
+}
+
 const period2RadiusSquared = (1/16);
 
 /// Calculates the value of the Mandelbrot image at one point.
@@ -255,6 +272,10 @@ int probe(double x, double y, int maxIterations) {
   return maxIterations;
 }
 
+//
+// Persistence (in the URL)
+//
+
 Camera loadCamera() {
   var params = <String, double>{};
   if (window.location.hash.isNotEmpty) {
@@ -272,7 +293,7 @@ Camera loadCamera() {
   if (params.containsKey("x") && params.containsKey("y") && params.containsKey("r")) {
    return new Camera(new Complex(params["x"], params["y"]), params["r"]);
   } else {
-    return defaultCamera;
+    return Camera.start;
   }
 }
 
