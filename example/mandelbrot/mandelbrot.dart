@@ -9,49 +9,43 @@ part "color.dart";
 // Views
 //
 
-typedef SaveCameraHandler(Camera next);
+typedef CameraChangeHandler(Camera next);
 
 class MandelbrotApp extends AnimatedTag {
   final Camera startCamera;
-  final SaveCameraHandler save;
+  final CameraChangeHandler onCameraChange;
 
-  const MandelbrotApp({this.startCamera: Camera.start, this.save});
+  const MandelbrotApp({this.startCamera: Camera.start, this.onCameraChange});
 
   @override
   Place start() => new Place(startCamera);
 
   @override
-  bool shouldRestart(Place p, AnimatedTag prev) {
-    if (prev is MandelbrotApp) {
-      return prev.startCamera != startCamera;
-    } else {
-      return true;
-    }
+  bool shouldRestart(Place<Camera> p, AnimatedTag prev) {
+    return startCamera != p.nextState;
   }
 
   @override
   Tag renderAt(Place<Camera> p) {
 
-    void onClick(Complex newCenter) {
-      p.nextState = p.nextState.pan(newCenter);
+    void step(Camera next) {
+      if (onCameraChange != null) {
+        onCameraChange(next);
+      }
+      p.nextState = next;
     }
 
-    void zoom(num scaleAmount) {
-      p.nextState = p.nextState.zoom(scaleAmount);
-      if (save != null) {
-        save(p.nextState);
-      }
-    }
+    void onClick(Complex newCenter) => step(p.nextState.pan(newCenter));
+
+    void zoom(num scaleAmount) => step(p.nextState.zoom(scaleAmount));
 
     var camera = p.state;
+
     return $.Div(inner: [
       new MandelbrotView(center: camera.center, radius: camera.radius, onClick: onClick),
       $.Div(inner: [
         $.Button(onClick: (_) => zoom(0.5), inner: "Zoom In"),
         $.Button(onClick: (_) => zoom(2.0), inner: "Zoom Out"),
-      ]),
-      $.Div(inner: [
-        "Center: ${camera.center} Radius: ${camera.radius}"
       ]),
       $.Div(inner: "Click image to recenter")
     ]);
@@ -202,9 +196,6 @@ class Camera implements Cloneable {
   Camera zoom(num scaleFactor) => new Camera(center, radius * scaleFactor);
 
   @override
-  clone() => this;
-
-  @override
   operator==(other) => (other is Camera) && center == other.center && radius == other.radius;
 
   @override
@@ -212,6 +203,9 @@ class Camera implements Cloneable {
 
   @override
   toString() => "Camera(${center}, ${radius})";
+
+  @override
+  clone() => this;
 
   static const start = const Camera(const Complex(0, 0), 2.0);
 }
@@ -291,26 +285,39 @@ Camera loadCamera() {
   }
 
   if (params.containsKey("x") && params.containsKey("y") && params.containsKey("r")) {
-   return new Camera(new Complex(params["x"], params["y"]), params["r"]);
+    return new Camera(new Complex(params["x"], params["y"]), params["r"]);
   } else {
     return Camera.start;
   }
 }
 
-saveCamera(Camera next) {
-  var state = "#x=${next.center.real}&y=${next.center.imag}&r=${next.radius}";
-  window.location.hash = state;
+Camera lastSaved;
+
+updateCamera(Camera next) {
+  var newHash = "#x=${next.center.real}&y=${next.center.imag}&r=${next.radius}";
+  var url = window.location.href;
+  if (url.contains("#")) {
+    url = url.substring(0, url.indexOf("#"));
+  }
+  url += newHash;
+  if (lastSaved != null && lastSaved.radius == next.radius) {
+    window.history.replaceState(null,  "", url);
+  } else {
+    window.history.pushState(null,  "", url);
+  }
+  lastSaved = next;
 }
 
 render() {
   var camera = loadCamera();
   getRoot("#container")
-    .mount(new MandelbrotApp(startCamera: camera, save: saveCamera));
+    .mount(new MandelbrotApp(startCamera: camera, onCameraChange: updateCamera));
 }
 
 main() {
   render();
   window.onHashChange.listen((_) {
+    lastSaved = null;
     render();
   });
 }
