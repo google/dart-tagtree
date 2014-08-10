@@ -12,6 +12,14 @@ class Camera implements Cloneable {
   // Below 1.0 means zoom in, above means zoom out.
   Camera zoom(num scaleFactor) => new Camera(center, radius * scaleFactor);
 
+  // Computes the width (and height) of each pixel in the complex plane,
+  // for a view with the given width and height.
+  // (Assumes square pixels.)
+  num pixelSize(int width, int height) {
+    var radiusInPixels = width < height ? width/2.0 : height/2.0;
+    return radius / radiusInPixels;
+  }
+
   @override
   operator==(other) => (other is Camera) && center == other.center && radius == other.radius;
 
@@ -26,6 +34,43 @@ class Camera implements Cloneable {
 
   /// A camera view that shows the full Mandelbrot set.
   static const start = const Camera(const Point(0, 0), 2.0);
+}
+
+/// Projects a rectangular grid of square pixels onto the complex plane.
+/// Converts from pixel coordinates to complex numbers.
+/// For the pixel grid, (0,0) is in the upper left and +y is down.
+/// For the complex plane, positive real is right and positive imaginary is up.
+class Grid {
+  final Point center; // center of the grid in the complex plane. (x is real, y is imaginary)
+  final int width; // width of the grid in pixels
+  final int height; // height of the grid in pixels
+  final num pixelSize; // size of a pixel in the complex plane
+
+  Grid(Camera camera, [int width = 400, int height = 400]) :
+    this.center = camera.center,
+    this.width = width,
+    this.height = height,
+    this.pixelSize = camera.pixelSize(width, height);
+
+  // The real component for a pixel with the given x coordinate.
+  num pixelToReal(int x) => pixelSize * (x - width / 2) + center.x;
+
+  // The imaginary component for a pixel with the given y coordinate.
+  num pixelToImag(int y) => -pixelSize * (y - height / 2) + center.y;
+
+  // The complex number corresponding to a pixel.
+  Point pixelToPoint(int x, int y) => new Point(pixelToReal(x), pixelToImag(y));
+
+  @override
+  operator==(other) =>
+      (other is Grid) &&
+      center == other.center &&
+      width == other.width &&
+      height == other.height &&
+      pixelSize == other.pixelSize;
+
+  @override
+  get hashCode => center.hashCode ^ width.hashCode ^ height.hashCode ^ pixelSize.hashCode;
 }
 
 const period2RadiusSquared = (1/16);

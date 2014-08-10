@@ -40,10 +40,8 @@ class MandelbrotApp extends AnimatedTag {
 
     void zoom(num scaleAmount) => step(p.nextState.zoom(scaleAmount));
 
-    var camera = p.state;
-
     return $.Div(inner: [
-      new MandelbrotView(center: camera.center, radius: camera.radius, onClick: onClick),
+      new MandelbrotView(grid: new Grid(p.state), onClick: onClick),
       $.Div(inner: [
         $.Button(onClick: (_) => zoom(0.5), inner: "Zoom In"),
         $.Button(onClick: (_) => zoom(2.0), inner: "Zoom Out"),
@@ -56,34 +54,20 @@ class MandelbrotApp extends AnimatedTag {
 typedef ClickHandler(Point point);
 
 class MandelbrotView extends AnimatedTag {
-  final Point center;
-  final num radius;
-
-  final int width;
-  final int height;
-  final ClickHandler onClick;
+  final Grid grid;
   final List<Color> colors;
-  double scalePixel;
+  final ClickHandler onClick;
 
   MandelbrotView({
-    this.center: const Point(0, 0),
-    this.radius: 2.0,
-
-    this.width: 400,
-    this.height: 400,
+    this.grid,
     List<Color> colors,
-    this.onClick}) :
-      this.colors = (colors == null) ? defaultColors : colors
-  {
-    var radiusPixels = width < height ? width/2.0 : height/2.0;
-    scalePixel = radius / radiusPixels;
-  }
+    this.onClick
+  }) : this.colors = (colors == null) ? defaultColors : colors;
 
   @override
   bool operator==(Object other) {
     if (other is MandelbrotView) {
-      bool result = center==other.center && radius == other.radius &&
-          width == other.width && height == other.height &&
+      bool result = grid == other.grid &&
           colors == other.colors &&
           onClick == other.onClick;
       return result;
@@ -92,7 +76,7 @@ class MandelbrotView extends AnimatedTag {
   }
 
   @override
-  int get hashCode => center.hashCode ^ radius.hashCode ^ width ^ height;
+  int get hashCode => grid.hashCode;
 
   @override
   start() => new Place(false);
@@ -111,20 +95,40 @@ class MandelbrotView extends AnimatedTag {
     if (onClick != null) {
       convertOnClick = (HandlerEvent e) {
         MousePosition m = e.value;
-        onClick(new Point(pixelToCoordX(m.x), pixelToCoordY(m.y)));
+        onClick(grid.pixelToPoint(m.x,  m.y));
       };
     }
 
-    return $.Canvas(width: width, height: height, clazz: "center", ref: canvas,
+    return $.Canvas(width: grid.width, height: grid.height, clazz: "center", ref: canvas,
       onClick: convertOnClick);
   }
 
   void draw(CanvasRenderingContext2D context) {
+
+    void drawLine(ImageData pixels, int y) {
+      num imag = - grid.pixelToImag(y);
+      int maxIterations = colors.length - 1;
+      int width = pixels.width;
+
+      var data = pixels.data;
+      int pixelIndex = y * width * 4;
+
+      for (int x = 0; x < width; x++) {
+        num real = grid.pixelToReal(x);
+        int iterations = findMandelbrot(real, imag, maxIterations);
+        Color color = colors[iterations];
+        data[pixelIndex++] = color.r;
+        data[pixelIndex++] = color.g;
+        data[pixelIndex++] = color.b;
+        data[pixelIndex++] = 255;
+      }
+    }
+
     var startTime = window.performance.now();
 //    window.console.profile("draw");
 
-    var pixels = context.createImageData(width, height);
-    for (int y = 0; y < height; y++) {
+    var pixels = context.createImageData(grid.width, grid.height);
+    for (int y = 0; y < grid.height; y++) {
       drawLine(pixels, y);
     }
     context.putImageData(pixels, 0,  0);
@@ -134,28 +138,7 @@ class MandelbrotView extends AnimatedTag {
     print("draw time: ${elapsedTime} ms");
   }
 
-  void drawLine(ImageData pixels, int y) {
-    num imag = - pixelToCoordY(y);
-    int maxIterations = colors.length - 1;
-    int width = pixels.width;
-
-    var data = pixels.data;
-    int pixelIndex = y * width * 4;
-
-    for (int x = 0; x < width; x++) {
-      num real = pixelToCoordX(x);
-      int iterations = findMandelbrot(real, imag, maxIterations);
-      Color color = colors[iterations];
-      data[pixelIndex++] = color.r;
-      data[pixelIndex++] = color.g;
-      data[pixelIndex++] = color.b;
-      data[pixelIndex++] = 255;
-    }
-  }
-
-  num pixelToCoordX(int x) => scalePixel * (x - width / 2) + center.x;
-  num pixelToCoordY(int y) => -scalePixel * (y - height / 2) + center.y;
-
+  // A list of 1000 colors that wraps around the color spectrum 20 times and fades to black.
   static final List<Color> defaultColors = colorRange(
       new HslColor(1, 80, 70),
       new HslColor(360 * 20, 100, 0),
