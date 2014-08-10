@@ -1,0 +1,85 @@
+part of mandelbrot;
+
+/// The area of the complex plane to display in the view.
+/// (X is used for the real axis and y for the imaginary axis.)
+class Camera implements Cloneable {
+  final Point center;
+  final num radius; // half of the view's width and height, whichever is shorter
+  const Camera(this.center, this.radius);
+
+  Camera pan(Point newCenter) => new Camera(newCenter, radius);
+
+  // Below 1.0 means zoom in, above means zoom out.
+  Camera zoom(num scaleFactor) => new Camera(center, radius * scaleFactor);
+
+  @override
+  operator==(other) => (other is Camera) && center == other.center && radius == other.radius;
+
+  @override
+  get hashCode => center.hashCode ^ radius.hashCode;
+
+  @override
+  toString() => "Camera(${center}, ${radius})";
+
+  @override
+  clone() => this;
+
+  /// A camera view that shows the full Mandelbrot set.
+  static const start = const Camera(const Point(0, 0), 2.0);
+}
+
+const period2RadiusSquared = (1/16);
+
+/// Calculates the value of the Mandelbrot image at one point.
+///
+/// Returns a number between 0 and maxIterations that indicates the number of iterations
+/// it takes for the Mandelbrot sequence to go outside the circle with radius 2.
+/// Returns maxIterations if it doesn't escape within that many iterations.
+int findMandelbrot(double x, double y, int maxIterations) {
+  // Return early if the point is within the central bulb (a cartoid).
+  double xMinus = x - 0.25;
+  double ySquared = y * y;
+  double q = xMinus * xMinus + ySquared;
+  if (q * (q + xMinus) < 0.25 * ySquared) {
+    return maxIterations;
+  }
+
+  // Return early if the point is within the period-2 bulb (a circle)
+  if ((x + 1) * (x + 1) + ySquared < period2RadiusSquared) {
+    return maxIterations;
+  }
+
+  double a = 0.0;
+  double b = 0.0;
+
+  // cycle detection: follow the same path but at half speed
+  double pastA = 0.0;
+  double pastB = 0.0;
+
+  for (int count = 0; count < maxIterations; count++) {
+    num aSquared = a * a;
+    num bSquared = b * b;
+    if (aSquared + bSquared > 4.0) {
+      return count; // escaped
+    }
+    num nextA = aSquared - bSquared + x;
+    num nextB = 2.0 * a * b + y;
+    a = nextA;
+    b = nextB;
+
+    if (a == pastA && b == pastB) {
+      return maxIterations; // cycle found
+    }
+
+    if (count % 2 == 0) {
+      // move previous point used for detecting cycles
+      num nextPastA = pastA * pastA - pastB * pastB + x;
+      num nextPastB = 2.0 * pastA * pastB + y;
+      pastA = nextPastA;
+      pastB = nextPastB;
+    }
+  }
+
+  // didn't escape
+  return maxIterations;
+}

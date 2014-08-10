@@ -4,6 +4,7 @@ import 'package:tagtree/browser.dart';
 import 'dart:html';
 
 part "color.dart";
+part "geometry.dart";
 
 //
 // Views
@@ -35,7 +36,7 @@ class MandelbrotApp extends AnimatedTag {
       p.nextState = next;
     }
 
-    void onClick(Complex newCenter) => step(p.nextState.pan(newCenter));
+    void onClick(Point newCenter) => step(p.nextState.pan(newCenter));
 
     void zoom(num scaleAmount) => step(p.nextState.zoom(scaleAmount));
 
@@ -52,10 +53,10 @@ class MandelbrotApp extends AnimatedTag {
   }
 }
 
-typedef ClickHandler(Complex point);
+typedef ClickHandler(Point point);
 
 class MandelbrotView extends AnimatedTag {
-  final Complex center;
+  final Point center;
   final num radius;
 
   final int width;
@@ -65,7 +66,7 @@ class MandelbrotView extends AnimatedTag {
   double scalePixel;
 
   MandelbrotView({
-    this.center: const Complex(0, 0),
+    this.center: const Point(0, 0),
     this.radius: 2.0,
 
     this.width: 400,
@@ -110,7 +111,7 @@ class MandelbrotView extends AnimatedTag {
     if (onClick != null) {
       convertOnClick = (HandlerEvent e) {
         MousePosition m = e.value;
-        onClick(new Complex(pixelToCoordX(m.x), pixelToCoordY(m.y)));
+        onClick(new Point(pixelToCoordX(m.x), pixelToCoordY(m.y)));
       };
     }
 
@@ -143,7 +144,7 @@ class MandelbrotView extends AnimatedTag {
 
     for (int x = 0; x < width; x++) {
       num real = pixelToCoordX(x);
-      int iterations = probe(real, imag, maxIterations);
+      int iterations = findMandelbrot(real, imag, maxIterations);
       Color color = colors[iterations];
       data[pixelIndex++] = color.r;
       data[pixelIndex++] = color.g;
@@ -152,8 +153,8 @@ class MandelbrotView extends AnimatedTag {
     }
   }
 
-  num pixelToCoordX(int x) => scalePixel * (x - width / 2) + center.real;
-  num pixelToCoordY(int y) => -scalePixel * (y - height / 2) + center.imag;
+  num pixelToCoordX(int x) => scalePixel * (x - width / 2) + center.x;
+  num pixelToCoordY(int y) => -scalePixel * (y - height / 2) + center.y;
 
   static final List<Color> defaultColors = colorRange(
       new HslColor(1, 80, 70),
@@ -162,108 +163,6 @@ class MandelbrotView extends AnimatedTag {
 
   static _makeCssColors(List<Color> input) =>
       input.map((c) => c.toCss()).toList()..add("#000");
-}
-
-//
-// Models
-//
-
-class Complex {
-  final num real;
-  final num imag;
-  const Complex(this.real, this.imag);
-
-  @override
-  bool operator==(other) =>
-    other is Complex && real==other.real && imag==other.imag;
-
-  @override
-  int get hashCode => real.hashCode ^ imag.hashCode;
-
-  @override
-  toString() => imag >= 0 ? "${real}+${imag}i" : "${real}${imag}i";
-}
-
-/// The area of the complex plane to display in the view.
-class Camera implements Cloneable {
-  final Complex center;
-  final num radius; // distance to shorter of width and height
-  const Camera(this.center, this.radius);
-
-  Camera pan(Complex newCenter) => new Camera(newCenter, radius);
-
-  // Below 1.0 means zoom in, above means zoom out.
-  Camera zoom(num scaleFactor) => new Camera(center, radius * scaleFactor);
-
-  @override
-  operator==(other) => (other is Camera) && center == other.center && radius == other.radius;
-
-  @override
-  get hashCode => center.hashCode ^ radius.hashCode;
-
-  @override
-  toString() => "Camera(${center}, ${radius})";
-
-  @override
-  clone() => this;
-
-  static const start = const Camera(const Complex(0, 0), 2.0);
-}
-
-const period2RadiusSquared = (1/16);
-
-/// Calculates the value of the Mandelbrot image at one point.
-///
-/// Returns a number between 0 and maxIterations that indicates the number of iterations
-/// it takes for the Mandelbrot sequence to go outside the circle with radius 2.
-/// Returns maxIterations if it doesn't escape within that many iterations.
-int probe(double x, double y, int maxIterations) {
-  // Return early if the point is within the central bulb (a cartoid).
-  double xMinus = x - 0.25;
-  double ySquared = y * y;
-  double q = xMinus * xMinus + ySquared;
-  if (q * (q + xMinus) < 0.25 * ySquared) {
-    return maxIterations;
-  }
-
-  // Return early if the point is within the period-2 bulb (a circle)
-  if ((x + 1) * (x + 1) + ySquared < period2RadiusSquared) {
-    return maxIterations;
-  }
-
-  double a = 0.0;
-  double b = 0.0;
-
-  // cycle detection: follow the same path but at half speed
-  double pastA = 0.0;
-  double pastB = 0.0;
-
-  for (int count = 0; count < maxIterations; count++) {
-    num aSquared = a * a;
-    num bSquared = b * b;
-    if (aSquared + bSquared > 4.0) {
-      return count; // escaped
-    }
-    num nextA = aSquared - bSquared + x;
-    num nextB = 2.0 * a * b + y;
-    a = nextA;
-    b = nextB;
-
-    if (a == pastA && b == pastB) {
-      return maxIterations; // cycle found
-    }
-
-    if (count % 2 == 0) {
-      // move previous point used for detecting cycles
-      num nextPastA = pastA * pastA - pastB * pastB + x;
-      num nextPastB = 2.0 * pastA * pastB + y;
-      pastA = nextPastA;
-      pastB = nextPastB;
-    }
-  }
-
-  // didn't escape
-  return maxIterations;
 }
 
 //
@@ -285,7 +184,7 @@ Camera loadCamera() {
   }
 
   if (params.containsKey("x") && params.containsKey("y") && params.containsKey("r")) {
-    return new Camera(new Complex(params["x"], params["y"]), params["r"]);
+    return new Camera(new Point(params["x"], params["y"]), params["r"]);
   } else {
     return Camera.start;
   }
@@ -294,7 +193,7 @@ Camera loadCamera() {
 Camera lastSaved;
 
 updateCamera(Camera next) {
-  var newHash = "#x=${next.center.real}&y=${next.center.imag}&r=${next.radius}";
+  var newHash = "#x=${next.center.x}&y=${next.center.y}&r=${next.radius}";
   var url = window.location.href;
   if (url.contains("#")) {
     url = url.substring(0, url.indexOf("#"));
