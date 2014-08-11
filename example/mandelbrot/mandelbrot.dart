@@ -2,9 +2,11 @@ library mandelbrot;
 
 import 'package:tagtree/browser.dart';
 import 'dart:html';
+import 'dart:math';
 
 part "color.dart";
 part "geometry.dart";
+part "render.dart";
 
 //
 // Views
@@ -89,7 +91,7 @@ class MandelbrotView extends AnimatedTag {
 
     // Ask for a callback when the DOM is ready.
     var canvas = new Ref<CanvasElement>();
-    p.onRendered = (_) => draw(canvas.elt.context2D);
+    p.onRendered = (_) => renderFull(canvas.elt.context2D, grid, colors);
 
     var convertOnClick = null;
     if (onClick != null) {
@@ -103,46 +105,13 @@ class MandelbrotView extends AnimatedTag {
       onClick: convertOnClick);
   }
 
-  void draw(CanvasRenderingContext2D context) {
-
-    void drawLine(ImageData pixels, int y) {
-      num imag = - grid.pixelToImag(y);
-      int maxIterations = colors.length - 1;
-      int width = pixels.width;
-
-      var data = pixels.data;
-      int pixelIndex = y * width * 4;
-
-      for (int x = 0; x < width; x++) {
-        num real = grid.pixelToReal(x);
-        int iterations = findMandelbrot(real, imag, maxIterations);
-        Color color = colors[iterations];
-        data[pixelIndex++] = color.r;
-        data[pixelIndex++] = color.g;
-        data[pixelIndex++] = color.b;
-        data[pixelIndex++] = 255;
-      }
-    }
-
-    var startTime = window.performance.now();
-//    window.console.profile("draw");
-
-    var pixels = context.createImageData(grid.width, grid.height);
-    for (int y = 0; y < grid.height; y++) {
-      drawLine(pixels, y);
-    }
-    context.putImageData(pixels, 0,  0);
-
-//    window.console.profileEnd("draw");
-    var elapsedTime = window.performance.now() - startTime;
-    print("draw time: ${elapsedTime} ms");
-  }
-
-  // A list of 1000 colors that wraps around the color spectrum 20 times and fades to black.
+  // A list of 1000 colors that wraps around the color spectrum and fades to black.
   static final List<Color> defaultColors = colorRange(
-      new HslColor(1, 80, 70),
-      new HslColor(360 * 20, 100, 0),
-      1000);
+      new HslColor(0, 80, 70),
+      new HslColor(360 * 3, 100, 0),
+      1000, _ramp);
+
+  static num _ramp(num x) => sqrt(x);
 
   static _makeCssColors(List<Color> input) =>
       input.map((c) => c.toCss()).toList()..add("#000");

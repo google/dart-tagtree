@@ -33,7 +33,7 @@ class Camera implements Cloneable {
   clone() => this;
 
   /// A camera view that shows the full Mandelbrot set.
-  static const start = const Camera(const Point(0, 0), 2.0);
+  static const start = const Camera(const Point(0.0, 0.0), 2.0);
 }
 
 /// Projects a rectangular grid of square pixels onto the complex plane.
@@ -77,7 +77,7 @@ const period2RadiusSquared = (1/16);
 
 /// Calculates the value of the Mandelbrot image at one point.
 ///
-/// Returns a number between 0 and maxIterations that indicates the number of iterations
+/// Returns a number between 1 and maxIterations that indicates the number of iterations
 /// it takes for the Mandelbrot sequence to go outside the circle with radius 2.
 /// Returns maxIterations if it doesn't escape within that many iterations.
 int findMandelbrot(double x, double y, int maxIterations) {

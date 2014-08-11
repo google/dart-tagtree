@@ -64,9 +64,9 @@ class Color {
     throw new Exception("shouldn't get here");
   }
 
-  String toCss() {
-    return _rgbString;
-  }
+  String toCss() => _rgbString;
+
+  String toString() => "Color(${_rgbString})";
 }
 
 class HslColor {
@@ -84,17 +84,23 @@ class HslColor {
 /// color space. The hue may be denormalized (below 0 or above 360 degrees)
 /// to wrap around the color spectrum multiple times along a corkscrew or
 /// spiral path.
-List<Color> colorRange(HslColor start, HslColor end, int count) {
+/// The portion of the ramp function between 0 and 1 will be used to scale the colors.
+List<Color> colorRange(HslColor start, HslColor end, int count, Function ramp) {
   var interpolate = (int start, int end, num scale) =>
       ((end - start) * scale + start).round();
 
   var result = new List<Color>();
 
+  num min = ramp(0);
+  num max = ramp(1);
+  assert(min < max);
+
   for (double i = 0.0; i < count; i++) {
-    num scale = i / (count - 1);
-    int h = interpolate(start.h, end.h, scale) % 360;
-    int s = interpolate(start.s, end.s, scale);
-    int l = interpolate(start.l, end.l, scale);
+    num rampIn = (i / (count - 1));
+    num sample = (ramp(rampIn) - min) / (max - min);
+    int h = interpolate(start.h, end.h, sample) % 360;
+    int s = interpolate(start.s, end.s, sample);
+    int l = interpolate(start.l, end.l, sample);
     result.add(new HslColor(h, s, l).toRgb());
   }
 
