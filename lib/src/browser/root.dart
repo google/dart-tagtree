@@ -77,8 +77,9 @@ class _BrowserRoot extends render.RenderRoot {
     }
 
     container.onClick.listen((e) => handleMouse(e, onClick));
-    container.onMouseDown.listen((e) => handleMouse(e, onMouseDown));
     container.onMouseOver.listen((e) => handleMouse(e, onMouseOver));
+    container.onMouseDown.listen((e) => handleMouse(e, onMouseDown));
+    container.onMouseMove.listen((e) => handleMouse(e, onMouseMove));
     container.onMouseUp.listen((e) => handleMouse(e, onMouseUp));
     container.onMouseOut.listen((e) => handleMouse(e, onMouseOut));
 

@@ -15,72 +15,72 @@ class HtmlTagSet extends TagSet with HtmlTags {
 abstract class HtmlTags {
 
   Tag Div({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
   Tag Span({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
 
   Tag Header({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
   Tag Footer({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
 
   Tag H1({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
   Tag H2({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
   Tag H3({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
 
   Tag P({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
   Tag Pre({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
 
   Tag Ul({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
   Tag Li({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
 
   Tag Table({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
   Tag Tr({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
   Tag Td({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
 
   Tag A({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner,
     href});
   Tag Img({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut,
     width, height, src});
   Tag Canvas({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut,
     width, height});
 
   Tag B({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, inner});
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, inner});
 
   Tag Form({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onSubmit,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, onSubmit,
     inner});
   Tag FieldSet({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut,
     inner});
   Tag Legend({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut,
     inner});
   Tag Label({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, forr,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, forr,
     inner});
   Tag Input({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, onChange,
     value, defaultValue, placeholder, type, min, max});
   Tag TextArea({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, onChange,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, onChange,
     value, defaultValue});
   Tag Button({id, clazz, ref,
-    onClick, onMouseDown, onMouseOver, onMouseUp, onMouseOut, type,
+    onClick, onMouseOver, onMouseDown, onMouseMove, onMouseUp, onMouseOut, type,
     inner});
 }
 
@@ -93,8 +93,9 @@ final List<ElementType> _htmlTags = () {
     const AttributeType(#clazz, "class"),
     const PropType(#ref, "ref"),
     onClick,
-    onMouseDown,
     onMouseOver,
+    onMouseDown,
+    onMouseMove,
     onMouseUp,
     onMouseOut,
   ];
@@ -104,8 +105,9 @@ final List<ElementType> _htmlTags = () {
     const AttributeType(#clazz, "class"),
     const PropType(#ref, "ref"),
     onClick,
-    onMouseDown,
     onMouseOver,
+    onMouseDown,
+    onMouseMove,
     onMouseUp,
     onMouseOut,
     innerType,

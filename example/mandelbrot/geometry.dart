@@ -40,13 +40,15 @@ class Camera implements Cloneable {
 /// Converts from pixel coordinates to complex numbers.
 /// For the pixel grid, (0,0) is in the upper left and +y is down.
 /// For the complex plane, positive real is right and positive imaginary is up.
-class Grid {
+class Grid implements Cloneable {
   final Point center; // center of the grid in the complex plane. (x is real, y is imaginary)
   final int width; // width of the grid in pixels
   final int height; // height of the grid in pixels
   final num pixelSize; // size of a pixel in the complex plane
 
-  Grid(Camera camera, [int width = 400, int height = 400]) :
+  Grid.raw(this.center, this.width, this.height, this.pixelSize);
+
+  Grid(Camera camera, [int width = 800, int height = 800]) :
     this.center = camera.center,
     this.width = width,
     this.height = height,
@@ -61,6 +63,12 @@ class Grid {
   // The complex number corresponding to a pixel.
   Point pixelToPoint(int x, int y) => new Point(pixelToReal(x), pixelToImag(y));
 
+  int realToX(num real) => ((real - center.x) / pixelSize + (width / 2)).floor();
+
+  int imagToY(num imag) => ((imag - center.y) / -pixelSize + (height / 2)).floor();
+
+  Grid drag(num dReal, dImag) => new Grid.raw(new Point(center.x - dReal, center.y - dImag), width, height, pixelSize);
+
   @override
   operator==(other) =>
       (other is Grid) &&
@@ -71,6 +79,9 @@ class Grid {
 
   @override
   get hashCode => center.hashCode ^ width.hashCode ^ height.hashCode ^ pixelSize.hashCode;
+
+  @override
+  Grid clone() => this;
 }
 
 const period2RadiusSquared = (1/16);
