@@ -42,13 +42,15 @@ class MandelbrotApp extends AnimatedTag {
 
     void zoom(num scaleAmount) => step(p.nextState.zoom(scaleAmount));
 
-    return $.Div(inner: [
-      new MandelbrotView(grid: new Grid(p.state), onDrag: onDrag),
-      $.Div(inner: [
-        $.Button(onClick: (_) => zoom(0.5), inner: "Zoom In"),
-        $.Button(onClick: (_) => zoom(2.0), inner: "Zoom Out"),
+    return $.Div(clazz: "headerWrapper", inner: [
+      $.Header(inner: [
+         $.Div(inner: [
+           $.Button(onClick: (_) => zoom(0.5), inner: "Zoom In"),
+           $.Button(onClick: (_) => zoom(2.0), inner: "Zoom Out"),
+         ]),
+         $.Div(inner: "Drag image to recenter")
       ]),
-      $.Div(inner: "Drag image to recenter")
+      new MandelbrotView(clazz: "content", grid: new Grid(p.state), onDrag: onDrag),
     ]);
   }
 }
@@ -56,11 +58,13 @@ class MandelbrotApp extends AnimatedTag {
 typedef DragHandler(Point newCenter);
 
 class MandelbrotView extends Tag {
+  final String clazz;
   final Grid grid;
   final List<Color> colors;
   final DragHandler onDrag;
 
   MandelbrotView({
+    this.clazz,
     this.grid,
     List<Color> colors,
     this.onDrag
@@ -72,10 +76,10 @@ class MandelbrotView extends Tag {
   @override
   bool operator==(Object other) {
     if (other is MandelbrotView) {
-      bool result = grid == other.grid &&
+      return clazz == other.clazz &&
+          grid == other.grid &&
           colors == other.colors &&
           onDrag == other.onDrag;
-      return result;
     }
     return false;
   }
@@ -96,22 +100,30 @@ class _MandelbrotView extends Animator<MandelbrotView, RenderRequest> {
   const _MandelbrotView();
 
   @override
-  start(MandelbrotView input) => new DragPlace(new RenderRequest(input.grid, input.colors, fast: true));
+  start(MandelbrotView input) => new DragPlace(new RenderRequest(input.grid, input.colors));
 
   @override
-  bool shouldCut(DragPlace p, MandelbrotView input, nextInput, nextAnim) => p.drag == null;
+  bool shouldCut(DragPlace p, MandelbrotView input, nextInput, nextAnim) =>
+      p.drag == null && !p.isDirty && (nextInput.grid != p.state.grid || nextInput.colors != p.state.colors);
 
   @override
   Tag renderAt(DragPlace<RenderRequest> p, MandelbrotView input) {
     RenderRequest req = p.state;
 
     onMouseDown(HandlerEvent e) {
-      p.drag = new DragStart(e.value, req.grid);
+      MousePosition pos = e.value;
+      if (pos.button == 0) {
+        p.drag = new DragStart(e.value, req.grid);
+      }
     }
 
     onMouseMove(HandlerEvent e) {
       if (p.drag != null) {
-        p.nextState = new RenderRequest(p.drag.getDraggedGrid(e.value), req.colors, fast: true);
+        MousePosition pos = e.value;
+        Grid newGrid = p.drag.getDraggedGrid(e.value);
+        if (p.isDirty || p.state.grid != newGrid) {
+          p.nextState = new RenderRequest(newGrid, req.colors);
+        }
       }
     }
 
@@ -125,13 +137,13 @@ class _MandelbrotView extends Animator<MandelbrotView, RenderRequest> {
     // Ask for a callback when the DOM is ready.
     var canvas = new Ref<CanvasElement>();
     p.onRendered = (_) {
-      req.render(canvas.elt.context2D);
-      if (req.fast && p.drag == null) {
-        p.nextState = new RenderRequest(req.grid, req.colors, fast: false);
+      var nextRender = req.render(canvas.elt.context2D);
+      if (nextRender != null && p.drag == null) {
+        p.nextState = nextRender;
       }
     };
 
-    return $.Canvas(width: req.grid.width, height: req.grid.height, clazz: "center", ref: canvas,
+    return $.Canvas(clazz: input.clazz, width: req.grid.width, height: req.grid.height, ref: canvas,
       onMouseDown: onMouseDown, onMouseMove: onMouseMove, onMouseUp: (_) => onMouseUp(),
       onMouseOut: (_) => onMouseUp() // Try to avoid a "stuck" mouse button
     );

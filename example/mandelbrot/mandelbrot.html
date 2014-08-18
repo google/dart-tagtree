@@ -5,10 +5,26 @@
   	<meta charset="utf-8">
   	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mandelbrot - TagTree Demo</title>
+    <style type="text/css">
+      .fullScreen, .headerWrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+      }
+      .headerWrapper {
+        padding-top: 40pt;
+      }
+      header {
+        margin-top: -40pt;
+        height: 40pt;
+      }
+    </style>
   </head>
 
-  <body>
-    <div id="container"></div>
+  <body class="fullScreen">
+    <div id="container" class="fullScreen"></div>
     <script type="application/dart" src="mandelbrot.dart"></script>
     <script src="packages/browser/dart.js"></script>
   </body>

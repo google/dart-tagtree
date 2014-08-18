@@ -1,25 +1,31 @@
 part of mandelbrot;
 
+/// A request to render part of the Given grid as a Mandelbrot set.
 class RenderRequest implements Cloneable {
   final Grid grid;
   final List<Color> colors;
   final bool fast;
-  RenderRequest(this.grid, this.colors, {this.fast: false});
+  final int yStart;
+  final num maxMillis;
+  RenderRequest(this.grid, this.colors, {this.fast: true, this.yStart: 0, this.maxMillis: 15});
   RenderRequest clone() => this;
 
-  void render(CanvasRenderingContext2D context) {
+  /// Renders as much as possible within 15 ms. Returns a RenderRequest if there is more to be done.
+  RenderRequest render(CanvasRenderingContext2D context) {
     if (fast) {
       renderFast(context, grid, colors);
+      return new RenderRequest(grid, colors, fast: false);
     } else {
-      renderFull(context, grid, colors);
+      num nextYStart = renderStrip(context, grid, colors, yStart, maxMillis);
+      return nextYStart == null ? null : new RenderRequest(grid, colors, fast: false, yStart: nextYStart);
     }
   }
 }
 
-/// Renders each pixel in the given grid to the mandelbrot color.
-void renderFull(CanvasRenderingContext2D context, Grid grid, List<Color> colors, {bool fast}) {
-  var startTime = window.performance.now();
-//    window.console.profile("draw");
+/// Renders each pixel in the given grid, starting at yStart and downward.
+/// Stops after the given number of milliseconds. Returns the yStart for the next strip or null if finished.
+int renderStrip(CanvasRenderingContext2D context, Grid grid, List<Color> colors, int yStart, num maxMillis) {
+  num startTime = window.performance.now();
 
   var pixels = context.createImageData(grid.width, grid.height);
   var data = pixels.data;
@@ -42,22 +48,25 @@ void renderFull(CanvasRenderingContext2D context, Grid grid, List<Color> colors,
     }
   }
 
-  for (int y = 0; y < grid.height; y++) {
+  num deadline = startTime + maxMillis;
+  num y = yStart;
+  while (true) {
     drawLine(y);
+    y++;
+    if (y >= grid.height || window.performance.now() > deadline) {
+      break;
+    }
   }
 
-  context.putImageData(pixels, 0,  0);
-
-//    window.console.profileEnd("draw");
-  var elapsedTime = window.performance.now() - startTime;
-  print("full render time: ${elapsedTime} ms");
+  context.putImageData(pixels, 0,  0, 0, yStart, grid.width, y - yStart);
+  return y < grid.height ? y : null;
 }
 
-void renderFast(CanvasRenderingContext2D context, Grid grid, List<Color> colors) {
+/// Renders a low-resolution preview image.
+void renderFast(CanvasRenderingContext2D context, Grid grid, List<Color> colors, {cellSizePixels: 20}) {
   var startTime = window.performance.now();
 
-  num pixelsPerCell = 10;
-  num cellSize = grid.pixelSize * pixelsPerCell;
+  num cellSize = grid.pixelSize * cellSizePixels;
 
   // Find the bounds of a grid on the complex plane (so that cells don't move when we scroll)
   num top = ((grid.pixelToImag(0) / cellSize).floorToDouble() + 1) * cellSize;
@@ -67,10 +76,10 @@ void renderFast(CanvasRenderingContext2D context, Grid grid, List<Color> colors)
 
   int maxIterations = colors.length;
 
-  for (num imag = top; imag > bottom; imag -= cellSize) {
+  for (num imag = top + grid.pixelSize / 2; imag > bottom; imag -= cellSize) {
     int y = grid.imagToY(imag);
     int nextY = grid.imagToY(imag - cellSize);
-    for (num real = left; real < right; real += cellSize) {
+    for (num real = left + grid.pixelSize / 2; real < right; real += cellSize) {
       int x  = grid.realToX(real);
       int nextX = grid.realToX(real + cellSize);
       int iterations = findMandelbrot(real, imag, maxIterations);
@@ -81,5 +90,5 @@ void renderFast(CanvasRenderingContext2D context, Grid grid, List<Color> colors)
   }
 
   var elapsedTime = window.performance.now() - startTime;
-  print("fast render time: ${elapsedTime} ms");
+  //print("fast render time: ${elapsedTime} ms");
 }
