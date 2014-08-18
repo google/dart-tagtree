@@ -72,7 +72,7 @@ class _BrowserRoot extends render.RenderRoot {
       if (path == null) {
         return;
       }
-      var m = new MousePosition(e.client.x, e.client.y);
+      var m = new MousePosition(e.client.x, e.client.y, e.button);
       root.dispatchEvent(new HandlerEvent(type, path, m));
     }
 

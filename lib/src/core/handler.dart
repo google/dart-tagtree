@@ -16,7 +16,8 @@ class HandlerType extends PropType {
 class MousePosition extends Jsonable {
   final num x;
   final num y;
-  MousePosition(this.x, this.y);
+  final int button;
+  MousePosition(this.x, this.y, this.button);
 
   @override
   checked() {
@@ -29,11 +30,11 @@ class MousePosition extends Jsonable {
 
   static const $jsonType = const JsonType("mousePosition", toJson, fromJson);
 
-  static toJson(MousePosition pos) => [pos.x, pos.y];
+  static toJson(MousePosition pos) => [pos.x, pos.y, pos.button];
 
   static fromJson(array) {
-    assert(array.length == 2);
-    return new MousePosition(array[0], array[1]);
+    assert(array.length == 3);
+    return new MousePosition(array[0], array[1], array[2]);
   }
 }
 

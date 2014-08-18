@@ -73,4 +73,7 @@ abstract class StateMachineMixin<S> {
     _nextState = s;
     step();
   }
+
+  /// Returns true if a state change has been scheduled.
+  bool get isDirty => _nextState != null;
 }
