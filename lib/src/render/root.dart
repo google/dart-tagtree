@@ -13,7 +13,7 @@ abstract class RenderRoot {
   RenderRoot(this.id);
 
   /// A subclass hook called after DOM elements are mounted and we are ready
-  /// to start listenering for events.
+  /// to start listening for events.
   void installEventListeners();
 
   /// A subclass hook that's called when the DOM needs to be rendered.
