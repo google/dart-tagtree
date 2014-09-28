@@ -118,6 +118,24 @@ class _ThemeNode extends _Node {
   }
 }
 
+class _LayoutNode extends _Node {
+  Resizable innerTag;
+  _Node shadow;
+  Theme renderedTheme;
+  num width;
+  num height;
+
+  _LayoutNode(String path, int depth, this.innerTag) : super(path, depth);
+
+  @override
+  bool get isMounted => innerTag != null;
+
+  @override
+  void unmount() {
+    innerTag = null;
+  }
+}
+
 /// A node for a rendered HTML element.
 class _ElementNode extends _Node {
   ElementTag tag;

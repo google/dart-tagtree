@@ -43,4 +43,8 @@ abstract class DomUpdater {
   void addChildElement(String path, String childHtml);
 
   void removeChild(String path, int index);
+
+  /// Queries
+  num getClientWidth(String path);
+  num getClientHeight(String path);
 }

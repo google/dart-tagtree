@@ -42,6 +42,14 @@ abstract class _Update extends _Mount with _Unmount {
       } else {
         return _replace(node, nextTag, newTheme);
       }
+
+    } else if (node is _LayoutNode) {
+      if (nextAnim == null && nextTag is ResizeZone) {
+        updateResizeNode(node, nextTag.innerTag, oldTheme, newTheme);
+        return node;
+      } else {
+        return _replace(node, nextTag, newTheme);
+      }
     } else {
       throw "unknown node type: ${node.runtimeType}";
     }
@@ -91,6 +99,27 @@ abstract class _Update extends _Mount with _Unmount {
     // Recurse.
     node.tag = next;
     node.shadow = updateOrReplace(node.shadow, next.innerTag, prev.theme, next.theme);
+  }
+
+  void updateResizeNode(_LayoutNode node, Resizable nextTag, Theme oldTheme, Theme newTheme) {
+    num width = dom.getClientWidth(node.path);
+    num height = dom.getClientHeight(node.path);
+    if (node.width == width && node.height == height && node.innerTag == nextTag && oldTheme == newTheme) {
+      return; // Nothing to do
+    }
+
+    // Resize the shadow node
+    node.innerTag = nextTag.resize(width, height);
+    node.width = width;
+    node.height = height;
+
+    // Wrap in a div to make sure that the layout calculation only goes from outer to inner.
+    var shadowTag = new ElementTag.plainDiv(
+        style: "position: absolute; top: 0; left: 0; right: 0; bottom: 0",
+        inner: node.innerTag);
+
+    node.shadow = updateOrReplace(node.shadow, shadowTag, oldTheme, newTheme);
+    node.renderedTheme = newTheme;
   }
 
   /// Recursively updates an HTML element and its children to match the given tag.

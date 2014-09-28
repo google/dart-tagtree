@@ -28,6 +28,7 @@ part 'src/core/element.dart';
 part 'src/core/handler.dart';
 part 'src/core/jsontag.dart';
 part 'src/core/place.dart';
+part 'src/core/resize.dart';
 part 'src/core/state.dart';
 part 'src/core/tagtype.dart';
 part 'src/core/tagset.dart';

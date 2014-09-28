@@ -4,6 +4,7 @@ part of render;
 abstract class _Unmount {
 
   // What was unmounted
+  final List<_LayoutNode> _unmountedLayouts = [];
   void releaseElement(String path, ref, {bool willReplace: false});
 
   /// Recursively frees resources in a node tree. Marks all nodes as unmounted.
@@ -26,6 +27,13 @@ abstract class _Unmount {
 
       // Recurse.
       unmount(node.shadow, willReplace: willReplace);
+
+    } else if (node is _LayoutNode) {
+
+      // Recurse.
+      unmount(node.shadow, willReplace: willReplace);
+
+      _unmountedLayouts.add(node);
 
     } else {
       throw "unknown node type";

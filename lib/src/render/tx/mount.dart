@@ -9,6 +9,7 @@ abstract class _Mount {
   // What was mounted
   final List<_ElementNode> _renderedRefs = [];
   final List<_ElementNode> _mountedForms = [];
+  final List<_LayoutNode> _mountedLayouts = [];
   void addRenderCallback(Function callback);
   void addHandler(String typeName, String path, val);
 
@@ -24,6 +25,9 @@ abstract class _Mount {
   /// The depth is used to sort updates at render time. It's the depth in the
   /// tag tree, not the depth in the DOM tree (like the path). An animated node
   /// has a lower depth than its shadow tree.
+  ///
+  /// As a special case, LayoutZone tags are not mounted. Instead, a placeholder is added
+  /// and the nodes are returned in [_mountedLayouts].
   _Node mountTag(Tag tag, Theme theme, StringBuffer html, String path, int depth) {
     assert(tag != null);
 
@@ -53,6 +57,22 @@ abstract class _Mount {
       node.shadow = mountTag(node.tag.innerTag, node.tag.theme, html, node.path, node.depth + 1);
 
       return node;
+    } else if (tag is ResizeZone) {
+      var node = new _LayoutNode(path, depth, tag.innerTag);
+
+      // Render placeholder
+      var placeholder = new ElementTag.plainDiv(
+          style: "position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+      );
+
+      // Recurse.
+      node.shadow = mountTag(placeholder, theme, html, node.path, node.depth + 1);
+      node.renderedTheme = theme;
+
+      _mountedLayouts.add(node);
+
+      return node;
+
     } else {
       throw "Unknown tag type: ${tag.runtimeType}";
     }
@@ -78,7 +98,7 @@ abstract class _Mount {
     }
 
     // Special forms.
-    if (tag is ElementTag || tag is ThemeZone) {
+    if (tag is ElementTag || tag is ThemeZone || tag is ResizeZone) {
       return null;
     }
 

@@ -5,10 +5,11 @@ abstract class RenderRoot {
   final int id;
   final _handlers = new _HandlerMap();
   _Node _renderedTree;
+  final Set<_LayoutNode> _allLayouts = new Set();
 
   bool _frameRequested = false;
   Tag _nextTagTree;
-  final Set<_AnimatedNode> _nodesToUpdate = new Set();
+  final Set<_Node> _nodesToUpdate = new Set();
 
   RenderRoot(this.id);
 
@@ -35,12 +36,31 @@ abstract class RenderRoot {
   /// rendered tag tree.
   void dispatchEvent(HandlerEvent e) => _dispatch(e, _handlers);
 
+  void updateLayouts() {
+    _requestLayout(_allLayouts);
+  }
+
   /// Schedules a node to be rendered during the next frame.
   /// (That is, marks it as "dirty".)
   void _invalidate(_AnimatedNode node) {
     assert(node.isMounted);
     _nodesToUpdate.add(node);
     _requestAnimationFrame();
+  }
+
+  void _addLayouts(List<_LayoutNode> nodes) {
+    _allLayouts.addAll(nodes);
+  }
+
+  void _removeLayouts(List<_LayoutNode> nodes) {
+    _allLayouts.removeAll(nodes);
+  }
+
+  void _requestLayout(Iterable<_LayoutNode> nodes) {
+    if (nodes.isNotEmpty) {
+      _nodesToUpdate.addAll(nodes);
+      _requestAnimationFrame();
+    }
   }
 
   void _requestAnimationFrame() {

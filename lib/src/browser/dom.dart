@@ -143,6 +143,17 @@ class _DomUpdater implements render.DomUpdater {
     _visit(path).childNodes[index].remove();
   }
 
+  @override
+  num getClientWidth(String path) {
+    return _visit(path).clientWidth;
+  }
+
+  @override
+  num getClientHeight(String path) {
+    var elt = _visit(path);
+    return elt.clientHeight;
+  }
+
   HtmlElement _visit(String path) {
     assert(path != null);
     HtmlElement elt = cache.get(path);
@@ -176,9 +187,9 @@ String _getTargetValue(EventTarget target) {
 /// A Dart HTML sanitizer that knows about data-path.
 NodeTreeSanitizer _sanitizer = new NodeTreeSanitizer(new NodeValidatorBuilder()
     ..allowHtml5()
-    ..add(new _AllowDataPath()));
+    ..add(new _Whitelist()));
 
-class _AllowDataPath implements NodeValidator {
-  bool allowsAttribute(Element elt, String att, String value) => att == "data-path";
+class _Whitelist implements NodeValidator {
+  bool allowsAttribute(Element elt, String att, String value) => att == "data-path" || att == "style";
   bool allowsElement(Element elt) => false;
 }

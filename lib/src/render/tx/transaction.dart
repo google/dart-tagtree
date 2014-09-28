@@ -8,13 +8,13 @@ class _Transaction extends _Update {
 
   // What to do
   final Tag nextTagTree;
-  final List<_AnimatedNode> _nodesToUpdate;
+  final List<_Node> _nodesToUpdate;
 
   // What was done
   final List<Function> _renderCallbacks = [];
 
   _Transaction(this.root, this.dom, this.handlers, this.nextTagTree,
-      Iterable<_AnimatedNode> nodesToUpdate)
+      Iterable<_Node> nodesToUpdate)
       : _nodesToUpdate = new List.from(nodesToUpdate);
 
   void run() {
@@ -27,10 +27,16 @@ class _Transaction extends _Update {
     // Sort ancestors ahead of children.
     _nodesToUpdate.sort((a, b) => a.depth - b.depth);
 
-    for (_AnimatedNode n in _nodesToUpdate) {
+    for (_Node n in _nodesToUpdate) {
       if (n.isMounted) {
         // Re-render using the same Tag.
-        updateShadow(n, n.renderedTag, n.renderedTheme, n.renderedTheme);
+       if (n is _AnimatedNode) {
+          updateShadow(n, n.renderedTag, n.renderedTheme, n.renderedTheme);
+        } else if (n is _LayoutNode) {
+          updateResizeNode(n, n.innerTag, n.renderedTheme, n.renderedTheme);
+        } else {
+          throw "unable to update node: ${n.runtimeType}";
+        }
       }
     }
 
@@ -49,6 +55,10 @@ class _Transaction extends _Update {
     for (Function callback in _renderCallbacks) {
       callback();
     }
+
+    root._removeLayouts(_unmountedLayouts);
+    root._addLayouts(_mountedLayouts);
+    root._requestLayout(_mountedLayouts);
   }
 
   /// Renders a tag tree and returns the new node tree.

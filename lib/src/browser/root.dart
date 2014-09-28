@@ -101,6 +101,10 @@ class _BrowserRoot extends render.RenderRoot {
       root.dispatchEvent(new HandlerEvent(onChange, path, value));
     });
 
+    window.onResize.listen((Event e) {
+      root.updateLayouts();
+    });
+
     // TODO: implement many more events.
     // TODO: remove handlers on unmount.
   }

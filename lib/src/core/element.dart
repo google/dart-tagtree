@@ -7,6 +7,11 @@ class ElementTag extends Tag implements Jsonable {
   final PropsMap props;
   const ElementTag._raw(this.type, this.props);
 
+  /// A simple div that has a style attributes and may contain another tag.
+  /// (Used to break a dependency on the html library.)
+  ElementTag.plainDiv({String style, Tag inner}) :
+    this._raw(_plainDiv, _makeDivProps(style, inner));
+
   @override
   get animator => null; // special case
 
@@ -24,6 +29,20 @@ class ElementTag extends Tag implements Jsonable {
   /// [Place.onRendered].
   /// (Only works client-side; see browser.Ref).
   get ref => props["ref"];
+
+  static const _styleType = const AttributeType(#style, "style");
+  static const _plainDiv = const ElementType(#div, "div", const [_styleType, innerType], const []);
+
+  static PropsMap _makeDivProps(String style, Tag inner) {
+    var props = {};
+    if (style != null) {
+      props["style"] = style;
+    }
+    if (inner != null) {
+      props["inner"] = inner;
+    }
+    return new PropsMap(props);
+  }
 }
 
 /// A PropsMap contains an [ElementTag]'s fields.
