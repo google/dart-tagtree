@@ -42,17 +42,21 @@ class Camera implements Cloneable {
 /// For the complex plane, positive real is right and positive imaginary is up.
 class Grid implements Cloneable {
   final Point center; // center of the grid in the complex plane. (x is real, y is imaginary)
+  final num radius;
   final int width; // width of the grid in pixels
   final int height; // height of the grid in pixels
   final num pixelSize; // size of a pixel in the complex plane
 
-  Grid.raw(this.center, this.width, this.height, this.pixelSize);
+  Grid.raw(this.center, this.radius, this.width, this.height, this.pixelSize);
 
   Grid(Camera camera, [int width = 800, int height = 800]) :
     this.center = camera.center,
+    this.radius = camera.radius,
     this.width = width,
     this.height = height,
     this.pixelSize = camera.pixelSize(width, height);
+
+  Grid resize(int width, int height) => new Grid(new Camera(center, radius), width, height);
 
   // The real component for a pixel with the given x coordinate.
   num pixelToReal(int x) => pixelSize * (x - width / 2) + center.x;
@@ -67,7 +71,8 @@ class Grid implements Cloneable {
 
   int imagToY(num imag) => ((imag - center.y) / -pixelSize + (height / 2)).floor();
 
-  Grid drag(num dReal, dImag) => new Grid.raw(new Point(center.x - dReal, center.y - dImag), width, height, pixelSize);
+  Grid drag(num dReal, dImag) => new Grid.raw(
+      new Point(center.x - dReal, center.y - dImag), radius, width, height, pixelSize);
 
   @override
   operator==(other) =>

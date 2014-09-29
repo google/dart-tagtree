@@ -237,7 +237,9 @@ class AttributeType extends PropType {
 
   @override
   bool checkValue(value) {
-    assert(value is String || value is num); // automatically converted
-    return true;
+    if (value is String || value is num){
+      return true; // automatically converted
+    }
+    throw "invalid type for ${propKey} attribute: ${value.runtimeType}";
   }
 }

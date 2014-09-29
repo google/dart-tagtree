@@ -115,7 +115,7 @@ abstract class _Update extends _Mount with _Unmount {
 
     // Wrap in a div to make sure that the layout calculation only goes from outer to inner.
     var shadowTag = new ElementTag.plainDiv(
-        style: "position: absolute; top: 0; left: 0; right: 0; bottom: 0",
+        style: "position: relative; width: 100%; height: 100%",
         inner: node.innerTag);
 
     node.shadow = updateOrReplace(node.shadow, shadowTag, oldTheme, newTheme);
